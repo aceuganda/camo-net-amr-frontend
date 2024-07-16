@@ -1,0 +1,136 @@
+"use client"
+import React, { useState } from 'react';
+import LogoHeader from '../logosHeader';
+
+const RegistrationForm: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('registration');
+  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleRegistrationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle registration logic here
+    console.log({ email, fullName, password, confirmPassword });
+  };
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle login logic here
+    console.log({ email, password });
+  };
+
+  return (
+    <div
+      style={{ backgroundImage: 'url(/backgroundImageNet.webp)' }}
+      className="flex justify-center items-center min-h-screen bg-gray-100 bg-no-repeat bg-cover relative bg-fixed bg-center"
+    >
+      <div className='bg-[#161047] absolute h-[100%] w-[30%] top-0 left-0'></div>
+
+      <div className="w-[70%] h-[40rem] bg-white rounded-[10px] shadow-box  z-10">
+        <div className="flex justify-between items-center p-4 rounded-t-lg border-b-gray-300 border-b-[2px]">
+          <LogoHeader />
+        </div>
+        <div className="py-6 bg-[#f2f2f2] min-h-[33rem] px-4 sm:px-[6rem] rounded-[10px] transition-all relative">
+          <div className="flex border-b mb-6">
+            <button
+              onClick={() => setActiveTab('login')}
+              className={`w-1/2 text-center py-2 ${activeTab === 'login' ? 'text-[#00b9f1] border-b-2 border-[#00b9f1]' : 'text-gray-500 border-b-2 border-gray-500'}`}
+            >
+              LOGIN
+            </button>
+            <button
+              onClick={() => setActiveTab('registration')}
+              className={`w-1/2 text-center py-2 ${activeTab === 'registration' ? 'text-[#00b9f1] border-b-2 border-[#00b9f1]' : 'text-gray-500 border-b-2 border-gray-500'}`}
+            >
+              REGISTRATION
+            </button>
+          </div>
+          {activeTab === 'registration' ? (
+            <form className="space-y-3" onSubmit={handleRegistrationSubmit}>
+              <div>
+                <label className="block text-gray-700">Email Address <span className="text-red-600 text-[11px]">(Required)</span></label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+                  placeholder="Email Address"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700">Full Name <span className="text-red-600 text-[11px]">(Required)</span></label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+                  placeholder="Full Name"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700">Password <span className="text-red-600 text-[11px]">(Required)</span></label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+                  placeholder="Password"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700">Confirm Password <span className="text-red-600 text-[11px]">(Required)</span></label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+                  placeholder="Confirm Password"
+                  required
+                />
+              </div>
+              <div className='w-full flex justify-end absolute bottom-5 left-0 items-end  px-5'>
+              <button className="p-2  bg-[#00b9f1] sm:min-w-[13rem]  mt-3 text-white rounded hover:bg-[#7ad4ef]">REGISTER</button>
+              </div>
+            </form>
+          ) : (
+            <form className="space-y-4" onSubmit={handleLoginSubmit}>
+              <div>
+                <label className="block text-gray-700">Email Address <span className="text-red-600 text-[11px] ">(Required)</span></label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+                  placeholder="Email Address"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700">Password <span className="text-red-600 text-[11px]">(Required)</span></label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+                  placeholder="Password"
+                  required
+                />
+              </div>
+            
+              <div className='w-full flex absolute justify-end bottom-5 left-0 items-end px-5'>
+              <button className="p-2 sm:min-w-[13rem]  bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]">LOGIN</button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RegistrationForm;
