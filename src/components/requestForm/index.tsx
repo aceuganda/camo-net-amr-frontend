@@ -1,13 +1,21 @@
 "use client"
 import React, { useState } from 'react';
 import LogoHeader from '../logosHeader';
+import { login } from '@/lib/hooks/useAuth';
+import { useMutation } from '@tanstack/react-query';
+import DotsLoader from '../ui/dotsLoader';
+
 
 const RegistrationForm: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('registration');
+  const [activeTab, setActiveTab] = useState('login');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { data, isSuccess, isError, isPending, mutate } = useMutation({
+    mutationFn: login,
+    retry: false,
+  });
 
   const handleRegistrationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,10 +23,10 @@ const RegistrationForm: React.FC = () => {
     console.log({ email, fullName, password, confirmPassword });
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log({ email, password });
+   const user = await mutate({ email, password });
+   
   };
 
   return (
@@ -94,7 +102,7 @@ const RegistrationForm: React.FC = () => {
                 />
               </div>
               <div className='w-full flex justify-end absolute bottom-5 left-0 items-end  px-5'>
-              <button className="p-2  bg-[#00b9f1] sm:min-w-[13rem]  mt-3 text-white rounded hover:bg-[#7ad4ef]">REGISTER</button>
+              <button type='submit' className="p-2  bg-[#00b9f1] sm:min-w-[13rem]  mt-3 text-white rounded hover:bg-[#7ad4ef]">REGISTER</button>
               </div>
             </form>
           ) : (
@@ -123,7 +131,10 @@ const RegistrationForm: React.FC = () => {
               </div>
             
               <div className='w-full flex absolute justify-end bottom-5 left-0 items-end px-5'>
-              <button className="p-2 sm:min-w-[13rem]  bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]">LOGIN</button>
+               
+                <button type='submit' className="p-2 sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem]  bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]">
+                {isPending ? <DotsLoader/> : "LOGIN"}
+                  </button>
               </div>
             </form>
           )}
