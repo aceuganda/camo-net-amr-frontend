@@ -1,9 +1,11 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LogoHeader from '../logosHeader';
-import { login } from '@/lib/hooks/useAuth';
+import { login,Register } from '@/lib/hooks/useAuth';
 import { useMutation } from '@tanstack/react-query';
 import DotsLoader from '../ui/dotsLoader';
+import { toast } from "sonner";
+import { useRouter } from 'next/navigation';
 
 
 const RegistrationForm: React.FC = () => {
@@ -11,22 +13,41 @@ const RegistrationForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { data, isSuccess, isError, isPending, mutate } = useMutation({
+  const { data, isSuccess, error, isPending, mutate } = useMutation({
     mutationFn: login,
-    retry: false,
+  });
+  const { data:regData, isSuccess:regSuccess, error:regError, isPending:regIsPending, mutate:regMutate } = useMutation({
+    mutationFn: Register,
   });
 
-  const handleRegistrationSubmit = (e: React.FormEvent) => {
+  const handleRegistrationSubmit = async (e: any) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log({ email, fullName, password, confirmPassword });
+    if(password !== confirmPassword){
+      toast.error("Please make sure the passwords you have entered match");
+    }
+    regMutate({ email, name:fullName, password });
+    if(regSuccess){
+      toast.success("Registered successfully, please login.");
+      setActiveTab("login")
+    }
+    if (regError){
+      toast.error(`Failed to Register this account: An account with this email probably exists on the platform already`);
+    }
+   
   };
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-   const user = await mutate({ email, password });
-   
+  const handleLoginSubmit = async (e: any) => {
+    // e.preventDefault();
+    mutate({ email, password });
+    if(isSuccess){
+      router.push('/');
+      toast.success("Signed in successfully");
+    }
+    if (error){
+      toast.error(`Failed to login: make sure you have the right login credentials`);
+    }
   };
 
   return (
@@ -56,7 +77,7 @@ const RegistrationForm: React.FC = () => {
             </button>
           </div>
           {activeTab === 'registration' ? (
-            <form className="space-y-3" onSubmit={handleRegistrationSubmit}>
+            <div className="space-y-3">
               <div>
                 <label className="block text-gray-700">Email Address <span className="text-red-600 text-[11px]">(Required)</span></label>
                 <input
@@ -102,11 +123,11 @@ const RegistrationForm: React.FC = () => {
                 />
               </div>
               <div className='w-full flex justify-end absolute bottom-5 left-0 items-end  px-5'>
-              <button type='submit' className="p-2  bg-[#00b9f1] sm:min-w-[13rem]  mt-3 text-white rounded hover:bg-[#7ad4ef]">REGISTER</button>
+              <button disabled={regIsPending}  onClick={handleRegistrationSubmit} className="p-2  bg-[#00b9f1] sm:min-w-[13rem]flex items-center justify-center min-h-[2.4rem]  mt-3 text-white rounded hover:bg-[#7ad4ef]"> {regIsPending && !regSuccess  && !regError? <DotsLoader/> : "REGISTER"}</button>
               </div>
-            </form>
+            </div>
           ) : (
-            <form className="space-y-4" onSubmit={handleLoginSubmit}>
+            <div className="space-y-4">
               <div>
                 <label className="block text-gray-700">Email Address <span className="text-red-600 text-[11px] ">(Required)</span></label>
                 <input
@@ -132,11 +153,11 @@ const RegistrationForm: React.FC = () => {
             
               <div className='w-full flex absolute justify-end bottom-5 left-0 items-end px-5'>
                
-                <button type='submit' className="p-2 sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem]  bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]">
+                <button disabled={isPending}  onClick={handleLoginSubmit} className="p-2 sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem]  bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]">
                 {isPending ? <DotsLoader/> : "LOGIN"}
                   </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       </div>
