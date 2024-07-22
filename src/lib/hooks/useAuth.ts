@@ -26,5 +26,6 @@ export const Register = async (data: RegisterData) => {
 
 
 export const logout = () => {
-  localStorage.removeItem('token');
+  localStorage.removeItem('access_token');
+  return true; 
 };

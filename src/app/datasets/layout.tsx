@@ -1,14 +1,16 @@
-import HomeCatalogue from "@/components/landingCatalogue";
-import Image from "next/image";
+
+
+import React from "react";
 import LogoHeader from "@/components/logosHeader";
 import NavigationBar from "@/components/navigationBar";
 
-export default function Home() {
+
+export default function DatasetLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col w-[100%] h-[100%]">
-      <LogoHeader/>
+      <LogoHeader />
       <NavigationBar/>
-      <HomeCatalogue />
+      {children}
     </div>
   );
 }

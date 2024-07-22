@@ -3,8 +3,8 @@ import Image from "next/image";
 import { useState } from "react";
 import {
   CheckIcon,
-  SymbolIcon,
-  RowsIcon,
+  SwitchIcon,
+  HomeIcon,
   MagnifyingGlassIcon,
   ChevronRightIcon,
   ChevronLeftIcon,
@@ -13,6 +13,8 @@ import {
   ChevronDownIcon,
   DownloadIcon,
 } from "@radix-ui/react-icons";
+
+import Link from "next/link";
 
 type Dataset = {
   id: string;
@@ -100,14 +102,6 @@ export default function HomeCatalogue() {
 
   return (
     <main className="flex min-h-screen flex-col items-center ">
-      <div className="bg-[#24408E] w-full h-[2.5rem] flex justify-between items-center px-[1rem] text-white">
-        <div className="flex flex-row items-center justify-center">
-          <RowsIcon /> <span className="ml-2">Datasets</span>
-        </div>
-        <div>
-          <SymbolIcon />
-        </div>
-      </div>
       <div className="w-full flex flex-row  justify-between ">
         <div
           className={`transition-all duration-300 ${
