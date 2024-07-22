@@ -5,10 +5,9 @@ import { login, Register } from "@/lib/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { leapfrog } from "ldrs";
+import DotsLoader from "../ui/dotsLoader";
 
 const RegistrationForm: React.FC = () => {
-  leapfrog.register();
   const [activeTab, setActiveTab] = useState("login");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -159,11 +158,7 @@ const RegistrationForm: React.FC = () => {
                 >
                   {" "}
                   {regIsPending && !regSuccess && !regError ? (
-                     <l-leapfrog
-                     size="40"
-                     speed="2.5"
-                     color="black"
-                   ></l-leapfrog>
+                     <DotsLoader />
                   ) : (
                     "REGISTER"
                   )}
@@ -208,11 +203,7 @@ const RegistrationForm: React.FC = () => {
                   className="p-2 sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem]  bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]"
                 >
                   {isPending ? (
-                    <l-leapfrog
-                      size="40"
-                      speed="2.5"
-                      color="black"
-                    ></l-leapfrog>
+                    <DotsLoader/>
                   ) : (
                     "LOGIN"
                   )}

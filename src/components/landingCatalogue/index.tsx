@@ -9,11 +9,10 @@ import {
   DownloadIcon,
 } from "@radix-ui/react-icons";
 import { useSearch } from "@/context/searchContext";
-
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
+import dynamic from 'next/dynamic';
 
-import { leapfrog } from "ldrs";
-import dynamic from "next/dynamic";
+const DotsLoader = dynamic(() => import('../ui/dotsLoader'), { ssr: false });
 
 type FetchedDataset = {
   id: string;
@@ -45,7 +44,6 @@ export default function HomeCatalogue() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const { data, isLoading, error, } = useGetCatalogue();
   const datasets: FetchedDataset[] = data?.data || [];
-  leapfrog.register();
 
   const filteredDatasets = datasets.filter((dataset) =>
     dataset.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -159,7 +157,7 @@ export default function HomeCatalogue() {
           <>
             {isLoading && (
               <div className="text-center w-full flex items-start h-[4rem] justify-center text-gray-500">
-                <l-leapfrog size="40" speed="2.5" color="black"></l-leapfrog>
+                <DotsLoader/>
               </div>
             )}
 
