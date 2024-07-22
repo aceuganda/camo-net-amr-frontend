@@ -52,7 +52,7 @@ const NavigationBar = () => {
           <span className="ml-2">Projects</span>
         </Link> */}
         <Link
-          href="/"
+          href={isLoggedIn ? "/" : "/auth"}
           className={`flex flex-row items-center justify-center ${
             isActive("/data-access") ? "text-[#00B9F1]" : "text-white"
           }`}
