@@ -1,9 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import LogoHeader from "../logosHeader";
 import { login, Register } from "@/lib/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
-import DotsLoader from "../ui/dotsLoader";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { leapfrog } from "ldrs";
@@ -12,7 +11,6 @@ const RegistrationForm: React.FC = () => {
   leapfrog.register();
   const [activeTab, setActiveTab] = useState("login");
   const [email, setEmail] = useState("");
-
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();

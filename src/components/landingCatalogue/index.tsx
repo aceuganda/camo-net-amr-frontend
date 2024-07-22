@@ -1,5 +1,5 @@
-"use client";
-import Image from "next/image";
+'use client';
+
 import { useState } from "react";
 import {
   ChevronRightIcon,
@@ -10,51 +10,22 @@ import {
 } from "@radix-ui/react-icons";
 import { useSearch } from "@/context/searchContext";
 
-import Link from "next/link";
+import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
 
-type Dataset = {
+import { leapfrog } from "ldrs";
+import dynamic from "next/dynamic";
+
+type FetchedDataset = {
   id: string;
   name: string;
   category: string;
   type: string;
-  sampleSize: number;
+  size: number;
   countries: string[];
-  projectStatus: string;
-  dataUsePermission: string;
+  project_status: string;
+  data_use_permissions: string;
 };
 
-const datasets: Dataset[] = [
-  {
-    id: "1",
-    name: "Flemming Dataset",
-    category: "Demographic and Clinical",
-    type: "Secondary (Derived) dataset",
-    sampleSize: 599,
-    countries: ["UGANDA"],
-    projectStatus: "Closed",
-    dataUsePermission: "Publicly Available",
-  },
-  {
-    id: "2",
-    name: "Combatting Antimicrobial Resistance in Uganda",
-    category: "Demographic and Clinical",
-    type: "Secondary (Derived) dataset",
-    sampleSize: 200062,
-    countries: ["UGANDA"],
-    projectStatus: "Closed",
-    dataUsePermission: "Reserved Access",
-  },
-  {
-    id: "3",
-    name: "AMR Economic data",
-    category: "Economic Data",
-    type: "Primary dataset",
-    sampleSize: 200,
-    countries: ["UGANDA"],
-    projectStatus: "Active",
-    dataUsePermission: "Reserved Access",
-  },
-];
 const categories = [
   { name: "Economic Data", count: 1 },
   { name: "Demographic & Health", count: 3 },
@@ -72,6 +43,9 @@ export default function HomeCatalogue() {
   const [isCategoryOpen, setIsCategoryOpen] = useState(true);
   const [isTypeOpen, setIsTypeOpen] = useState(true);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const { data, isLoading, error, } = useGetCatalogue();
+  const datasets: FetchedDataset[] = data?.data || [];
+  leapfrog.register();
 
   const filteredDatasets = datasets.filter((dataset) =>
     dataset.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -117,17 +91,6 @@ export default function HomeCatalogue() {
 
           {isMenuOpen && (
             <>
-              {/* <div className="relative mb-4">
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="p-2 rounded-t-[7px] border-b-2 border-gray-300 pr-10 w-full bg-[#F0F9FA] shadow-custom"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <MagnifyingGlassIcon className="absolute right-2 top-2 w-6 h-6 text-gray-500" />
-              </div> */}
-
               <div className="mb-4">
                 <h3
                   className="font-[600] text-[15px] mb-[1.5rem] flex items-center text-[#24408E] cursor-pointer"
@@ -192,62 +155,81 @@ export default function HomeCatalogue() {
           <div className="text-[#24408E] font-[700] w-full gap-[7px] flex-row flex items-center justify-end px-[1rem] my-[30px]">
             <DownloadIcon /> <span>EXPORT</span>
           </div>
-          {filteredDatasets.length === 0 ? (
-            <div className="text-center w-full flex items-start justify-center text-gray-500">
-              No data for search term: {searchTerm}{" "}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-[95%] text-sm border-collapse rounded-t-lg overflow-hidden">
-                {/* Table Header */}
-                <thead className="bg-[#00B9F1] text-white">
-                  <tr>
-                    <th className="p-5">
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-5 w-5 text-blue-600"
-                        onChange={handleSelectAll}
-                        checked={selectedRows.length === datasets.length}
-                      />
-                    </th>
-                    <th className="p-5 text-left">Name</th>
-                    <th className="p-5 text-left">Category</th>
-                    <th className="p-5 text-left">Type</th>
-                    <th className="p-5 text-left">Sample Size</th>
-                    <th className="p-5 text-left">Countries</th>
-                    <th className="p-5 text-left">Project Status</th>
-                    <th className="p-5 text-left">Data Use Permission</th>
-                  </tr>
-                </thead>
 
-                {/* Table Body */}
-                <tbody>
-                  {filteredDatasets.map((dataset, index) => (
-                    <tr
-                      key={dataset.id}
-                      className={`${index % 2 === 0 ? 'bg-[#EBF7FD]' : 'bg-white'} rounded-t-lg border-b border-gray-200`}
-                    >
-                      <td className="p-5">
+          <>
+            {isLoading && (
+              <div className="text-center w-full flex items-start h-[4rem] justify-center text-gray-500">
+                <l-leapfrog size="40" speed="2.5" color="black"></l-leapfrog>
+              </div>
+            )}
+
+            {error && (
+              <div className="text-center w-full flex items-start justify-center text-gray-500">
+                Failed to fetch the Catalog, Please refresh the page
+              </div>
+            )}
+
+            {filteredDatasets.length === 0 && searchTerm && (
+              <div className="text-center w-full flex items-start justify-center text-gray-500">
+                No data for search term: {searchTerm}{" "}
+              </div>
+            )}
+
+            {filteredDatasets.length > 0 && !error && !isLoading && (
+              <div className="overflow-x-auto">
+                <table className="w-[95%] text-sm border-collapse rounded-t-lg overflow-hidden">
+                  {/* Table Header */}
+                  <thead className="bg-[#00B9F1] text-white">
+                    <tr>
+                      <th className="p-5">
                         <input
                           type="checkbox"
                           className="form-checkbox h-5 w-5 text-blue-600"
-                          onChange={(e) => handleRowCheck(e, dataset.id)}
-                          checked={selectedRows.includes(dataset.id)}
+                          onChange={handleSelectAll}
+                          checked={selectedRows.length === datasets.length}
                         />
-                      </td>
-                      <td className="p-5">{dataset.name}</td>
-                      <td className="p-5">{dataset.category}</td>
-                      <td className="p-5">{dataset.type}</td>
-                      <td className="p-5">{dataset.sampleSize}</td>
-                      <td className="p-5">{dataset.countries.join(", ")}</td>
-                      <td className="p-5">{dataset.projectStatus}</td>
-                      <td className="p-5">{dataset.dataUsePermission}</td>
+                      </th>
+                      <th className="p-5 text-left">Name</th>
+                      <th className="p-5 text-left">Category</th>
+                      <th className="p-5 text-left">Type</th>
+                      <th className="p-5 text-left">Sample Size</th>
+                      <th className="p-5 text-left">Countries</th>
+                      <th className="p-5 text-left">Project Status</th>
+                      <th className="p-5 text-left">Data Use Permission</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+
+                  {/* Table Body */}
+                  <tbody>
+                    {filteredDatasets.map((dataset, index) => (
+                      <tr
+                        key={dataset.id}
+                        className={`${
+                          index % 2 === 0 ? "bg-[#EBF7FD]" : "bg-white"
+                        } rounded-t-lg border-b border-gray-200`}
+                      >
+                        <td className="p-5">
+                          <input
+                            type="checkbox"
+                            className="form-checkbox h-5 w-5 text-blue-600"
+                            onChange={(e) => handleRowCheck(e, dataset.id)}
+                            checked={selectedRows.includes(dataset.id)}
+                          />
+                        </td>
+                        <td className="p-5">{dataset.name}</td>
+                        <td className="p-5">{dataset.category}</td>
+                        <td className="p-5">{dataset.type}</td>
+                        <td className="p-5">{dataset.size}</td>
+                        <td className="p-5">{dataset.countries}</td>
+                        <td className="p-5">{dataset.project_status}</td>
+                        <td className="p-5">{dataset.data_use_permissions}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         </div>
       </div>
     </main>

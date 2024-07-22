@@ -1,6 +1,6 @@
 // hooks/useAuth.ts
 import { useMutation } from '@tanstack/react-query';
-import api from './..//axios';
+import api from './../axios';
 
 interface LoginData {
   email: string;
