@@ -1,10 +1,10 @@
-
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/lib/providers";
-import React from 'react'
+import React from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { SearchProvider } from "@/context/searchContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,14 +19,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en">
       <Providers>
-      <body className={inter.className}>
-          {children}
-          <Toaster/>
-      </body>
+        <SearchProvider>
+          <body className={inter.className}>
+            {children}
+            <Toaster />
+          </body>
+        </SearchProvider>
       </Providers>
     </html>
   );

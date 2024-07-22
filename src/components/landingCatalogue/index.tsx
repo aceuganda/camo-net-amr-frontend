@@ -2,17 +2,13 @@
 import Image from "next/image";
 import { useState } from "react";
 import {
-  CheckIcon,
-  SwitchIcon,
-  HomeIcon,
-  MagnifyingGlassIcon,
   ChevronRightIcon,
-  ChevronLeftIcon,
   LayersIcon,
   Cross1Icon,
   ChevronDownIcon,
   DownloadIcon,
 } from "@radix-ui/react-icons";
+import { useSearch } from "@/context/searchContext";
 
 import Link from "next/link";
 
@@ -71,7 +67,7 @@ const types = [
 ];
 
 export default function HomeCatalogue() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { searchTerm } = useSearch();
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [isCategoryOpen, setIsCategoryOpen] = useState(true);
   const [isTypeOpen, setIsTypeOpen] = useState(true);
@@ -121,7 +117,7 @@ export default function HomeCatalogue() {
 
           {isMenuOpen && (
             <>
-              <div className="relative mb-4">
+              {/* <div className="relative mb-4">
                 <input
                   type="text"
                   placeholder="Search"
@@ -130,7 +126,7 @@ export default function HomeCatalogue() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <MagnifyingGlassIcon className="absolute right-2 top-2 w-6 h-6 text-gray-500" />
-              </div>
+              </div> */}
 
               <div className="mb-4">
                 <h3
