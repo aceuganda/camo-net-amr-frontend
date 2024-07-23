@@ -70,11 +70,11 @@ export default function HomeCatalogue() {
 
   return (
     <main className="flex min-h-screen flex-col items-center ">
-      <div className="w-full flex flex-row  justify-between ">
+      <div className=" w-full flex flex-row  justify-between ">
         <div
           className={`transition-all duration-300 ${
             isMenuOpen ? "w-[30rem] px-[3rem]" : "w-16"
-          } bg-[#F7F7F7] h-auto min-h-[40rem]  shadow-lg flex flex-col p-4 rounded-b-[10px]`}
+          } bg-[#F7F7F7] h-auto min-h-[40rem]  shadow-lg flex flex-col p-4 rounded-b-[10px] max-sm:hidden`}
         >
           <div className="flex items-center justify-between border-b pb-2 mb-2">
             {isMenuOpen && <span className="font-semibold">Filters</span>}
@@ -149,7 +149,7 @@ export default function HomeCatalogue() {
           )}
         </div>
 
-        <div className="ml-[2rem] w-full">
+        <div className="ml-[2rem] w-[90%] sm:w-full">
           <div className="text-[#24408E] font-[700] w-full gap-[7px] flex-row flex items-center justify-end px-[1rem] my-[30px]">
             <DownloadIcon /> <span>EXPORT</span>
           </div>
@@ -174,8 +174,8 @@ export default function HomeCatalogue() {
             )}
 
             {filteredDatasets.length > 0 && !error && !isLoading && (
-              <div className="overflow-x-auto">
-                <table className="w-[95%] text-sm border-collapse rounded-t-lg overflow-hidden">
+              <div className="max-sm:w-[100%] overflow-x-auto">
+                <table className="w-[95%] text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden max-sm:max-w-[30rem]">
                   {/* Table Header */}
                   <thead className="bg-[#00B9F1] text-white">
                     <tr>

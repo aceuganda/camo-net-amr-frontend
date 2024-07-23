@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LogoHeader from "../logosHeader";
 import { login, Register } from "@/lib/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
@@ -26,27 +26,7 @@ const RegistrationForm: React.FC = () => {
   } = useMutation({
     mutationFn: Register,
   });
-
-  const handleRegistrationSubmit = async (e: any) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      toast.error("Please make sure the passwords you have entered match");
-    }
-    regMutate({ email, name: fullName, password });
-    if (regSuccess) {
-      toast.success("Registered successfully, please login.");
-      setActiveTab("login");
-    }
-    if (regError) {
-      toast.error(
-        `Failed to Register this account: An account with this email probably exists on the platform already`
-      );
-    }
-  };
-
-  const handleLoginSubmit = async (e: any) => {
-    // e.preventDefault();
-    mutate({ email, password });
+  useEffect(() => {
     if (isSuccess) {
       router.push("/");
       toast.success("Signed in successfully");
@@ -56,6 +36,37 @@ const RegistrationForm: React.FC = () => {
         `Failed to login: make sure you have the right login credentials`
       );
     }
+
+  }, [isSuccess,error]);
+
+  useEffect(() => {
+    if (regSuccess) {
+      toast.success("Registered successfully, please login.");
+      setActiveTab("login");
+    }
+    if (regError) {
+      toast.error(
+        `Failed to Register this account: An account with this email probably exists on the platform already`
+      );
+    }
+
+  }, [ regSuccess, regError ]);
+
+
+
+  const handleRegistrationSubmit = async (e: any) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error("Please make sure the passwords you have entered match");
+    }
+    regMutate({ email, name: fullName, password });
+    
+  };
+
+  const handleLoginSubmit = async (e: any) => {
+    // e.preventDefault();
+    mutate({ email, password });
+    
   };
 
   return (
