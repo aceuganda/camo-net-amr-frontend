@@ -83,7 +83,7 @@ export default function HomeCatalogue() {
           setIsMenuOpen={setIsMenuOpen}
         />
 
-        <div className={`ml-[2rem] w-[90%] ${!isMenuOpen? "sm:w-full" :"sm:w-[80%]" } `}>
+        <div className={`ml-[2rem] w-[90%] ${!isMenuOpen? "" :"sm:w-[80%]" } `}>
           <div className="text-[#24408E] font-[700] w-full gap-[7px] flex-row flex items-center justify-end px-[1rem] my-[30px]">
             <DownloadIcon /> <span>EXPORT</span>
           </div>

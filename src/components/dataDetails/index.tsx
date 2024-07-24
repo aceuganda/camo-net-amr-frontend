@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useGetDataSet } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
+import { useMutation } from "@tanstack/react-query";
+import { requestAccess, downloadData } from "@/lib/hooks/useDataSets";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import FileSaver from "file-saver";
+
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
 interface DataSet {
@@ -74,20 +80,64 @@ interface Response {
 }
 
 export default function DatasetDetails({ id }: any) {
-  // Dummy dataset data
 
-  // Dummy permission state
-  const [hasDownloadPermission, setHasDownloadPermission] = useState(false);
   const { data, isLoading, error } = useGetDataSet(id);
   const dataset: Response = data?.data || {};
   const userPermission = dataset.user_permission;
+  const router = useRouter();
 
 
-  const canDownload = userPermission?.status === "approved" && dataset.data_set.in_warehouse;
+  const canDownload = (userPermission?.status === "approved" && dataset.data_set.in_warehouse) || dataset.is_super_admin;
   const canRequestAccess = !userPermission ;
   const showDownloadButton = dataset?.data_set?.in_warehouse;
 
   const permissionStatus = userPermission?.status || "none";
+
+  const { data:downloadedData, isSuccess:isDownloadSuccess, error:downloadError, isPending:downloadPending, mutate:downloadFn } = useMutation({
+    mutationFn: downloadData,
+  });
+  const { data:requestData, isSuccess:isRequestSuccess, error:requestError, isPending:requestPending, mutate:requestFn } = useMutation({
+    mutationFn: requestAccess,
+  });
+
+  const handleDwn = async (e: any) => {
+    e.preventDefault();
+    downloadFn(dataset.data_set.db_name); 
+  };
+  const handleRequest = async (e: any) => {
+    e.preventDefault();
+    requestFn(dataset.data_set.id); 
+  };
+
+  useEffect(() => {
+    if (downloadedData && isDownloadSuccess) {
+      if (downloadedData instanceof Blob) {
+        FileSaver.saveAs(downloadedData, "data.csv"); 
+      } else {
+        console.error("Downloaded data is not a valid Blob");
+      }
+      toast.success("Downloaded successfully");
+    }
+    if (downloadError) {
+      toast.error(
+        `Failed to download data set, make sure you have the permission to download this data set`
+      );
+    }
+
+  }, [downloadedData,isDownloadSuccess,downloadError]);
+
+  useEffect(() => {
+    if (requestData && isRequestSuccess) {
+      toast.success("Requested successfully");
+      router.push(`/datasets/access/${id}`)
+    }
+    if (requestError) {
+      toast.error(
+        `Failed to request access to this data set`
+      );
+    }
+
+  }, [ requestData, requestError,isRequestSuccess ]);
 
   return (
     <main className="min-h-screen flex-col w-full flex items-start ">
@@ -116,15 +166,16 @@ export default function DatasetDetails({ id }: any) {
               <div className="flex space-x-4">
               {showDownloadButton && (
                   <button
-                    className={`py-2 px-4 rounded ${canDownload ? "bg-[#00B9F1] text-white" : "bg-gray-400 text-white cursor-not-allowed"}`}
+                    onClick={handleDwn}
+                    className={`p-2 sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem] rounded ${canDownload ? "bg-[#00B9F1] text-white" : "bg-gray-400 text-white cursor-not-allowed"}`}
                     disabled={!canDownload}
                   >
-                    Download
+                    {downloadPending ? <DotsLoader/> :"Download"}
                   </button>
                 )}
                 {canRequestAccess && dataset.data_set.in_warehouse &&(
-                  <button className="bg-[#00B9F1] text-white py-2 px-4 rounded">
-                    Request Access
+                  <button onClick={handleRequest} className="p-2   sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem]  bg-[#00b9f1] text-white rounded hover:bg-[#7ad4ef]">
+                    {requestPending ? <DotsLoader/> :"Request Access"}
                   </button>
                 )}
                 {!canRequestAccess && (
