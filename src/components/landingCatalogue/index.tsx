@@ -23,6 +23,11 @@ type FetchedDataset = {
   countries: string[];
   project_status: string;
   data_use_permissions: string;
+  protocol_name: string;
+  thematic_area: string;
+  study_design: string;
+  data_format: string;
+  study_population: string;
 };
 
 const categories = [
@@ -70,7 +75,7 @@ export default function HomeCatalogue() {
 
   return (
     <main className="flex min-h-screen flex-col items-center ">
-      <div className=" w-full flex flex-row  justify-between ">
+      <div className=" w-full flex flex-row  justify-between overflow-x-hidden">
         <div
           className={`transition-all duration-300 ${
             isMenuOpen ? "w-[30rem] px-[3rem]" : "w-16"
@@ -149,7 +154,7 @@ export default function HomeCatalogue() {
           )}
         </div>
 
-        <div className="ml-[2rem] w-[90%] sm:w-full">
+        <div className={`ml-[2rem] w-[90%] ${!isMenuOpen? "sm:w-full" :"sm:w-[80%]" } `}>
           <div className="text-[#24408E] font-[700] w-full gap-[7px] flex-row flex items-center justify-end px-[1rem] my-[30px]">
             <DownloadIcon /> <span>EXPORT</span>
           </div>
@@ -174,8 +179,8 @@ export default function HomeCatalogue() {
             )}
 
             {filteredDatasets.length > 0 && !error && !isLoading && (
-              <div className="max-sm:w-[100%] overflow-x-auto">
-                <table className="w-[95%] text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden max-sm:max-w-[30rem]">
+              <div className="w-[100%] overflow-x-auto">
+                <table className=" text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden ">
                   {/* Table Header */}
                   <thead className="bg-[#00B9F1] text-white">
                     <tr>
@@ -192,6 +197,11 @@ export default function HomeCatalogue() {
                       <th className="p-5 text-left">Type</th>
                       <th className="p-5 text-left">Sample Size</th>
                       <th className="p-5 text-left">Countries</th>
+                      <th className="p-5 text-left">Protocol name</th>
+                      <th className="p-5 text-left">Thematic area</th>
+                      <th className="p-5 text-left">Study design</th>
+                      <th className="p-5 text-left">Data format</th>
+                      <th className="p-5 text-left">Study Population</th>
                       <th className="p-5 text-left">Project Status</th>
                       <th className="p-5 text-left">Data Use Permission</th>
                     </tr>
@@ -219,6 +229,11 @@ export default function HomeCatalogue() {
                         <td className="p-5">{dataset.type}</td>
                         <td className="p-5">{dataset.size}</td>
                         <td className="p-5">{dataset.countries}</td>
+                        <td className="p-5">{dataset.protocol_name}</td>
+                        <td className="p-5">{dataset.thematic_area}</td>
+                        <td className="p-5">{dataset.study_design}</td>
+                        <td className="p-5">{dataset.data_format}</td>
+                        <td className="p-5">{dataset.study_population}</td>
                         <td className="p-5">{dataset.project_status}</td>
                         <td className="p-5">{dataset.data_use_permissions}</td>
                       </tr>
