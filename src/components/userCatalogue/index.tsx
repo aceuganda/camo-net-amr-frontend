@@ -99,7 +99,7 @@ export default function UserCatalogue() {
                           {dataset.access === "requested" && (
                             <span className="text-yellow-500 font-bold">Requested</span>
                           )}
-                          {dataset.access === "not granted" || dataset.access === "denied" && (
+                          {(dataset.access === "not granted" || dataset.access === "denied") && (
                             <span className="text-gray-500 font-bold">Not Granted</span>
                           )}
                         </td>
