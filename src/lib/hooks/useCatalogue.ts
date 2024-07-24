@@ -21,3 +21,14 @@ export const useGetUserCatalogue = () => {
     }
   });
 }
+
+
+export const useGetDataSet = (id:string) => {
+  return useQuery<any, Error, {data: any}>({
+    queryFn: () => api.get(`/data_sets_with_permissions/${id}`),
+    queryKey: ["data_set_with_permissions"],
+    meta: {
+      errorMessage: "Failed to fetch datasets"
+    }
+  });
+}

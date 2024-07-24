@@ -4,6 +4,7 @@ import { useSearch } from "@/context/searchContext";
 import { useGetUserCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from 'next/dynamic';
 import SidebarMenu from "../filter";
+import { useRouter } from "next/navigation";
 
 const DotsLoader = dynamic(() => import('../ui/dotsLoader'), { ssr: false });
 
@@ -15,7 +16,8 @@ type FetchedDataset = {
   study_design: string;
   size: number;
   data_use_permissions: string;
-  access: string
+  access: string,
+  in_warehouse: boolean,
 };
 
 export default function UserCatalogue() {
@@ -24,6 +26,7 @@ export default function UserCatalogue() {
   const { data, isLoading, error } = useGetUserCatalogue();
   const datasets: FetchedDataset[] = data?.data || [];
   const [isMenuOpen, setIsMenuOpen] = useState(true);
+  const router = useRouter();
 
   const filteredDatasets = datasets.filter((dataset) =>
     dataset.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -31,6 +34,7 @@ export default function UserCatalogue() {
 
   const handleDatasetClick = (datasetId: string) => {
     setSelectedDataset(datasetId);
+    router.push(`/datasets/access/${datasetId}`);
   };
 
   return (
@@ -40,8 +44,11 @@ export default function UserCatalogue() {
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
         />
-
+        
           <div  className="m-[2rem] w-full ">
+            <div className="text-[1.5rem] font-bold text-[#24408E] mb-[1rem]">
+                Datasets
+            </div>
             {isLoading && (
               <div className="text-center w-full flex items-start h-[4rem] justify-center text-gray-500">
                 <DotsLoader/>
@@ -63,7 +70,7 @@ export default function UserCatalogue() {
             {filteredDatasets.length > 0 && !error && !isLoading && (
               <div className="w-[100%] overflow-x-auto">
                 <table className=" text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden ">
-                  {/* Table Header */}
+                  
                   <thead className="bg-[#00B9F1] text-white">
                     <tr>
                       <th className="p-5 text-left">Name</th>
@@ -73,6 +80,7 @@ export default function UserCatalogue() {
                       <th className="p-5 text-left">Size</th>
                       <th className="p-5 text-left">Data Use Permission</th>
                       <th className="p-5 text-left">Access</th>
+                      <th className="p-5 text-left">Available For download</th>
                     </tr>
                   </thead>
 
@@ -92,6 +100,7 @@ export default function UserCatalogue() {
                         <td className="p-5">{dataset.type}</td>
                         <td className="p-5">{dataset.size}</td>
                         <td className="p-5">{dataset.data_use_permissions}</td>
+                        <td className="p-5">{dataset.in_warehouse.toString()}</td>
                         <td className="p-5">
                           {dataset.access === "approved" && (
                             <span className="text-[#24408E] font-bold">Granted</span>

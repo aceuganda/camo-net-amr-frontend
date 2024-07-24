@@ -24,11 +24,12 @@ type FetchedDataset = {
   countries: string[];
   project_status: string;
   data_use_permissions: string;
-  protocol_name: string;
+  title: string;
   thematic_area: string;
   study_design: string;
   data_format: string;
   study_population: string;
+  in_warehouse: boolean;
 };
 
 const categories = [
@@ -132,6 +133,7 @@ export default function HomeCatalogue() {
                       <th className="p-5 text-left">Study Population</th>
                       <th className="p-5 text-left">Project Status</th>
                       <th className="p-5 text-left">Data Use Permission</th>
+                      <th className="p-5 text-left">Available For download</th>
                     </tr>
                   </thead>
 
@@ -157,13 +159,14 @@ export default function HomeCatalogue() {
                         <td className="p-5">{dataset.type}</td>
                         <td className="p-5">{dataset.size}</td>
                         <td className="p-5">{dataset.countries}</td>
-                        <td className="p-5">{dataset.protocol_name}</td>
+                        <td className="p-5">{dataset.title}</td>
                         <td className="p-5">{dataset.thematic_area}</td>
                         <td className="p-5">{dataset.study_design}</td>
                         <td className="p-5">{dataset.data_format}</td>
                         <td className="p-5">{dataset.study_population}</td>
                         <td className="p-5">{dataset.project_status}</td>
                         <td className="p-5">{dataset.data_use_permissions}</td>
+                        <td className="p-5">{dataset.in_warehouse.toString()}</td>
                       </tr>
                     ))}
                   </tbody>
