@@ -11,3 +11,13 @@ export const useGetCatalogue = () => {
     }
   });
 }
+
+export const useGetUserCatalogue = () => {
+  return useQuery<any, Error, {data: any}>({
+    queryFn: () => api.get('/user_data_sets'),
+    queryKey: ["user_data_sets"],
+    meta: {
+      errorMessage: "Failed to fetch datasets"
+    }
+  });
+}

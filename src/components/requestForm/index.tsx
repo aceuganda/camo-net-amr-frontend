@@ -28,7 +28,7 @@ const RegistrationForm: React.FC = () => {
   });
   useEffect(() => {
     if (isSuccess) {
-      router.push("/");
+      router.push("/datasets/access");
       toast.success("Signed in successfully");
     }
     if (error) {

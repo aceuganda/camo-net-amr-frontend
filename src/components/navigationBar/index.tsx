@@ -52,9 +52,9 @@ const NavigationBar = () => {
           <span className="ml-2">Projects</span>
         </Link> */}
         <Link
-          href={isLoggedIn ? "/" : "/auth"}
+          href={isLoggedIn ? "/datasets/access" : "/auth"}
           className={`flex flex-row items-center justify-center  text-nowrap ${
-            isActive("/data-access") ? "text-[#00B9F1]" : "text-white"
+            pathname.includes("/datasets/") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
           <span className="ml-2 w-full">Data Access</span>
