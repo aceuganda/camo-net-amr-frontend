@@ -107,6 +107,7 @@ export default function DatasetDetails({ id }: any) {
   const handleRequest = async (e: any) => {
     e.preventDefault();
     requestFn(dataset.data_set.id); 
+    
   };
 
   useEffect(() => {
@@ -117,6 +118,7 @@ export default function DatasetDetails({ id }: any) {
         console.error("Downloaded data is not a valid Blob");
       }
       toast.success("Downloaded successfully");
+
     }
     if (downloadError) {
       toast.error(
@@ -129,7 +131,7 @@ export default function DatasetDetails({ id }: any) {
   useEffect(() => {
     if (requestData && isRequestSuccess) {
       toast.success("Requested successfully");
-      router.push(`/datasets/access/${id}`)
+      window.location.reload();
     }
     if (requestError) {
       toast.error(

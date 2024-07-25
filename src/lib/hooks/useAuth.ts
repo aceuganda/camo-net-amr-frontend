@@ -15,6 +15,7 @@ interface RegisterData {
 export const login = async (data: LoginData) => {
   const response = await api.post('/login', data);
   localStorage.setItem('access_token', response.data.access_token);
+  localStorage.setItem('amr_user_roles', response.data.roles);
   return response.data;
 };
 
@@ -27,5 +28,6 @@ export const Register = async (data: RegisterData) => {
 
 export const logout = () => {
   localStorage.removeItem('access_token');
+  localStorage.removeItem('amr_user_roles');
   return true; 
 };

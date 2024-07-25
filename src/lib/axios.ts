@@ -20,6 +20,7 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 403) {
       toast.error("Your session has expired, you need to login again for data access");
       localStorage.removeItem('access_token');
+      localStorage.removeItem('amr_user_roles');
       window.location.href = '/auth'; 
     }
     return Promise.reject(error);

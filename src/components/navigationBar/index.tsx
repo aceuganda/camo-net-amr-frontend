@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { HomeIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
@@ -14,6 +15,15 @@ const NavigationBar = () => {
   const router = useRouter();
   const { searchTerm, setSearchTerm } = useSearch();
 
+  const [roles, setRoles] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Safe to use localStorage
+      const storedRoles = localStorage.getItem('amr_user_roles');
+      setRoles(storedRoles);
+    }
+  }, []);
   const isActive = (path: string) => pathname === path;
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -54,11 +64,19 @@ const NavigationBar = () => {
         <Link
           href={isLoggedIn ? "/datasets/access" : "/auth"}
           className={`flex flex-row items-center justify-center  text-nowrap ${
-            pathname.includes("/datasets/") ? "text-[#00B9F1]" : "text-white"
+            pathname.includes("/datasets/access") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
           <span className="ml-2 w-full">Data Access</span>
         </Link>
+        {roles?.includes('admin') && <Link
+          href={isLoggedIn ? "/datasets/admin" : "/auth"}
+          className={`flex flex-row items-center justify-center  text-nowrap ${
+            pathname.includes("/datasets/admin") ? "text-[#00B9F1]" : "text-white"
+          }`}
+        >
+          <span className="ml-2 w-full">Admin</span>
+        </Link>}
       </div>
 
       <div className="flex flex-row items-center gap-[2rem] justify-center">
