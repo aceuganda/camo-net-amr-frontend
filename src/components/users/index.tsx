@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { assignRole, removeRole } from "@/lib/hooks/useRoles";
 import { toast } from "sonner";
+import { useSearch } from "@/context/searchContext";
 
 const DotsLoader = dynamic(() => import('../ui/dotsLoader'), { ssr: false });
 
