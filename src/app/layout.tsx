@@ -9,9 +9,9 @@ import { SearchProvider } from "@/context/searchContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Camo-net Data portal",
+  title: "Uganda amr portal",
   description:
-    "This portal gives a snippet of the data being handled in the camo-net project",
+    "This portal gives a snippet of the data being handled in the amr projects in uganda",
 };
 
 export default function RootLayout({

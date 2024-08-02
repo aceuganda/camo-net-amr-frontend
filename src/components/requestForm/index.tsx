@@ -64,7 +64,7 @@ const RegistrationForm: React.FC = () => {
   };
 
   const handleLoginSubmit = async (e: any) => {
-    // e.preventDefault();
+    e.preventDefault();
     mutate({ email, password });
     
   };
