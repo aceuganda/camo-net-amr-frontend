@@ -11,7 +11,7 @@ const cspHeader = `
     form-action 'self';
     frame-ancestors 'none';
     upgrade-insecure-requests;
-    connect-src 'self';
+    connect-src 'self' https://camonet-data-portal.org;
 ` 
 
 const nextConfig = {
