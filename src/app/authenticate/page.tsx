@@ -6,7 +6,7 @@ import { login, Register } from "@/lib/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
+import Link from "next/link";
 
 const LogoHeader = dynamic(() => import("@/components/logosHeader"), { ssr: false });
 const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), { ssr: false });
@@ -30,21 +30,18 @@ function LoginForm() {
   }, [isSuccess, error, router]);
 
   const handleLoginSubmit = async (e:any) => {
-    e.preventDefault()
-    if(password && email){
+    e.preventDefault();
+    if (password && email) {
       mutate({ email, password });
-    }else{
+    } else {
       toast.error(`Please fill both the login fields`);
     }
-    
   };
 
   return (
-    <form  onSubmit={handleLoginSubmit} className="space-y-4">
+    <form onSubmit={handleLoginSubmit} className="space-y-4">
       <div>
-        <label className="block text-gray-700">
-          Email Address 
-        </label>
+        <label className="block text-gray-700">Email Address</label>
         <input
           type="text"
           value={email}
@@ -52,12 +49,9 @@ function LoginForm() {
           className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
           placeholder="Email Address"
         />
-
       </div>
       <div>
-        <label className="block text-gray-700">
-          Password 
-        </label>
+        <label className="block text-gray-700">Password</label>
         <input
           type="password"
           value={password}
@@ -66,13 +60,14 @@ function LoginForm() {
           placeholder="Password"
         />
       </div>
-      <div className="w-full flex absolute justify-end bottom-5 left-0 items-end px-5">
+      <div className="w-full flex justify-between items-center">
         <button
           disabled={isPending}
           className="p-2 sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]"
         >
           {isPending ? <DotsLoader /> : "LOGIN"}
         </button>
+        <Link href="authenticate/privacy-policy" className="text-blue-500 hover:underline">Privacy Policy</Link>
       </div>
     </form>
   );
@@ -87,6 +82,8 @@ function RegistrationForm() {
     mutationFn: Register,
   });
 
+  
+
   useEffect(() => {
     if (isSuccess) {
       toast.success("Registered successfully, please login.");
@@ -97,7 +94,7 @@ function RegistrationForm() {
   }, [isSuccess, error]);
 
   const handleRegistrationSubmit = async (e:any) => {
-    e.preventDefault()
+    e.preventDefault();
     if (password !== confirmPassword) {
       toast.error("Please make sure the passwords you have entered match");
       return;
@@ -159,13 +156,14 @@ function RegistrationForm() {
           required
         />
       </div>
-      <div className="w-full flex justify-end absolute bottom-5 left-0 items-end px-5">
+      <div className="w-full flex justify-between items-center">
         <button
-          disabled={isPending}     
+          disabled={isPending}
           className="p-2 bg-[#00b9f1] sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] mt-3 text-white rounded hover:bg-[#7ad4ef]"
         >
           {isPending && !isSuccess && !error ? <DotsLoader /> : "REGISTER"}
         </button>
+        <Link  href="authenticate/privacy-policy" className="text-blue-500 hover:underline">Privacy Policy</Link>
       </div>
     </form>
   );
