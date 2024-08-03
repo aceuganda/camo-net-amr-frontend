@@ -29,12 +29,13 @@ function LoginForm() {
     }
   }, [isSuccess, error, router]);
 
-  const handleLoginSubmit = async () => {
+  const handleLoginSubmit = async (e:any) => {
+    e.preventDefault()
     mutate({ email, password });
   };
 
   return (
-    <div className="space-y-4">
+    <form className="space-y-4">
       <div>
         <label className="block text-gray-700">
           Email Address <span className="text-red-600 text-[11px]">(Required)</span>
@@ -70,7 +71,7 @@ function LoginForm() {
           {isPending ? <DotsLoader /> : "LOGIN"}
         </button>
       </div>
-    </div>
+    </form>
   );
 }
 
@@ -93,6 +94,7 @@ function RegistrationForm() {
   }, [isSuccess, error]);
 
   const handleRegistrationSubmit = async () => {
+    e.preventDefault()
     if (password !== confirmPassword) {
       toast.error("Please make sure the passwords you have entered match");
       return;
@@ -101,7 +103,7 @@ function RegistrationForm() {
   };
 
   return (
-    <div className="space-y-3">
+    <form className="space-y-3">
       <div>
         <label className="block text-gray-700">
           Email Address <span className="text-red-600 text-[11px]">(Required)</span>
@@ -163,7 +165,7 @@ function RegistrationForm() {
           {isPending && !isSuccess && !error ? <DotsLoader /> : "REGISTER"}
         </button>
       </div>
-    </div>
+    </form>
   );
 }
 
