@@ -62,7 +62,7 @@ const NavigationBar = () => {
           <span className="ml-2">Projects</span>
         </Link> */}
         <Link
-          href={isLoggedIn ? "/datasets/access" : "/auth"}
+          href={isLoggedIn ? "/datasets/access" : "/authenticate"}
           className={`flex flex-row items-center justify-center  text-nowrap ${
             pathname.includes("/datasets/access") ? "text-[#00B9F1]" : "text-white"
           }`}
@@ -94,7 +94,7 @@ const NavigationBar = () => {
         {isLoggedIn ? (
           <button onClick={handleLogout}>LOGOUT</button>
         ) : (
-          <Link href="/auth">LOGIN</Link>
+          <Link href="/authenticate">LOGIN</Link>
         )}
       </div>
     </div>
