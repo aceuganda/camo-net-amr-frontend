@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 function PrivacyPolicy() {
   const router = useRouter();
@@ -38,6 +39,7 @@ function PrivacyPolicy() {
         <h2 className="text-xl font-semibold mt-6 mb-2">Information Collection and Use</h2>
         <p className="mb-4">
           For a better experience, while using our Service, we may require you to provide us with certain personally identifiable information, including but not limited to name, email address, phone contact. The information that we request will be retained on your device and is not collected by us in any way.
+          The app does use third-party services that declare their Terms and Conditions <Link className="text-blue-500" href={'https://policies.google.com/privacy'}>(Google Play Services)</Link>.
         </p>
 
         <h2 className="text-xl font-semibold mt-6 mb-2">Log Data</h2>
