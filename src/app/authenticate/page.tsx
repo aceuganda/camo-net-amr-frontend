@@ -1,14 +1,13 @@
 "use client"
 import React from 'react';
-import RegistrationForm from '@/components/auth';
 import dynamic from 'next/dynamic';
 
-
+const AuthenticateComponent = dynamic(() => import('@/components/auth'), { ssr: false });
 
 export default function RegistrationFormPage() {
   return (
     <>
-    <RegistrationForm/>
+    <AuthenticateComponent/>
     </>
   );
 }

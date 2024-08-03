@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import LogoHeader from "../logosHeader";
 import { login, Register } from "@/lib/hooks/useAuth";
@@ -7,7 +8,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import DotsLoader from "../ui/dotsLoader";
 
-const LoginForm: React.FC = () => {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -23,7 +24,7 @@ const LoginForm: React.FC = () => {
     if (error) {
       toast.error(`Failed to login: make sure you have the right login credentials`);
     }
-  }, [isSuccess, error]);
+  }, [isSuccess, error, router]);
 
   const handleLoginSubmit = async (e: any) => {
     e.preventDefault();
@@ -71,7 +72,7 @@ const LoginForm: React.FC = () => {
   );
 };
 
-const RegistrationForm: React.FC = () => {
+function RegistrationForm(){
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
@@ -165,7 +166,7 @@ const RegistrationForm: React.FC = () => {
   );
 };
 
-const AuthComponent: React.FC = () => {
+function AuthComponent (){
   const [activeTab, setActiveTab] = useState("login");
 
   return (
