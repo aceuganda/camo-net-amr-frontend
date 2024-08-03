@@ -31,27 +31,32 @@ function LoginForm() {
 
   const handleLoginSubmit = async (e:any) => {
     e.preventDefault()
-    mutate({ email, password });
+    if(password && email){
+      mutate({ email, password });
+    }else{
+      toast.error(`Please fill both the login fields`);
+    }
+    
   };
 
   return (
     <form  onSubmit={handleLoginSubmit} className="space-y-4">
       <div>
         <label className="block text-gray-700">
-          Email Address <span className="text-red-600 text-[11px]">(Required)</span>
+          Email Address 
         </label>
         <input
-          type="email"
+          type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
           placeholder="Email Address"
-          required
         />
+
       </div>
       <div>
         <label className="block text-gray-700">
-          Password <span className="text-red-600 text-[11px]">(Required)</span>
+          Password 
         </label>
         <input
           type="password"
@@ -59,13 +64,11 @@ function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
           placeholder="Password"
-          required
         />
       </div>
       <div className="w-full flex absolute justify-end bottom-5 left-0 items-end px-5">
         <button
           disabled={isPending}
-         
           className="p-2 sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]"
         >
           {isPending ? <DotsLoader /> : "LOGIN"}
