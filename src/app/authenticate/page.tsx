@@ -35,7 +35,7 @@ function LoginForm() {
   };
 
   return (
-    <form className="space-y-4">
+    <form  onSubmit={handleLoginSubmit} className="space-y-4">
       <div>
         <label className="block text-gray-700">
           Email Address <span className="text-red-600 text-[11px]">(Required)</span>
@@ -65,7 +65,7 @@ function LoginForm() {
       <div className="w-full flex absolute justify-end bottom-5 left-0 items-end px-5">
         <button
           disabled={isPending}
-          onClick={handleLoginSubmit}
+         
           className="p-2 sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]"
         >
           {isPending ? <DotsLoader /> : "LOGIN"}
@@ -93,7 +93,7 @@ function RegistrationForm() {
     }
   }, [isSuccess, error]);
 
-  const handleRegistrationSubmit = async () => {
+  const handleRegistrationSubmit = async (e:any) => {
     e.preventDefault()
     if (password !== confirmPassword) {
       toast.error("Please make sure the passwords you have entered match");
@@ -103,7 +103,7 @@ function RegistrationForm() {
   };
 
   return (
-    <form className="space-y-3">
+    <form onSubmit={handleRegistrationSubmit} className="space-y-3">
       <div>
         <label className="block text-gray-700">
           Email Address <span className="text-red-600 text-[11px]">(Required)</span>
@@ -158,8 +158,7 @@ function RegistrationForm() {
       </div>
       <div className="w-full flex justify-end absolute bottom-5 left-0 items-end px-5">
         <button
-          disabled={isPending}
-          onClick={handleRegistrationSubmit}
+          disabled={isPending}     
           className="p-2 bg-[#00b9f1] sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] mt-3 text-white rounded hover:bg-[#7ad4ef]"
         >
           {isPending && !isSuccess && !error ? <DotsLoader /> : "REGISTER"}
