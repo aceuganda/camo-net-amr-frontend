@@ -2,19 +2,29 @@
 import Link from "next/link";
 import { useState, useEffect } from 'react';
 import { usePathname } from "next/navigation";
+import { useUserInfor } from "@/lib/hooks/useAuth";
+import { useRouter } from "next/navigation";
+
+
+
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const [roles, setRoles] = useState<string | null>(null);
+
+  const { data, isLoading, error } = useUserInfor(); 
+    const [roles, setRoles] = useState<string | null | undefined>(null);
     const pathname = usePathname();
+    const router = useRouter()
+
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Safe to use localStorage
-      const storedRoles = localStorage.getItem('amr_user_roles');
-      setRoles(storedRoles);
+    if (data?.data) {
+      setRoles(data.data.user.roles);
     }
-  }, []);
+    if (error){
+      router.push("/authenticate");
+    }
+  }, [data, error, router]);
 
   return (
     <div>

@@ -1,33 +1,45 @@
-// hooks/useAuth.ts
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import api from './../axios';
 
 interface LoginData {
   email: string;
   password: string;
 }
+
 interface RegisterData {
-    email: string;
-    password: string;
-    name: String;
+  email: string;
+  password: string;
+  name: string;
+}
+
+
+export const useUserInfor = () => {
+  return useQuery<any, Error, {data: any}>({
+    queryFn: () => api.get('/users/me'),
+    queryKey: ["user_info"],
+    meta: {
+      errorMessage: "Failed to fetch user"
+    }
+  });
 }
 
 export const login = async (data: LoginData) => {
+  // Send login request
   const response = await api.post('/login', data);
-  localStorage.setItem('access_token', response.data.access_token);
-  localStorage.setItem('amr_user_roles', response.data.roles);
+
   return response.data;
 };
 
 export const Register = async (data: RegisterData) => {
-    const response = await api.post('/users/register', data);
-    return response.data;
-  };
+  const response = await api.post('/users/register', data);
+  return response.data;
+};
 
+export const logout = async () => {
 
-
-export const logout = () => {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('amr_user_roles');
-  return true; 
+  await api.post('/logout');
+  document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+  document.cookie = "amr_user_roles=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+  
+  return true;
 };

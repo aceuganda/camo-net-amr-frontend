@@ -115,7 +115,7 @@ export default function DatasetDetails({ id }: any) {
       if (downloadedData instanceof Blob) {
         FileSaver.saveAs(downloadedData, "data.csv"); 
       } else {
-        console.error("Downloaded data is not a valid Blob");
+        toast.error("Downloaded data is not a valid file");
       }
       toast.success("Downloaded successfully");
 

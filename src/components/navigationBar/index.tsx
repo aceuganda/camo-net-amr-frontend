@@ -8,35 +8,44 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useSearch } from "@/context/searchContext";
+import { useUserInfor } from "@/lib/hooks/useAuth";
+import { useMutation } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
+const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
 const NavigationBar = () => {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const router = useRouter();
   const { searchTerm, setSearchTerm } = useSearch();
-
-  const [roles, setRoles] = useState<string | null>(null);
+  const { data, error } = useUserInfor(); 
+  const {isSuccess:logoutSuccess, isPending:logoutPending, mutate:logoutFn} = useMutation({
+    mutationFn: logout,
+  });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Safe to use localStorage
-      const storedRoles = localStorage.getItem('amr_user_roles');
-      setRoles(storedRoles);
+    if (data?.data) {
+      const roles = data.data.user.roles;
+      setAdmin(roles.includes('admin'));
+      setIsLoggedIn(data.data.logged_in);
     }
-  }, []);
-  const isActive = (path: string) => pathname === path;
+  }, [data, error]);
+
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    setIsLoggedIn(!!token);
-  }, []);
+    if(logoutSuccess){
+      setAdmin(false);
+      setIsLoggedIn(false);
+      router.push('/')
+    } 
+  }, [logoutSuccess,router]);
+
+  const isActive = (path: string) => pathname === path;
 
   const handleLogout = async () => {
-    const logMeOut = await logout();
-    if (logMeOut) {
-      setIsLoggedIn(false);
-      toast.message("Logged out successfully");
-      router.push("/");
-    }
+    setAdmin(false);
+    setIsLoggedIn(false);
+     await logoutFn();
   };
 
   return (
@@ -58,41 +67,38 @@ const NavigationBar = () => {
         >
           <span className="ml-2">Catalogue</span>
         </Link>
-        {/* <Link href="/projects" className={`flex flex-row items-center justify-center ${isActive('/') ? 'text-[#00B9F1]' : 'text-white'}`}>
-          <span className="ml-2">Projects</span>
-        </Link> */}
         <Link
           href={isLoggedIn ? "/datasets/access" : "/authenticate"}
-          className={`flex flex-row items-center justify-center  text-nowrap ${
+          className={`flex flex-row items-center justify-center text-nowrap ${
             pathname.includes("/datasets/access") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
           <span className="ml-2 w-full">Data Access</span>
         </Link>
-        {roles?.includes('admin') && <Link
-          href={isLoggedIn ? "/datasets/admin" : "/auth"}
-          className={`flex flex-row items-center justify-center  text-nowrap ${
+        {admin===true ? <Link
+          href={isLoggedIn ? "/datasets/admin" : "/authenticate"}
+          className={`flex flex-row items-center justify-center text-nowrap ${
             pathname.includes("/datasets/admin") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
           <span className="ml-2 w-full">Admin</span>
-        </Link>}
+        </Link>:null}
       </div>
 
       <div className="flex flex-row items-center gap-[2rem] justify-center">
-        <div className="relative max-sm:hidden ">
+        <div className="relative max-sm:hidden">
           <input
             type="text"
             placeholder="Search name or category..."
-            className="p-[5px] placeholder:pl-[20px] rounded-[12px] text-[12px] border-[1px] border-white pr-10 md:min-w-[30rem] bg-transparent  shadow-custom"
+            className="p-[5px] placeholder:pl-[20px] rounded-[12px] text-[12px] border-[1px] border-white pr-10 md:min-w-[30rem] bg-transparent shadow-custom"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          {!searchTerm  && <MagnifyingGlassIcon className="absolute left-2 bottom-[7px]  w-4 h-4 text-white" />}
+          {!searchTerm && <MagnifyingGlassIcon className="absolute left-2 bottom-[7px] w-4 h-4 text-white" />}
         </div>
 
         {isLoggedIn ? (
-          <button onClick={handleLogout}>LOGOUT</button>
+          <button onClick={handleLogout}>{logoutPending ?<DotsLoader/>:"LOGOUT"}</button>
         ) : (
           <Link href="/authenticate">LOGIN</Link>
         )}
