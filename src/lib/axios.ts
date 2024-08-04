@@ -20,9 +20,9 @@ api.interceptors.response.use(
       document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
       document.cookie = "amr_user_roles=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
        
-      if((/^\/datasets\/.+/.test(currentUrl))){
-        window.location.href = '/authenticate'; 
-      }
+      // if((/^\/datasets\/.+/.test(currentUrl))){
+      //   window.location.href = '/authenticate'; 
+      // }
        
     }
 
