@@ -3,10 +3,10 @@ import Image from "next/image";
 
 export default function LogoHeader() {
   const images = [
-    { src: "/logos/camonet.webp", alt: "CAMO-NET" },
-    { src: "/logos/idiMak.webp", alt: "IDI Makererer" },
+    { src: "/logos/cnetug.webp", alt: "" },
+    { src: "/logos/idmak.webp", alt: " " },
     { src: "/logos/ace.webp", alt: "ACE" },
-    { src: "/logos/wellcome.webp", alt: "Wellcome Fund" },
+    { src: "/logos/welc.webp", alt: "" },
   ];
   return (
       <div className="bg-white w-full h-auto pb-[1rem] flex items-center justify-around">

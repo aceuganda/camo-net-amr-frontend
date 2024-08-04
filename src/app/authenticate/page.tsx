@@ -219,10 +219,10 @@ function AuthComponent() {
         >
           Home
         </button>
-      <div className="w-[70%] h-[40rem] bg-white rounded-[10px] shadow-box z-10">
-        <div className="flex justify-between items-center p-4 rounded-t-lg border-b-gray-300 border-b-[2px]">
+      <div className="w-[70%] h-[full] bg-white rounded-[10px] shadow-box z-10">
+        {/* <div className="flex justify-between items-center p-4 rounded-t-lg border-b-gray-300 border-b-[2px]">
           <LogoHeader />
-        </div>
+        </div> */}
         <div className="py-6 bg-[#f2f2f2] min-h-[33rem] px-4 sm:px-[6rem] rounded-[10px] transition-all relative">
           <div className="flex border-b mb-6">
             <button
