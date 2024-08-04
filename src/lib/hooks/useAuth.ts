@@ -36,10 +36,6 @@ export const Register = async (data: RegisterData) => {
 };
 
 export const logout = async () => {
-
-  await api.post('/logout');
-  document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-  document.cookie = "amr_user_roles=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-  
+  const response =  await api.post('/logout');
   return true;
 };
