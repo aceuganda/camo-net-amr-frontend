@@ -42,10 +42,11 @@ const NavigationBar = () => {
 
   const isActive = (path: string) => pathname === path;
 
-  const handleLogout = async () => {
+  const handleLogout = async (e:any) => {
+    e.preventDefault()
     setAdmin(false);
     setIsLoggedIn(false);
-     await logoutFn();
+    logoutFn();
   };
 
   return (
