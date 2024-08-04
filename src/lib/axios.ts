@@ -15,10 +15,11 @@ api.interceptors.response.use(
   error => {
     const currentUrl = window.location.pathname;
     if (error.response && error.response.status === 403) {
+      //remove auto logout for now
       // toast.error("Your session has expired, you need to login again for data access");
       // Remove cookies by setting them to expire
-      document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-      document.cookie = "amr_user_roles=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+      //document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+      //document.cookie = "amr_user_roles=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
        
       // if((/^\/datasets\/.+/.test(currentUrl))){
       //   window.location.href = '/authenticate'; 
