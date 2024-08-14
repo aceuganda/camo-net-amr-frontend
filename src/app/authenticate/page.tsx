@@ -23,20 +23,23 @@ function LoginForm() {
     setShowPassword(!showPassword);
   };
   const router = useRouter();
-  const { data, isSuccess, error, isPending, mutate:loginFn } = useMutation({
+  const { data, isSuccess:loginSuccess, error, isPending, mutate:loginFn } = useMutation({
     mutationFn: login,
   });
 
 
   useEffect(() => {
-    if (isSuccess) {
-      router.push("/datasets/access");
+    if (loginSuccess) {
+      
       toast.success("Signed in successfully");
+      setTimeout(() => {
+        router.push("/datasets/access");
+      }, 2000);
     }
     if (error) {
       toast.error(`Failed to login: make sure you have the right login credentials`);
     }
-  }, [isSuccess, error, router]);
+  }, [loginSuccess, error, router]);
 
   const handleLoginSubmit = async (e:any) => {
     e.preventDefault();
@@ -108,6 +111,7 @@ function RegistrationForm() {
   useEffect(() => {
     if (isSuccess) {
       toast.success("Registered successfully, please login.");
+      window.location.reload();
     }
     if (error) {
       toast.error(`Failed to Register this account: An account with this email probably exists on the platform already`);

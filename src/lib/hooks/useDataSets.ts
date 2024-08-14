@@ -10,8 +10,8 @@ export const downloadData = async (source: string) => {
     return response.data; 
   };
   
-export const requestAccess = async (id: string) => {
-    const response = await api.post('/permissions/request', { id });
+export const requestAccess = async (data:any) => {
+    const response = await api.post('/permissions/request', data);
     return response.data; 
   };
   

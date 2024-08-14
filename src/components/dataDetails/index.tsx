@@ -9,6 +9,7 @@ import { requestAccess, downloadData } from "@/lib/hooks/useDataSets";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
+import { Modal } from "../modal";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -80,66 +81,99 @@ interface Response {
 }
 
 export default function DatasetDetails({ id }: any) {
-
   const { data, isLoading, error } = useGetDataSet(id);
   const dataset: Response = data?.data || {};
   const userPermission = dataset.user_permission;
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formValues, setFormValues] = useState({
+    purpose: "",
+    institution: "",
+    title: "",
+    agreed_to_privacy: false,
+  });
 
-
-  const canDownload = (userPermission?.status === "approved" && dataset.data_set.in_warehouse) || dataset.is_super_admin;
-  const canRequestAccess = !userPermission ;
+  const canDownload =
+    (userPermission?.status === "approved" && dataset.data_set.in_warehouse) ||
+    dataset.is_super_admin;
+  const canRequestAccess = !userPermission;
   const showDownloadButton = dataset?.data_set?.in_warehouse;
 
   const permissionStatus = userPermission?.status || "none";
 
-  const { data:downloadedData, isSuccess:isDownloadSuccess, error:downloadError, isPending:downloadPending, mutate:downloadFn } = useMutation({
+  const {
+    data: downloadedData,
+    isSuccess: isDownloadSuccess,
+    error: downloadError,
+    isPending: downloadPending,
+    mutate: downloadFn,
+  } = useMutation({
     mutationFn: downloadData,
   });
-  const { data:requestData, isSuccess:isRequestSuccess, error:requestError, isPending:requestPending, mutate:requestFn } = useMutation({
+  const {
+    data: requestData,
+    isSuccess: isRequestSuccess,
+    error: requestError,
+    isPending: requestPending,
+    mutate: requestFn,
+  } = useMutation({
     mutationFn: requestAccess,
   });
 
   const handleDwn = async (e: any) => {
     e.preventDefault();
-    downloadFn(dataset.data_set.db_name); 
+    downloadFn(dataset.data_set.db_name);
   };
   const handleRequest = async (e: any) => {
     e.preventDefault();
-    requestFn(dataset.data_set.id); 
-    
+    setIsModalOpen(true);
+  };
+
+  const handleModalSubmit = () => {
+    const { purpose, institution, title, agreed_to_privacy } = formValues;
+    if (purpose && institution && title && agreed_to_privacy == true) {
+        requestFn({ ...formValues, data_set_id: dataset.data_set.id });
+        setIsModalOpen(false);
+    } else {
+        toast.error("Please fill in all fields before submitting.");
+    }
   };
 
   useEffect(() => {
     if (downloadedData && isDownloadSuccess) {
       if (downloadedData instanceof Blob) {
-        FileSaver.saveAs(downloadedData, "data.csv"); 
+        FileSaver.saveAs(downloadedData, "data.csv");
       } else {
         toast.error("Downloaded data is not a valid file");
       }
       toast.success("Downloaded successfully");
-
     }
     if (downloadError) {
       toast.error(
         `Failed to download data set, make sure you have the permission to download this data set`
       );
     }
-
-  }, [downloadedData,isDownloadSuccess,downloadError]);
+  }, [downloadedData, isDownloadSuccess, downloadError]);
 
   useEffect(() => {
     if (requestData && isRequestSuccess) {
       toast.success("Requested successfully");
+      setIsModalOpen(false);
       window.location.reload();
     }
     if (requestError) {
-      toast.error(
-        `Failed to request access to this data set`
-      );
+      toast.error(`Failed to request access to this data set`);
+      setIsModalOpen(false);
     }
+  }, [requestData, requestError, isRequestSuccess]);
 
-  }, [ requestData, requestError,isRequestSuccess ]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormValues({
+      ...formValues,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
 
   return (
     <main className="min-h-screen flex-col w-full flex items-start ">
@@ -166,23 +200,42 @@ export default function DatasetDetails({ id }: any) {
                 <span>{dataset.data_set.name}</span>
               </div>
               <div className="flex space-x-4">
-              {showDownloadButton && (
+                {showDownloadButton && (
                   <button
                     onClick={handleDwn}
-                    className={`p-2 sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem] rounded ${canDownload ? "bg-[#00B9F1] text-white" : "bg-gray-400 text-white cursor-not-allowed"}`}
+                    className={`p-2 sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem] rounded ${
+                      canDownload
+                        ? "bg-[#00B9F1] text-white"
+                        : "bg-gray-400 text-white cursor-not-allowed"
+                    }`}
                     disabled={!canDownload}
                   >
-                    {downloadPending ? <DotsLoader/> :"Download"}
+                    {downloadPending ? <DotsLoader /> : "Download"}
                   </button>
                 )}
-                {canRequestAccess && dataset.data_set.in_warehouse &&(
-                  <button onClick={handleRequest} className="p-2   sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem]  bg-[#00b9f1] text-white rounded hover:bg-[#7ad4ef]">
-                    {requestPending ? <DotsLoader/> :"Request Access"}
+                {canRequestAccess && dataset.data_set.in_warehouse && (
+                  <button
+                    onClick={handleRequest}
+                    className="p-2   sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem]  bg-[#00b9f1] text-white rounded hover:bg-[#7ad4ef]"
+                  >
+                    {requestPending ? <DotsLoader /> : "Request Access"}
                   </button>
                 )}
                 {!canRequestAccess && (
-                  <span className={`py-2 px-4 rounded ${permissionStatus === "approved" ? "text-green-500" : permissionStatus === "denied" ? "text-red-500" : "text-yellow-500"}`}>
-                    {permissionStatus === "requested" ? "Access Requested" : permissionStatus === "denied" ? "Access Denied" : "Approved"}
+                  <span
+                    className={`py-2 px-4 rounded ${
+                      permissionStatus === "approved"
+                        ? "text-green-500"
+                        : permissionStatus === "denied"
+                        ? "text-red-500"
+                        : "text-yellow-500"
+                    }`}
+                  >
+                    {permissionStatus === "requested"
+                      ? "Access Requested"
+                      : permissionStatus === "denied"
+                      ? "Access Denied"
+                      : "Approved"}
                   </span>
                 )}
               </div>
@@ -276,6 +329,63 @@ export default function DatasetDetails({ id }: any) {
           </div>
         </div>
       )}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleModalSubmit}
+        cancelText="Cancel"
+        submitText={requestPending ? <DotsLoader/>: "Submit"}
+      >
+        <form>
+          <div className="mb-4">
+            <div className="mb-4">
+              <label className="block text-gray-700">Institution:</label>
+              <input
+                type="text"
+                name="institution"
+                value={formValues.institution}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                placeholder="Enter institution"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700">Title:</label>
+              <input
+                type="text"
+                name="title"
+                value={formValues.title}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                placeholder="Enter title"
+              />
+            </div>
+            <label className="block text-gray-700">Purpose:</label>
+            <input
+              type="text"
+              name="purpose"
+              value={formValues.purpose}
+              onChange={handleInputChange}
+              className="w-full p-3 text-lg border rounded"
+              placeholder="Enter purpose"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700">
+              Agree to Privacy Policy:
+            </label>
+            <input
+              type="checkbox"
+              name="agreed_to_privacy"
+              checked={formValues.agreed_to_privacy}
+              onChange={handleInputChange}
+              className="mr-2"
+            />{" "}
+            I agree
+          </div>
+        </form>
+      </Modal>
     </main>
   );
 }
