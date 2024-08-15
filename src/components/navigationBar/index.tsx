@@ -76,6 +76,14 @@ const NavigationBar = () => {
         >
           <span className="ml-2 w-full">Data Access</span>
         </Link>
+        <Link
+          href={'/guide'}
+          className={`flex flex-row items-center justify-center text-nowrap ${
+            pathname.includes("/guide") ? "text-[#00B9F1]" : "text-white"
+          }`}
+        >
+          <span className="ml-2 w-full">User Guide</span>
+        </Link>
         {admin===true ? <Link
           href={isLoggedIn ? "/datasets/admin" : "/authenticate"}
           className={`flex flex-row items-center justify-center text-nowrap ${
@@ -87,7 +95,7 @@ const NavigationBar = () => {
       </div>
 
       <div className="flex flex-row items-center gap-[2rem] justify-center">
-        <div className="relative max-sm:hidden">
+        <div className="relative max-md:hidden">
           <input
             type="text"
             placeholder="Search name or category..."
