@@ -13,10 +13,10 @@ function UserGuide() {
     >
       <div className="bg-[#161047] absolute h-[100%] w-[30%] top-0 left-0"></div>
 
-      <div className="w-[70%] max-w-4xl h-auto mt-[3rem] bg-white rounded-[10px] shadow-box z-10 p-6 sm:p-12 relative">
+      <div className="w-[95%] sm:w-[70%] max-w-4xl h-auto mt-[3rem] bg-white rounded-[10px] shadow-box z-10 p-6 sm:p-12 relative">
         <button
           onClick={() => router.back()}
-          className="absolute top-4 left-4 px-4 py-2 text-white bg-[#00b9f1] rounded hover:bg-[#007acc]"
+          className="absolute top-4 left-4 px-4 py-2 text-white bg-[#00b9f1] text-[12px] rounded hover:bg-[#007acc]"
         >
           Back
         </button>

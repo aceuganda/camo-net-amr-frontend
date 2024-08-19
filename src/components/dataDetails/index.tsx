@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
 import { Modal } from "../modal";
+import ConfidentialityAgreement from "../confidentialityAgreement";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -86,6 +87,8 @@ export default function DatasetDetails({ id }: any) {
   const userPermission = dataset.user_permission;
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
+  const [isAgreedToConfidentiality, setIsAgreedToConfidentiality] = useState(false);
   const [formValues, setFormValues] = useState({
     purpose: "",
     institution: "",
@@ -120,9 +123,13 @@ export default function DatasetDetails({ id }: any) {
     mutationFn: requestAccess,
   });
 
-  const handleDwn = async (e: any) => {
-    e.preventDefault();
-    downloadFn(dataset.data_set.db_name);
+  const handleDwn = async () => {
+    if (isAgreedToConfidentiality){
+      await downloadFn(dataset.data_set.db_name);
+      
+    }else{
+      toast.error("Please agree to the confidentiality agreement before downloading the data");
+    }
   };
   const handleRequest = async (e: any) => {
     e.preventDefault();
@@ -143,6 +150,7 @@ export default function DatasetDetails({ id }: any) {
     if (downloadedData && isDownloadSuccess) {
       if (downloadedData instanceof Blob) {
         FileSaver.saveAs(downloadedData, "data.csv");
+        setIsAgreementModalOpen(false)
       } else {
         toast.error("Downloaded data is not a valid file");
       }
@@ -202,7 +210,7 @@ export default function DatasetDetails({ id }: any) {
               <div className="flex space-x-4">
                 {showDownloadButton && (
                   <button
-                    onClick={handleDwn}
+                    onClick={()=>{setIsAgreementModalOpen(true)}}
                     className={`p-2 sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem] rounded ${
                       canDownload
                         ? "bg-[#00B9F1] text-white"
@@ -334,58 +342,68 @@ export default function DatasetDetails({ id }: any) {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleModalSubmit}
         cancelText="Cancel"
-        submitText={requestPending ? <DotsLoader/>: "Submit"}
+        submitText={requestPending ? <DotsLoader /> : "Submit"}
       >
-        <form>
-          <div className="mb-4">
-            <div className="mb-4">
-              <label className="block text-gray-700">Institution:</label>
-              <input
-                type="text"
-                name="institution"
-                value={formValues.institution}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                placeholder="Enter institution"
+        <div>   
+          <div className="max-h-[50vh] overflow-y-auto">  
+              <form>
+                {/* Request Form Fields */}
+                <div className="mb-4">
+                  <label className="block text-gray-700">Institution:</label>
+                  <input
+                    type="text"
+                    name="institution"
+                    value={formValues.institution}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter institution"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700">Title:</label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formValues.title}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter title"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700">Purpose:</label>
+                  <input
+                    type="text"
+                    name="purpose"
+                    value={formValues.purpose}
+                    onChange={handleInputChange}
+                    className="w-full p-3 text-lg border rounded"
+                    placeholder="Enter purpose"
+                  />
+                </div>
+              </form>
+              
+              <ConfidentialityAgreement
+                handleAgreedCallBack={(agreed: boolean) => {
+                  if (agreed) setFormValues({
+                    ...formValues,
+                    agreed_to_privacy: true,
+                  });
+                }}
               />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700">Title:</label>
-              <input
-                type="text"
-                name="title"
-                value={formValues.title}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                placeholder="Enter title"
-              />
-            </div>
-            <label className="block text-gray-700">Purpose:</label>
-            <input
-              type="text"
-              name="purpose"
-              value={formValues.purpose}
-              onChange={handleInputChange}
-              className="w-full p-3 text-lg border rounded"
-              placeholder="Enter purpose"
-            />
           </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">
-              Agree to Privacy Policy:
-            </label>
-            <input
-              type="checkbox"
-              name="agreed_to_privacy"
-              checked={formValues.agreed_to_privacy}
-              onChange={handleInputChange}
-              className="mr-2"
-            />{" "}
-            I agree
-          </div>
-        </form>
+        </div>
       </Modal>
+      <Modal
+        isOpen={isAgreementModalOpen}
+        onClose={() => setIsAgreementModalOpen(false)}
+        onSubmit={handleDwn}
+        cancelText="Cancel"
+        submitText={downloadPending ? <DotsLoader/>: "Download"}
+      >
+       <ConfidentialityAgreement handleAgreedCallBack={(agreed:boolean)=>{if(agreed) setIsAgreedToConfidentiality(true)}}/>
+      </Modal>
+
     </main>
   );
 }

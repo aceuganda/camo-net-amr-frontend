@@ -20,7 +20,7 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const handleClickAway = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClickAway:any = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }

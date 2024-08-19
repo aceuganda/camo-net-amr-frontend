@@ -54,7 +54,7 @@ const NavigationBar = () => {
 
   return (
     <div className="bg-[#24408E] max-sm:text-[10px] w-full h-[2.5rem] flex justify-between items-center px-[1rem] text-white">
-      <div className="w-[40%] flex gap-[1rem] items-start">
+      <div className="w-[40%] flex gap-[0.4rem] sm:gap-[1rem] items-start">
         <Link
           href="/"
           className={`flex flex-row items-center justify-center ${
@@ -79,14 +79,7 @@ const NavigationBar = () => {
         >
           <span className="ml-2 w-full">Data Access</span>
         </Link>
-        <Link
-          href={'/guide'}
-          className={`flex flex-row items-center justify-center text-nowrap ${
-            pathname.includes("/guide") ? "text-[#00B9F1]" : "text-white"
-          }`}
-        >
-          <span className="ml-2 w-full">User Guide</span>
-        </Link>
+        
         {admin===true ? <Link
           href={isLoggedIn ? "/datasets/admin" : "/authenticate"}
           className={`flex flex-row items-center justify-center text-nowrap ${
@@ -97,17 +90,25 @@ const NavigationBar = () => {
         </Link>:null}
       </div>
 
-      <div className="flex flex-row items-center gap-[2rem] justify-center">
+      <div className="flex flex-row items-center gap-[0.3rem] sm:gap-[1rem] justify-center">
         <div className="relative max-md:hidden">
           <input
             type="text"
             placeholder="Search name or category..."
-            className="p-[5px] placeholder:pl-[20px] rounded-[12px] text-[12px] border-[1px] border-white pr-10 md:min-w-[30rem] bg-transparent shadow-custom"
+            className="p-[5px] placeholder:pl-[20px] rounded-[12px] text-[12px] border-[1px] border-white pr-10 md:min-w-[20rem] bg-transparent shadow-custom"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {!searchTerm && <MagnifyingGlassIcon className="absolute left-2 bottom-[7px] w-4 h-4 text-white" />}
         </div>
+        <Link
+          href={'/guide'}
+          className={`flex flex-row items-center justify-center text-nowrap ${
+            pathname.includes("/guide") ? "text-[#00B9F1]" : "text-white"
+          }`}
+        >
+          <span className="ml-2 w-full">GUIDE</span>
+        </Link>
 
         {isLoggedIn ? (
           <button onClick={handleLogout}>{logoutPending ?<DotsLoader/>:"LOGOUT"}</button>
