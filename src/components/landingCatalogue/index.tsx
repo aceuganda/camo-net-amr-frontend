@@ -108,7 +108,7 @@ export default function HomeCatalogue() {
             )}
 
             {filteredDatasets.length > 0 && !error && !isLoading && (
-              <div className="w-[100%] overflow-x-auto">
+              <div className="w-[98%] overflow-x-auto">
                 <table className=" text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden ">
                   {/* Table Header */}
                   <thead className="bg-[#00B9F1] text-white">

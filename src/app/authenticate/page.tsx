@@ -56,7 +56,7 @@ function LoginForm() {
       <div>
         <label className="block text-gray-700">Email Address</label>
         <input
-          type="text"
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"

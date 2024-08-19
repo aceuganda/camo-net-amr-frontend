@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useQueryClient } from '@tanstack/react-query';
 import { HomeIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { logout } from "@/lib/hooks/useAuth";
@@ -15,6 +16,7 @@ const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
 const NavigationBar = () => {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [admin, setAdmin] = useState(false);
   const router = useRouter();
@@ -34,6 +36,7 @@ const NavigationBar = () => {
 
   useEffect(() => {
     if(logoutSuccess){
+      queryClient.invalidateQueries({ queryKey: ['user_info'] });
       setAdmin(false);
       setIsLoggedIn(false);
       router.push('/')

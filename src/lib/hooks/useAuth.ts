@@ -26,7 +26,6 @@ export const useUserInfor = () => {
 export const login = async (data: LoginData) => {
   // Send login request
   const response = await api.post('/login', data);
-
   return response.data;
 };
 
