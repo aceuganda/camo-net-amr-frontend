@@ -7,6 +7,7 @@ import { denyAccess, allowAccess } from "@/lib/hooks/usePermissions";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Modal } from "../modal";
+import { useSearch } from "@/context/searchContext";
 const DotsLoader = dynamic(() => import('../ui/dotsLoader'), { ssr: false });
 
 interface Permission {
@@ -26,6 +27,7 @@ const AdminRequests = () => {
   const datasets: Permission[] = data?.data || [];
   const [selectedRequest, setSelectedRequest] = useState<Permission | null>(null);
   const [modalType, setModalType] = useState<"approve" | "deny" | null>(null);
+  const { searchTerm } = useSearch();
 
   const { data:denyData, isSuccess:isDenySuccess, error:denyError, isPending:denyPending, mutate:denyFn } = useMutation({
     mutationFn: denyAccess,
@@ -33,6 +35,11 @@ const AdminRequests = () => {
   const { data:allowData, isSuccess:allowSuccess, error:allowError, isPending:allowPending, mutate:allowFn } = useMutation({
     mutationFn: allowAccess,
   });
+
+  const filteredData = datasets.filter((data) =>
+    data.user_email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US");
@@ -96,7 +103,14 @@ const AdminRequests = () => {
         </div>
       )}
 
-      {!isLoading && !error && (
+      {filteredData.length === 0 && searchTerm && (
+        <div className="text-center w-full flex items-start justify-center text-gray-500">
+          No data for search term: {searchTerm}{" "}
+        </div>
+      )}
+
+
+      {filteredData.length > 0 && !isLoading && !error && (
         <div className="overflow-auto">
           <table className="text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden">
             <thead className="bg-[#00B9F1] text-white">
@@ -112,7 +126,7 @@ const AdminRequests = () => {
               </tr>
             </thead>
             <tbody>
-              {datasets.map((request: Permission) => (
+              {filteredData.map((request: Permission) => (
                 <tr key={request.permission_id} className="even:bg-[#EBF7FD]">
                   <td className="border p-5 text-left">{request.data_set_name}</td>
                   <td className="border p-5 text-left">{request.user_name}</td>

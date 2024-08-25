@@ -31,9 +31,13 @@ export default function UserCatalogue() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const router = useRouter();
 
-  const filteredDatasets = datasets.filter((dataset) =>
-    dataset.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDatasets = datasets.filter((dataset) => {
+    const matchesSearchTerm = dataset.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(cat => dataset.category.toLowerCase().includes(cat.toLowerCase()));
+    const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => dataset.type.toLowerCase().includes(type.toLowerCase()));
+    return matchesSearchTerm && matchesCategory && matchesType;
+  });
+
 
   const handleDatasetClick = (datasetId: string) => {
     setSelectedDataset(datasetId);
@@ -72,6 +76,12 @@ export default function UserCatalogue() {
             {filteredDatasets.length === 0 && searchTerm && (
               <div className="text-center w-full flex items-start justify-center text-gray-500">
                 No data for search term: {searchTerm}{" "}
+              </div>
+            )}
+            
+            {filteredDatasets.length === 0 && (selectedCategories.length > 0 || selectedTypes.length > 0) && (
+              <div className="text-center w-full flex items-start justify-center text-gray-500">
+                No data matches the selected filters.
               </div>
             )}
 
