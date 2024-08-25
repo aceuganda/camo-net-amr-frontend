@@ -94,6 +94,9 @@ export default function DatasetDetails({ id }: any) {
     institution: "",
     title: "",
     agreed_to_privacy: false,
+    idi_staff: false, 
+    staff_number: "", 
+    category: "", 
   });
 
   const canDownload =
@@ -137,8 +140,8 @@ export default function DatasetDetails({ id }: any) {
   };
 
   const handleModalSubmit = () => {
-    const { purpose, institution, title, agreed_to_privacy } = formValues;
-    if (purpose && institution && title && agreed_to_privacy == true) {
+    const { purpose, institution, title, agreed_to_privacy, idi_staff, staff_number, category } = formValues;
+    if (purpose && institution && title && agreed_to_privacy && category) {
         requestFn({ ...formValues, data_set_id: dataset.data_set.id });
         setIsModalOpen(false);
     } else {
@@ -175,7 +178,7 @@ export default function DatasetDetails({ id }: any) {
     }
   }, [requestData, requestError, isRequestSuccess]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value, type, checked } = e.target;
     setFormValues({
       ...formValues,
@@ -346,10 +349,9 @@ export default function DatasetDetails({ id }: any) {
       >
         <div>   
           <div className="max-h-[50vh] overflow-y-auto">  
-              <form>
-                {/* Request Form Fields */}
+          <form>
                 <div className="mb-4">
-                  <label className="block text-gray-700">Institution:</label>
+                  <label className="block text-gray-700">Institution / Organization:</label>
                   <input
                     type="text"
                     name="institution"
@@ -360,7 +362,7 @@ export default function DatasetDetails({ id }: any) {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700">Title:</label>
+                  <label className="block text-gray-700">Title/Position:</label>
                   <input
                     type="text"
                     name="title"
@@ -380,6 +382,46 @@ export default function DatasetDetails({ id }: any) {
                     className="w-full p-3 text-lg border rounded"
                     placeholder="Enter purpose"
                   />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700">Are you an IDI staff member?</label>
+                  <input
+                    type="checkbox"
+                    name="idi_staff"
+                    checked={formValues.idi_staff}
+                    onChange={handleInputChange}
+                    className="mr-2 leading-tight"
+                  />
+                  <span className="text-sm text-gray-600">Check if you are an IDI staff member.</span>
+                </div>
+                {formValues.idi_staff && (
+                  <div className="mb-4">
+                    <label className="block text-gray-700">Staff Number:</label>
+                    <input
+                      type="text"
+                      name="staff_number"
+                      value={formValues.staff_number}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter your staff number"
+                    />
+                  </div>
+                )}
+                <div className="mb-4">
+                  <label className="block text-gray-700">Category:</label>
+                  <select
+                    name="category"
+                    value={formValues.category}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="" disabled>Select your category</option>
+                    <option value="student">Student</option>
+                    <option value="researcher">Researcher</option>
+                    <option value="developer">Data scientist</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <span className="text-sm text-gray-600">Please select the category that best describes your role.</span>
                 </div>
               </form>
               

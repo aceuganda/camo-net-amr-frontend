@@ -23,6 +23,9 @@ type FetchedDataset = {
 export default function UserCatalogue() {
   const { searchTerm } = useSearch();
   const [selectedDataset, setSelectedDataset] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const { data, isLoading, error } = useGetUserCatalogue();
   const datasets: FetchedDataset[] = data?.data || [];
   const [isMenuOpen, setIsMenuOpen] = useState(true);
@@ -43,6 +46,11 @@ export default function UserCatalogue() {
       <SidebarMenu
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
+          selectedTypes={selectedTypes}
+          setSelectedTypes={setSelectedTypes}
+        
         />
         
           <div  className="m-[2rem] w-full ">

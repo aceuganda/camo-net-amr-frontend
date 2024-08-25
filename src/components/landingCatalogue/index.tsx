@@ -32,29 +32,24 @@ type FetchedDataset = {
   in_warehouse: boolean;
 };
 
-const categories = [
-  { name: "Economic Data", count: 1 },
-  { name: "Demographic & Health", count: 3 },
-  { name: "Genomic", count: 1 },
-];
-
-const types = [
-  { name: "Primary dataset", count: 4 },
-  { name: "Secondary (Derived) dataset", count: 1 },
-];
 
 export default function HomeCatalogue() {
   const { searchTerm } = useSearch();
   const [isMenuOpen, setIsMenuOpen] = useState(true);
-  const [isCategoryOpen, setIsCategoryOpen] = useState(true);
-  const [isTypeOpen, setIsTypeOpen] = useState(true);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const { data, isLoading, error, } = useGetCatalogue();
   const datasets: FetchedDataset[] = data?.data || [];
 
-  const filteredDatasets = datasets.filter((dataset) =>
-    dataset.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDatasets = datasets.filter((dataset) => {
+    const matchesSearchTerm = dataset.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(cat => dataset.category.toLowerCase().includes(cat.toLowerCase()));
+    const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => dataset.type.toLowerCase().includes(type.toLowerCase()));
+    return matchesSearchTerm && matchesCategory && matchesType;
+  });
+
+
   const handleSelectAll = (e: any) => {
     if (e.target.checked) {
       const allIds = filteredDatasets.map((dataset) => dataset.id);
@@ -81,6 +76,10 @@ export default function HomeCatalogue() {
       <SidebarMenu
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
+          selectedTypes={selectedTypes}
+          setSelectedTypes={setSelectedTypes}
         />
 
         <div className={`ml-[2rem] w-[90%] ${!isMenuOpen? "" :"sm:w-[80%]" } `}>
@@ -104,6 +103,12 @@ export default function HomeCatalogue() {
             {filteredDatasets.length === 0 && searchTerm && (
               <div className="text-center w-full flex items-start justify-center text-gray-500">
                 No data for search term: {searchTerm}{" "}
+              </div>
+            )}
+
+            {filteredDatasets.length === 0 && (selectedCategories.length > 0 || selectedTypes.length > 0) && (
+              <div className="text-center w-full flex items-start justify-center text-gray-500">
+                No data matches the selected filters.
               </div>
             )}
 
