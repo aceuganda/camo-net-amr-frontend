@@ -20,6 +20,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "file-saver": "^2.0.5",
+    "framer-motion": "^11.3.30",
     "js-cookie": "^3.0.5",
     "ldrs": "^1.0.2",
     "lucide-react": "^0.400.0",
