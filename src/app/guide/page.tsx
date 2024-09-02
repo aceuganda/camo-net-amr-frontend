@@ -28,7 +28,9 @@ function UserGuide() {
           through how to access and download data available on the platform.
         </p>
         <h2 className="text-xl font-semibold mt-6 mb-2">Login or Register </h2>
-        <Link href='/authenticate' className="text-blue-600">login/register</Link>
+        <Link href="/authenticate" className="text-blue-600">
+          login/register
+        </Link>
         <p className="mb-4">
           Before accessing any features or datasets on the UGANDA CAMONET DATA
           PORTAL, you must first log in or register for an account. This ensures
@@ -81,10 +83,12 @@ function UserGuide() {
 
         <h2 className="text-xl font-semibold mt-6 mb-2">Home Page Overview</h2>
         <p className="mb-4">
-          The Home page of the UGANDA CAMONET DATA PORTAL provides an
-          introduction to the datasets housed on the platform. You will find an
-          overview of the data, including various metrics and visualizations
-          such as graphs and charts that give insights into the data.
+          On this home page, you will find a variety of metrics and
+          visualizations, including interactive graphs, charts, and choropleth
+          maps that provide insights into the prevalence of AMR in different
+          regions. These tools are designed to help you grasp the significance
+          and implications of the data before diving deeper into specific
+          datasets.
         </p>
         <p className="mb-4">
           These visuals are designed to help you understand the scope and scale

@@ -4,21 +4,19 @@ import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import ResistanceLineChart from "./resistanceChart";
 
-// Dynamically load components
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
-// const Chart = dynamic(() => import('../components/Chart'), { ssr: false });
+const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), { ssr: false });
 
 export default function HomePage() {
   const { scrollY } = useScroll();
-  const headerOpacity = useTransform(scrollY, [0, 700], [1, 0]);
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#F5F9FF] to-[#E1EEFF] text-[#24408E]">
       <div className="w-full flex flex-col items-center justify-center overflow-hidden">
         <motion.div
-          className="relative w-full h-screen"
-          style={{ opacity: headerOpacity }}
+          className="relative w-full "
         >
           <Image
             src="/idi_building.webp"
@@ -30,43 +28,36 @@ export default function HomePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#F5F9FF] opacity-90"></div>
           <motion.h1
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="absolute inset-0 flex items-center justify-center text-center font-bold text-6xl md:text-7xl lg:text-8xl text-[#003366] drop-shadow-lg"
+
+            className="absolute top-[20rem] left-0 right-0 flex items-center justify-center text-center font-bold text-6xl md:text-7xl lg:text-8xl text-[#003366] drop-shadow-lg"
           >
             AMR Data Portal, Uganda
            
           </motion.h1>
-        </motion.div>
-
-        <div className="relative w-full">
-          {/* Blurred background image */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/antibiotics.webp "
-              alt="AMR Background"
-              layout="fill"
-              objectFit="cover"
-              quality={100}
-              className="filter blur-sm brightness-150"
-            />
-            <div className="absolute inset-0 bg-white bg-opacity-70"></div>
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            {/* Grid Layout for Content */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Grid Layout for Content */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[5px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 z-10">
               {/* Introduction Section */}
               <motion.section
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white bg-opacity-90  h-[100%] p-6 z-10  rounded-lg shadow-lg mb-8"
+          >
+            <h2 className="text-3xl font-semibold mb-4  text-[#003366]">
+              What is AMR?
+            </h2>
+            <p className="text-base text-gray-700">
+              Antimicrobial resistance (AMR) occurs when microorganisms such as bacteria, viruses, fungi, and parasites evolve to resist the effects of medications that once effectively treated them. This means that common infections and minor injuries can become life-threatening because the medications used to treat them are no longer effective.
+            </p>
+          </motion.section>
+              <motion.section
+                 initial={{ opacity: 0, y: 50 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.2, duration: 0.8 }}
+                className="bg-white bg-opacity-90  p-6 z-10 sm:col-span-2 rounded-lg shadow-lg"
               >
-                <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
-                  Introduction
+                <h2 className="text-3xl font-semibold mb-4  text-[#003366]">
+                  Did you know !
                 </h2>
                 <p className="text-base text-gray-700 mb-4">
                   Antimicrobial resistance (AMR) stands as one of the most
@@ -84,39 +75,21 @@ export default function HomePage() {
                   associated with AMR in the same year.
                 </p>
               </motion.section>
-
-              {/* Drivers of AMR Section */}
+              
               <motion.section
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg"
+                 initial={{ opacity: 0, y: 50 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.2, duration: 0.8 }}
+                className="bg-white bg-opacity-90 sm:col-span-2   p-6 z-10 rounded-lg shadow-lg"
               >
-                <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
-                  Drivers of AMR
-                </h2>
-                <p className="text-base text-gray-700 mb-4">
-                  The factors contributing to the rise of AMR are complex and
-                  interconnected, spanning various sectors including healthcare,
-                  agriculture, and the environment. Key drivers include:
-                </p>
-                <ul className="list-disc list-inside text-base text-gray-700">
-                  <li>Non-prescription access to antibiotics</li>
-                  <li>Inadequate training of healthcare providers</li>
-                  <li>Environmental contamination</li>
-                  <li>Widespread use of antimicrobials in agriculture</li>
-                  <li>Misuse and overuse in healthcare settings</li>
-                  <li>Poor infection prevention and control</li>
-                  <li>Limited access to quality medicines and diagnostics</li>
-                </ul>
+                <ResistanceLineChart/>
               </motion.section>
-
               {/* Consequences of AMR Section */}
               <motion.section
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg"
+                 initial={{ opacity: 0, y: 50 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.2, duration: 0.8 }}
+                className="bg-white bg-opacity-90   p-6 z-10 rounded-lg shadow-lg"
               >
                 <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
                   Consequences of AMR
@@ -142,13 +115,42 @@ export default function HomePage() {
                   <li>Strain on health systems</li>
                 </ul>
               </motion.section>
+                  
+
+              {/* Drivers of AMR Section */}
+              <motion.section
+                 initial={{ opacity: 0, y: 50 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.2, duration: 0.8 }}
+                className="bg-white bg-opacity-90  p-6 z-10 rounded-lg shadow-lg"
+              >
+                <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
+                  Drivers of AMR
+                </h2>
+                <p className="text-base text-gray-700 mb-4">
+                  The factors contributing to the rise of AMR are complex and
+                  interconnected, spanning various sectors including healthcare,
+                  agriculture, and the environment. Key drivers include:
+                </p>
+                <ul className="list-disc list-inside text-base text-gray-700">
+                  <li>Non-prescription access to antibiotics</li>
+                  <li>Inadequate training of healthcare providers</li>
+                  <li>Environmental contamination</li>
+                  <li>Widespread use of antimicrobials in agriculture</li>
+                  <li>Misuse and overuse in healthcare settings</li>
+                  <li>Poor infection prevention and control</li>
+                  <li>Limited access to quality medicines and diagnostics</li>
+                </ul>
+              </motion.section>
+
+              
 
               {/* Our Project Section */}
               <motion.section
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg"
+                 initial={{ opacity: 0, y: 50 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.2, duration: 0.8 }}
+                className="bg-white bg-opacity-90  sm:col-span-2 p-6 z-10 rounded-lg shadow-lg"
               >
                 <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
                   Our Project
@@ -178,18 +180,38 @@ export default function HomePage() {
                 </p>
               </motion.section>
             </div>
+        </motion.div>
 
-            {/* Placeholder for Trends Section */}
+        <div className="relative w-full">
+          {/* Blurred background image */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/antibiotics.webp "
+              alt="AMR Background"
+              layout="fill"
+              objectFit="cover"
+              quality={100}
+              className="filter blur-sm brightness-150"
+            />
+            <div className="absolute inset-0 bg-white bg-opacity-70"></div>
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+              <h1 className="text-3xl font-semibold mb-4 text-[#003366]">
+                Trends and impact of AMR in Uganda
+              </h1>
+
             <motion.section
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="bg-white bg-opacity-90 p-8 rounded-lg shadow-lg mt-8"
+              className="bg-white bg-opacity-90  p-8 rounded-lg shadow-lg mt-8"
             >
               <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
-                AMR Trends
+                Resistance Rate in different regions 
               </h2>
-              <p className="text-base text-gray-700">Coming soon</p>
+              <ResistanceChoropleth/>
             </motion.section>
 
             {/* Call to Action */}

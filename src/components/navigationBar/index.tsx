@@ -91,7 +91,7 @@ const NavigationBar = () => {
       </div>
 
       <div className="flex flex-row items-center gap-[0.3rem] sm:gap-[1rem] justify-center">
-        <div className="relative max-md:hidden">
+        {pathname != "/" && <div className="relative max-md:hidden">
           <input
             type="text"
             placeholder="Search name or category..."
@@ -100,7 +100,7 @@ const NavigationBar = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {!searchTerm && <MagnifyingGlassIcon className="absolute left-2 bottom-[7px] w-4 h-4 text-white" />}
-        </div>
+        </div>}
         <Link
           href={'/guide'}
           className={`flex flex-row items-center justify-center text-nowrap ${
