@@ -87,7 +87,7 @@ export default function HomeCatalogue() {
             <DownloadIcon /> <span>EXPORT</span>
           </div>
 
-          <>
+          <div>
             {isLoading && (
               <div className="text-center w-full flex items-start h-[4rem] justify-center text-gray-500">
                 <DotsLoader/>
@@ -178,7 +178,7 @@ export default function HomeCatalogue() {
                 </table>
               </div>
             )}
-          </>
+          </div>
         </div>
       </div>
     </main>

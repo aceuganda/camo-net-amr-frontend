@@ -22,6 +22,15 @@ export const useUserInfor = () => {
     }
   });
 }
+export const useVerifyEmail =  (token: string | null) => {
+  return useQuery<any, Error, {data: any}>({
+    queryFn: () => api.get(`/users/verify?token=${token}`),
+    queryKey: ["verify_email"],
+    meta: {
+      errorMessage: "Failed to verify user"
+    }
+  });
+};
 
 export const login = async (data: LoginData) => {
   // Send login request

@@ -139,11 +139,11 @@ const AdminUsers = () => {
                             {isRemovingAdmin ? (
                               <DotsLoader />
                             ) : (
-                              <>
+                           
                                 <span className="inline-block">
                                   Remove Admin
                                 </span>
-                              </>
+                            
                             )}
                           </button>
                         ) : (
@@ -154,11 +154,11 @@ const AdminUsers = () => {
                             {isAssigningAdmin ? (
                               <DotsLoader />
                             ) : (
-                              <>
+                             
                                 <span className="inline-block">
                                   Assign Admin
                                 </span>
-                              </>
+                          
                             )}
                           </button>
                         )}
