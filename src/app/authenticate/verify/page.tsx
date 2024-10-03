@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useVerifyEmail } from "@/lib/hooks/useAuth";
+import { Suspense } from 'react';
 const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), {
   ssr: false,
 });
@@ -47,4 +48,11 @@ const VerificationPage = () => {
   );
 };
 
-export default VerificationPage;
+export default function AuthVerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerificationPage />
+    </Suspense>
+  );
+}
+// export default VerificationPage;
