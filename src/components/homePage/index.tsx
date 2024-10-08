@@ -1,241 +1,329 @@
 "use client";
-
+import React from "react";
 import dynamic from "next/dynamic";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import ResistanceLineChart from "./resistanceChart";
 
-const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
-const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), { ssr: false });
+const ResistanceLineChart = dynamic(() => import("./resistanceChart"), {
+  ssr: false,
+});
+const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), {
+  ssr: false,
+});
+
+const objectivesData = [
+  {
+    title: "Objective 1",
+    description:
+      "To harness the power of data through strategic studies to generate new knowledge related to optimizing antimicrobial use.",
+    image: "/data_analysis.webp",
+  },
+  {
+    title: "Objective 2",
+    description:
+      "To implement co-produced, contextually fit, and sustainable solutions targeting innovation, systems, and behaviors.",
+    image: "/produced_solutions.webp",
+  },
+  {
+    title: "Objective 3",
+    description:
+      "To evaluate interventions and strategies targeting optimized antimicrobial use through intersectional approaches.",
+    image: "/intersectional_approach.webp",
+  },
+];
+
+const themesData = [
+  {
+    title: "Technology and Innovation",
+    description: "Utilizing AI for clinical decision support and diagnostics.",
+    image: "/ai.webp",
+  },
+  {
+    title: "Context, Culture, and Behaviours",
+    description:
+      "Focusing on organizational behavior change and health-seeking behaviors.",
+    image: "/nurses.webp",
+  },
+  {
+    title: "Medicines Management",
+    description:
+      "Addressing supply chains, prescribing systems, and quality assurance.",
+    image: "/antibiotics.webp",
+  },
+];
 
 export default function HomePage() {
-  const { scrollY } = useScroll();
-
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#F5F9FF] to-[#E1EEFF] text-[#24408E]">
-      <div className="w-full flex flex-col items-center justify-center overflow-hidden">
-        <motion.div
-          className="relative w-full "
-        >
-          <Image
-            src="/idi_building.webp"
-            alt="AMR Research Collage"
-            layout="fill"
-            objectFit="cover"
-            quality={100}
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#F5F9FF] opacity-90"></div>
-          <motion.h1
-
-            className="absolute top-[20rem] left-0 right-0 flex items-center justify-center text-center font-bold text-6xl md:text-7xl lg:text-8xl text-[#003366] drop-shadow-lg"
-          >
-            AMR Data Portal, Uganda
-           
-          </motion.h1>
-          {/* Grid Layout for Content */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[5px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 z-10">
-              {/* Introduction Section */}
-              <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white bg-opacity-90  h-[100%] p-6 z-10  rounded-lg shadow-lg mb-8"
-          >
-            <h2 className="text-3xl font-semibold mb-4  text-[#003366]">
-              What is AMR?
-            </h2>
-            <p className="text-base text-gray-700">
-              Antimicrobial resistance (AMR) occurs when microorganisms such as bacteria, viruses, fungi, and parasites evolve to resist the effects of medications that once effectively treated them. This means that common infections and minor injuries can become life-threatening because the medications used to treat them are no longer effective.
+    <main className="flex min-h-screen flex-col items-center bg-white text-gray-800">
+      <motion.div
+        className="w-full h-[35vh] relative"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <Image
+          src="/idi_building.webp"
+          alt="Research laboratory"
+          layout="fill"
+          objectFit="cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="text-center text-white max-w-4xl mx-auto px-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+              CAMO-Net Uganda Hub
+            </h1>
+            <p className="text-xl mb-4">
+              A dedicated data portal for the Uganda hub, facilitating access to
+              antimicrobial resistance (AMR) data and insights to enhance public
+              health initiatives.
             </p>
-          </motion.section>
-              <motion.section
-                 initial={{ opacity: 0, y: 50 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="bg-white bg-opacity-90  p-6 z-10 sm:col-span-2 rounded-lg shadow-lg"
-              >
-                <h2 className="text-3xl font-semibold mb-4  text-[#003366]">
-                  Did you know !
-                </h2>
-                <p className="text-base text-gray-700 mb-4">
-                  Antimicrobial resistance (AMR) stands as one of the most
-                  significant threats to global health in the 21st century. The
-                  World Health Organization (WHO) has declared it a top ten
-                  global public health threat facing humanity. By 2050, AMR is
-                  predicted to become the leading cause of death globally, with
-                  annual deaths projected to rise from 700,000 to 10 million if
-                  current trends continue unchecked.
-                </p>
-                <p className="text-base text-gray-700">
-                  In 2019, 1.27 million deaths were directly attributed to AMR,
-                  surpassing mortality rates from HIV, malaria, and
-                  tuberculosis. An additional 4.95 million deaths were
-                  associated with AMR in the same year.
-                </p>
-              </motion.section>
-              
-              <motion.section
-                 initial={{ opacity: 0, y: 50 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="bg-white bg-opacity-90 sm:col-span-2   p-6 z-10 rounded-lg shadow-lg"
-              >
-                <ResistanceLineChart/>
-              </motion.section>
-              {/* Consequences of AMR Section */}
-              <motion.section
-                 initial={{ opacity: 0, y: 50 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="bg-white bg-opacity-90   p-6 z-10 rounded-lg shadow-lg"
-              >
-                <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
-                  Consequences of AMR
-                </h2>
-                <p className="text-base text-gray-700 mb-4">
-                  The impacts of AMR extend far beyond individual patient
-                  outcomes, affecting entire health systems and economies:
-                </p>
-                <h3 className="text-xl font-semibold mb-2 text-[#003366]">
-                  Clinical Consequences
-                </h3>
-                <ul className="list-disc list-inside text-base text-gray-700 mb-4">
-                  <li>Increased difficulty in treating infections</li>
-                  <li>Higher rates of complications and mortality</li>
-                  <li>Compromised medical procedures</li>
-                </ul>
-                <h3 className="text-xl font-semibold mb-2 text-[#003366]">
-                  Economic Consequences
-                </h3>
-                <ul className="list-disc list-inside text-base text-gray-700">
-                  <li>Higher healthcare costs</li>
-                  <li>Productivity losses</li>
-                  <li>Strain on health systems</li>
-                </ul>
-              </motion.section>
-                  
-
-              {/* Drivers of AMR Section */}
-              <motion.section
-                 initial={{ opacity: 0, y: 50 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="bg-white bg-opacity-90  p-6 z-10 rounded-lg shadow-lg"
-              >
-                <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
-                  Drivers of AMR
-                </h2>
-                <p className="text-base text-gray-700 mb-4">
-                  The factors contributing to the rise of AMR are complex and
-                  interconnected, spanning various sectors including healthcare,
-                  agriculture, and the environment. Key drivers include:
-                </p>
-                <ul className="list-disc list-inside text-base text-gray-700">
-                  <li>Non-prescription access to antibiotics</li>
-                  <li>Inadequate training of healthcare providers</li>
-                  <li>Environmental contamination</li>
-                  <li>Widespread use of antimicrobials in agriculture</li>
-                  <li>Misuse and overuse in healthcare settings</li>
-                  <li>Poor infection prevention and control</li>
-                  <li>Limited access to quality medicines and diagnostics</li>
-                </ul>
-              </motion.section>
-
-              
-
-              {/* Our Project Section */}
-              <motion.section
-                 initial={{ opacity: 0, y: 50 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="bg-white bg-opacity-90  sm:col-span-2 p-6 z-10 rounded-lg shadow-lg"
-              >
-                <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
-                  Our Project
-                </h2>
-                <p className="text-base text-gray-700 mb-4">
-                  Our project aims to develop a comprehensive AMR and
-                  Antimicrobial Use and Consumption (AMUC) data warehouse for
-                  Uganda, addressing critical gaps in AMR surveillance and
-                  intervention strategies.
-                </p>
-                <h3 className="text-xl font-semibold mb-2 text-[#003366]">
-                  Objectives
-                </h3>
-                <ul className="list-disc list-inside text-base text-gray-700 mb-4">
-                  <li>Improve access to AMR and AMUC data</li>
-                  <li>Analyze antibiotic prescribing patterns</li>
-                  <li>Determine economic burden</li>
-                  <li>Develop predictive models</li>
-                </ul>
-                <h3 className="text-xl font-semibold mb-2 text-[#003366]">
-                  Methodology
-                </h3>
-                <p className="text-base text-gray-700">
-                  Our approach combines data curation, machine learning-based
-                  modeling, and cost-of-illness analysis, utilizing data from
-                  nine regional referral hospitals in Uganda (2018-2026).
-                </p>
-              </motion.section>
-            </div>
-        </motion.div>
-
-        <div className="relative w-full">
-          {/* Blurred background image */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/antibiotics.webp "
-              alt="AMR Background"
-              layout="fill"
-              objectFit="cover"
-              quality={100}
-              className="filter blur-sm brightness-150"
-            />
-            <div className="absolute inset-0 bg-white bg-opacity-70"></div>
-          </div>
-
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-
-              <h1 className="text-3xl font-semibold mb-4 text-[#003366]">
-                Trends and impact of AMR in Uganda
-              </h1>
-
-            <motion.section
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="bg-white bg-opacity-90  p-8 rounded-lg shadow-lg mt-8"
-            >
-              <h2 className="text-3xl font-semibold mb-4 text-[#003366]">
-                Resistance Rate in different regions 
-              </h2>
-              <ResistanceChoropleth/>
-            </motion.section>
-
-            {/* Call to Action */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.0 }}
-              className="text-center py-16"
-            >
-              <Link href="/datasets">
-                <button className="bg-[#00B9F1] text-white font-bold py-3 px-6 rounded-full hover:bg-[#0090BE] transition duration-300">
-                  Explore Our Datasets
-                </button>
-              </Link>
-            </motion.div>
           </div>
         </div>
+      </motion.div>
+
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <motion.section
+          className="mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h2 className="text-2xl font-semibold text-[#003366] mb-4">
+                About CAMO-Net Uganda
+              </h2>
+              <p className="text-gray-700 mb-4">
+                The Infectious Diseases Institute (IDI) at Makerere University
+                serves as the center for the CAMO-Net Uganda Hub. Our mission is
+                to complement and enhance the existing ecosystem of global
+                programmes designed to alleviate the global burden of
+                antimicrobial resistance (AMR) and poorly treated infections.
+              </p>
+              <p className="text-gray-700 mb-4">
+                Through a collaborative approach spanning April 2023 to March
+                2026, we target health workers, researchers, policymakers, and
+                innovators to create sustainable solutions for optimizing
+                antimicrobial use in humans.
+              </p>
+              <p className="text-gray-700">
+                A key component of our initiative is the development of a
+                comprehensive data warehouse for AMR in Uganda. This data
+                warehouse will facilitate the collection, storage, and analysis
+                of AMR data, enabling informed decision making
+                and implementation effective interventions. By harnessing data-driven
+                insights, we aim to strengthen the response to AMR and improve
+                health outcomes across the country.
+              </p>
+            </div>
+            <div className="relative h-[450px]">
+              <Image
+                src="/hubgroup.webp"
+                alt="Laboratory research"
+                layout="fill"
+                objectFit="cover"
+                className="rounded-lg"
+              />
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Objectives Section */}
+        <motion.section
+          className="mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-semibold text-[#003366] mb-6 text-start">
+            Objectives
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Objective Cards */}
+            {objectivesData.map((objective, index) => (
+              <div
+                key={index}
+                className="relative bg-cover bg-center h-[200px] rounded-lg shadow-md overflow-hidden transition-transform duration-300 transform hover:scale-105"
+                style={{ backgroundImage: `url(${objective.image})` }}
+              >
+                <div className="absolute inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center p-4">
+                  <h3 className="text-xl font-semibold text-white mb-2 text-center">
+                    {objective.title}
+                  </h3>
+                  <p className="text-gray-200 text-center">
+                    {objective.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+        <motion.section
+          className="mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-semibold text-[#003366] mb-6 text-start">
+            Key Research Themes
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {themesData.map((theme, index) => (
+              <div
+                key={index}
+                className="relative bg-cover bg-center h-[200px] rounded-lg shadow-md overflow-hidden transition-transform duration-300 transform hover:scale-105"
+                style={{ backgroundImage: `url(${theme.image})` }}
+              >
+                <div className="absolute inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center p-4">
+                  <h4 className="text-lg font-semibold text-white mb-2 text-center">
+                    {theme.title}
+                  </h4>
+                  <p className="text-gray-200 text-center">
+                    {theme.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+
+        <motion.section
+          className="mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="relative h-[330px]">
+              <Image
+                src="/capacity_build.webp"
+                alt="Laboratory research"
+                layout="fill"
+                objectFit="cover"
+                className="rounded-lg"
+              />
+            </div>
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h2 className="text-2xl font-semibold text-[#003366] mb-4">
+                Capacity Building
+              </h2>
+              <h3 className="text-xl font-semibold text-[#003366] mb-4">
+                Strengthening Skills and Knowledge
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Our capacity-building initiatives aim to enhance the skills and
+                knowledge of health workers, researchers, and policymakers.
+                Through tailored training programs, workshops, and mentorship,
+                we empower individuals and institutions to effectively combat
+                antimicrobial resistance.
+              </p>
+              <p className="text-gray-700">
+                We focus on fostering a collaborative environment that
+                encourages the sharing of best practices and innovative
+                solutions, ensuring that all stakeholders are equipped to
+                address the challenges posed by AMR.
+              </p>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Research Projects Section */}
+        <motion.section
+          className="mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-semibold text-[#003366] mb-6">
+            Research Projects
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Project 1",
+                description:
+                  "Investigating the patterns and trends in antibiotic prescribing among People Living with HIV (PLWH) enrolled in routine cohorts at the Infectious Diseases Institute Clinics, Kampala, Uganda",
+                image: "/idiclinic.webp"
+              },
+              {
+                title: "Project 2",
+                description:
+                  "Innovative approaches to optimise antibiotic therapy in the context of HIV, and related co-morbidity and polypharmacy in an outpatient HIV clinic in Uganda",
+                image: "/project2.webp"
+              },
+              {
+                title: "Project 3",
+                description:
+                  "Combatting Antimicrobial Resistance in Uganda: A Data-Driven Approach to Optimize Antibiotic Use and Improve Patient Outcomes",
+                image: "/data_visualization.webp"
+              },
+            ].map((project, index) => (
+              <div
+                key={index}
+                className="bg-gray-50 p-6 rounded-lg flex flex-col"
+              >
+                <div className="relative h-[200px] mb-4">
+                  <Image
+                    src={project.image}
+                    alt={`${project.title} visualization`}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold text-[#003366] mb-2">
+                  {project.title}
+                </h3>
+                <p className="text-gray-700 flex-grow">{project.description}</p>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Data Visualization Section */}
+        <motion.section
+          className="mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-semibold text-[#003366] mb-6">
+            AMR Trends & Impact
+          </h2>
+          <div className="space-y-8">
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-xl font-semibold text-[#003366] mb-4">
+                Resistance Trends
+              </h3>
+              <ResistanceLineChart />
+            </div>
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-xl font-semibold text-[#003366] mb-4">
+                Regional Distribution of AMR
+              </h3>
+              <ResistanceChoropleth />
+            </div>
+          </div>
+        </motion.section>
       </div>
 
-      {/* Footer */}
-      <footer className="w-full text-center py-4 text-sm text-gray-500 bg-[#003366] text-white">
-        © 2024 AMR Data Portal | Cited Sources: Mayito et al, 2024. Combatting
-        Antimicrobial Resistance through a Data-Driven Approach. Published in
-        JMIR Preprints.
+      <footer className="w-full py-6 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-gray-600">© 2024 CAMO-Net Uganda Hub</p>
+          <p className="text-sm text-gray-500 mt-2">
+            A Wellcome Trust supported initiative to combat Antimicrobial
+            Resistance
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Infectious Diseases Institute, McKinnell Knowledge Centre, Makerere
+            University, P.O Box 22418, Kampala, Uganda
+          </p>
+        </div>
       </footer>
     </main>
   );
