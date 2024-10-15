@@ -4,29 +4,37 @@ import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import { Line } from 'react-chartjs-2';
 
-import { useOverAllResistance } from "@/lib/hooks/useAMRTrends";
+import { useOverAllResistanceByGender } from "@/lib/hooks/useAMRTrends";
 import dynamic from "next/dynamic";
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
 Chart.register(CategoryScale);
-const ResistanceLineChart: React.FC = () => {
+const ResistanceByGenderLineChart: React.FC = () => {
     const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
-    const { data, isLoading, error, isSuccess } = useOverAllResistance();
+    const { data, isLoading, error, isSuccess } = useOverAllResistanceByGender();
 
     useEffect(() => {
         if (isSuccess && data) {
             const years = data?.data?.data?.map((item: { year: number }) => item.year);
-            const resistantCases = data?.data?.data.map((item: { resistant_cases: number }) => item.resistant_cases);
+            const femaleResistantCases = data?.data?.data.map((item: { female_resistance: number }) => item.female_resistance);
+            const maleResistantCases = data?.data?.data.map((item: { male_resistance: number }) => item.male_resistance);
 
             setChartData({
                 labels: years,
                 datasets: [
                     {
-                        label: 'Resistance Cases',
-                        data: resistantCases,
+                        label: 'Male Resistance Cases',
+                        data: maleResistantCases,
                         borderColor: 'rgba(255, 99, 132, 1)',
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        fill: true,
+                        fill: false,
+                    },
+                    {
+                        label: 'Female Resistance Cases',
+                        data: femaleResistantCases,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        fill: false,
                     }
                 ]
             });
@@ -48,4 +56,4 @@ const ResistanceLineChart: React.FC = () => {
     );
 };
 
-export default ResistanceLineChart;
+export default ResistanceByGenderLineChart;
