@@ -11,6 +11,18 @@ const ResistanceLineChart = dynamic(() => import("./resistanceChart"), {
 const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), {
   ssr: false,
 });
+const OrganismResistanceLines = dynamic(
+  () => import("./resistanceByOrganismChart"),
+  {
+    ssr: false,
+  }
+);
+const ResistanceLinesByGender = dynamic(
+  () => import("./resistanceByGenderChart"),
+  {
+    ssr: false,
+  }
+);
 
 const objectivesData = [
   {
@@ -65,7 +77,7 @@ export default function HomePage() {
         <Image
           src="/idi_building.webp"
           alt="Research laboratory"
-          layout="fill"
+          fill
           objectFit="cover"
           priority
         />
@@ -112,18 +124,18 @@ export default function HomePage() {
                 A key component of our initiative is the development of a
                 comprehensive data warehouse for AMR in Uganda. This data
                 warehouse will facilitate the collection, storage, and analysis
-                of AMR data, enabling informed decision making
-                and implementation effective interventions. By harnessing data-driven
-                insights, we aim to strengthen the response to AMR and improve
-                health outcomes across the country.
+                of AMR data, enabling informed decision making and
+                implementation effective interventions. By harnessing
+                data-driven insights, we aim to strengthen the response to AMR
+                and improve health outcomes across the country.
               </p>
             </div>
             <div className="relative h-[450px]">
               <Image
                 src="/hubgroup.webp"
                 alt="Laboratory research"
-                layout="fill"
-                objectFit="cover"
+                fill
+                style={{ objectFit: "cover" }}
                 className="rounded-lg"
               />
             </div>
@@ -191,7 +203,6 @@ export default function HomePage() {
           </div>
         </motion.section>
 
-
         <motion.section
           className="mb-16"
           initial={{ opacity: 0, y: 20 }}
@@ -203,8 +214,8 @@ export default function HomePage() {
               <Image
                 src="/capacity_build.webp"
                 alt="Laboratory research"
-                layout="fill"
-                objectFit="cover"
+                fill
+                style={{ objectFit: "cover" }}
                 className="rounded-lg"
               />
             </div>
@@ -248,19 +259,19 @@ export default function HomePage() {
                 title: "Project 1",
                 description:
                   "Investigating the patterns and trends in antibiotic prescribing among People Living with HIV (PLWH) enrolled in routine cohorts at the Infectious Diseases Institute Clinics, Kampala, Uganda",
-                image: "/idiclinic.webp"
+                image: "/idiclinic.webp",
               },
               {
                 title: "Project 2",
                 description:
                   "Innovative approaches to optimise antibiotic therapy in the context of HIV, and related co-morbidity and polypharmacy in an outpatient HIV clinic in Uganda",
-                image: "/project2.webp"
+                image: "/project2.webp",
               },
               {
                 title: "Project 3",
                 description:
                   "Combatting Antimicrobial Resistance in Uganda: A Data-Driven Approach to Optimize Antibiotic Use and Improve Patient Outcomes",
-                image: "/data_visualization.webp"
+                image: "/data_visualization.webp",
               },
             ].map((project, index) => (
               <div
@@ -271,8 +282,8 @@ export default function HomePage() {
                   <Image
                     src={project.image}
                     alt={`${project.title} visualization`}
-                    layout="fill"
-                    objectFit="cover"
+                    fill
+                    style={{ objectFit: "cover" }}
                     className="rounded-lg"
                   />
                 </div>
@@ -296,11 +307,33 @@ export default function HomePage() {
             AMR Trends & Impact
           </h2>
           <div className="space-y-8">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold text-[#003366] mb-4">
-                Resistance Trends
-              </h3>
-              <ResistanceLineChart />
+            <div className="flex sm:flex-row flex-col gap-2 justify-between bg-[#ffffff] p-2 rounded-lg">
+              <div className="p-6 rounded-lg w-[100%]">
+                <h3 className="text-xl font-semibold text-[#003366] mb-4">
+                  Total Resistance cases
+                </h3>
+                <ResistanceLineChart />
+              </div>
+              <div className="p-6 rounded-lg w-[100%]">
+                <h3 className="text-xl font-semibold text-[#003366] mb-4">
+                  Resistance Cases By Gender
+                </h3>
+                <ResistanceLinesByGender />
+              </div>
+            </div>
+            <div className="flex sm:flex-row flex-col justify-between bg-[#ffffff] p-2 rounded-lg">
+              <div className="bg-gray-50 p-6">
+                <h3 className="text-xl font-semibold text-[#003366] mb-4">
+                  Percentage resistance of E.coli as per antibiotics
+                </h3>
+                <OrganismResistanceLines organism="ecoli" />
+              </div>
+              <div className="bg-gray-50 p-6">
+                <h3 className="text-xl font-semibold text-[#003366] mb-4">
+                  Percentage resistance of S.aureus as per antibiotics
+                </h3>
+                <OrganismResistanceLines organism="aureus" />
+              </div>
             </div>
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-xl font-semibold text-[#003366] mb-4">

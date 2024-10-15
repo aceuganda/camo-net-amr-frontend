@@ -42,8 +42,7 @@ const ResistanceLineChart: React.FC = () => {
     }
 
     return (
-        <div>
-            <h2 className="text-2xl font-semibold mb-4">Resistance Over the Years</h2>
+        <div className='w-full'>
             <Line data={chartData} />
         </div>
     );
