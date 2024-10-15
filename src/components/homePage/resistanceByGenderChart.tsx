@@ -1,15 +1,16 @@
-// src/components/ResistanceLineChart.tsx
+// src/components/ResistanceBarChart.tsx
 import React, { useEffect, useState } from 'react';
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
-import { Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2'; // Import Bar instead of Line
 
 import { useOverAllResistanceByGender } from "@/lib/hooks/useAMRTrends";
 import dynamic from "next/dynamic";
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
 Chart.register(CategoryScale);
-const ResistanceByGenderLineChart: React.FC = () => {
+
+const ResistanceByGenderBarChart: React.FC = () => {
     const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
     const { data, isLoading, error, isSuccess } = useOverAllResistanceByGender();
 
@@ -25,16 +26,12 @@ const ResistanceByGenderLineChart: React.FC = () => {
                     {
                         label: 'Male Resistance Cases',
                         data: maleResistantCases,
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        fill: false,
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)', 
                     },
                     {
                         label: 'Female Resistance Cases',
                         data: femaleResistantCases,
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        fill: false,
+                        backgroundColor: 'rgba(153, 102, 255, 0.6)', 
                     }
                 ]
             });
@@ -42,18 +39,18 @@ const ResistanceByGenderLineChart: React.FC = () => {
     }, [isSuccess, data]);
 
     if (isLoading) {
-        return <div className="text-center"><DotsLoader/></div>; 
+        return <div className="text-center"><DotsLoader /></div>;
     }
 
     if (error) {
-        return <div className="text-red-500 text-center">Error: {error.message}</div>; 
+        return <div className="text-red-500 text-center">Error: {error.message}</div>;
     }
 
     return (
         <div className='w-full'>
-            <Line data={chartData} />
+            <Bar data={chartData} /> 
         </div>
     );
 };
 
-export default ResistanceByGenderLineChart;
+export default ResistanceByGenderBarChart;
