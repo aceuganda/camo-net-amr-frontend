@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
+
 const ResistanceLineChart = dynamic(() => import("./resistanceChart"), {
   ssr: false,
 });
@@ -19,6 +20,12 @@ const OrganismResistanceLines = dynamic(
 );
 const ResistanceLinesByGender = dynamic(
   () => import("./resistanceByGenderChart"),
+  {
+    ssr: false,
+  }
+);
+const ResistanceLinesByAge = dynamic(
+  () => import("./resistanceByAgeAndOrganism"),
   {
     ssr: false,
   }
@@ -324,15 +331,15 @@ export default function HomePage() {
             <div className="flex sm:flex-row flex-col justify-between bg-[#ffffff] p-2 rounded-lg">
               <div className="bg-gray-50 p-6">
                 <h3 className="text-xl font-semibold text-[#003366] mb-4">
-                  Percentage resistance of E.coli as per antibiotics
+                  Percentage resistance of Organisms as per antibiotics vs age
                 </h3>
-                <OrganismResistanceLines organism="ecoli" />
+                <OrganismResistanceLines />
               </div>
               <div className="bg-gray-50 p-6">
                 <h3 className="text-xl font-semibold text-[#003366] mb-4">
-                  Percentage resistance of S.aureus as per antibiotics
+                  Percentage resistance of organisms as per antibiotics vs time
                 </h3>
-                <OrganismResistanceLines organism="aureus" />
+                <ResistanceLinesByAge />
               </div>
             </div>
             <div className="bg-gray-50 p-6 rounded-lg">

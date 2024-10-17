@@ -3,7 +3,7 @@ import Chart from "chart.js/auto";
 import { CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import { Line } from 'react-chartjs-2';
 import dynamic from "next/dynamic";
-import { useOrganismResistanceByAge } from "@/lib/hooks/useAMRTrends";
+import { useOrganismResistance } from "@/lib/hooks/useAMRTrends";
 import { organisms } from "./constants";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
@@ -21,12 +21,13 @@ const COLORS = [
     'rgba(199, 99, 255, 1)'   // Violet
 ];
 
-const ResistanceLineChart: React.FC = () => {
+const ResistanceByAgeLineChart: React.FC = () => {
     const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
     const [selectedOrganism, setSelectedOrganism] = useState('ecoli'); 
-    const { data, isLoading, error, isSuccess, refetch } = useOrganismResistanceByAge(selectedOrganism, startDate, endDate);
+
+    const { data, isLoading, error, isSuccess, refetch } = useOrganismResistance(selectedOrganism, startDate, endDate);
 
     useEffect(() => {
         if (isSuccess && data) {
@@ -36,6 +37,7 @@ const ResistanceLineChart: React.FC = () => {
             setChartData({ labels, datasets });
         }
     }, [isSuccess, data]);
+
     const handleOrganismChange = (e:any) => {
         setSelectedOrganism(e.target.value);
     };
@@ -45,29 +47,15 @@ const ResistanceLineChart: React.FC = () => {
     };
 
     const generateDateLabels = (dataArray: any) => {
-        const ageGroupMapping: { [key: string]: number } = {
-            "0-0": 0,
-            "1-4": 1,
-            "5-14": 5,
-            "15-24": 15,
-            "25-34": 25,
-            "35-44": 35,
-            "45-54": 45,
-            "55-64": 55,
-            "65-80": 65,
-            ">=80": 80 
-        };
-    
         const uniqueDates = new Set<string>();   
         dataArray.forEach((antibiotic: any) =>
             antibiotic.data.forEach((entry: any) => {
-                const dateLabel = entry.age_group;
+                const dateLabel = entry.date;
                 uniqueDates.add(dateLabel);
             })
         );
-        return Array.from(uniqueDates).sort((a, b) => {
-            return ageGroupMapping[a] - ageGroupMapping[b];
-        });
+
+        return Array.from(uniqueDates).sort();
     };
 
     const createDatasets = (dataArray: any) => {
@@ -82,8 +70,8 @@ const ResistanceLineChart: React.FC = () => {
     };
 
     const generateDataPoints = (entries: any) => {
-        return entries.map((entry: { age_group: string, percentage_resistance: number }) => ({
-            x: entry.age_group,
+        return entries.map((entry: { date: string, percentage_resistance: number }) => ({
+            x: entry.date,
             y: entry.percentage_resistance,
         }));
     };
@@ -146,4 +134,4 @@ const ResistanceLineChart: React.FC = () => {
     );
 };
 
-export default ResistanceLineChart;
+export default ResistanceByAgeLineChart;

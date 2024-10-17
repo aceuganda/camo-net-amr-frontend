@@ -56,4 +56,23 @@ export const useOverAllResistance = () => {
       },
     });
   };
+
+  export const useOrganismResistanceByAge = (
+    organism: string, 
+    startDate: string | null = null, 
+    endDate: string | null = null
+  ) => {
+    let endpoint = `/trends/organism_resistance_by_age?organism=${organism}`;
+    
+    if (startDate) endpoint += `&start_date=${startDate}`;
+    if (endDate) endpoint += `&end_date=${endDate}`;
+  
+    return useQuery<any, Error, { data: any }>({
+      queryFn: () => api.get(endpoint),
+      queryKey: ["organism_resistance_by_age", organism, startDate, endDate],
+      meta: {
+        errorMessage: "Failed to fetch organism resistance data",
+      },
+    });
+  };
   

@@ -14,7 +14,7 @@ const colorScale = [
 const Legend: React.FC = () => {
     return (
         <div className="md:ml-4 mt-4 md:mt-0 p-[10px] bg-white z-[10]"  >
-            <h4>Resistance Intensity Legend</h4>
+            <h4>Resistance Cases Legend</h4>
             <ul style={{ listStyleType: 'none', padding: 0 }}>
                 {colorScale.map((item, index) => (
                     <li key={index} style={{ display: 'flex', alignItems: 'center' }}>
