@@ -84,7 +84,7 @@ const convertToCSV = (datasets: FetchedDataset[]) => {
     "Project Status",
     "On-hold Reason",
     "Countries",
-    "Data Collection Methods",
+
     "Study Population",
     "Data Format",
     "Entries",
@@ -116,7 +116,7 @@ const convertToCSV = (datasets: FetchedDataset[]) => {
     dataset.project_status,
     dataset.on_hold_reason,
     dataset.countries,
-    dataset.data_collection_methods,
+
     dataset.study_population,
     dataset.data_format,
     dataset.participant_count,
@@ -274,7 +274,7 @@ export default function HomeCatalogue() {
                         "Project Status",
                         "On-hold Reason",
                         "Countries",
-                        "Data Collection Methods",
+
                         "Study Population",
                         "Data Format",
                         "Entries",
@@ -330,7 +330,7 @@ export default function HomeCatalogue() {
                           dataset.project_status,
                           dataset.on_hold_reason,
                           dataset.countries,
-                          dataset.data_collection_methods,
+
                           dataset.study_population,
                           dataset.data_format,
                           dataset.participant_count,
