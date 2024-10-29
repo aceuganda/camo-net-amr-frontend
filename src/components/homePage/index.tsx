@@ -59,7 +59,7 @@ export default function HomePage() {
             The Data Portal connects to the central antimicrobial resistance (ARM) related Data Warehouse, serving as a user-friendly interface for accessing the data. Users can request access to specific datasets, and the portal also provides visualizations of key trends derived from the data stored in the warehouse, facilitating informed decision-making and research.
             </p>
             <Image
-              src="/hubgroup.webp"
+              src="/data_visualization.webp"
               alt="Laboratory research"
               width={300}
               height={200}
@@ -134,7 +134,7 @@ export default function HomePage() {
             Jinja Regional Referral Hospital (RRH), Gulu (RRH), Arua RRH, Lira RRH, Soroti RRH, Mbale RRH, Masaka RRH, Mbarara RRH and Kabale RRH. 
             </p>
             <Image
-              src="/capacity_build.webp"
+              src="/idiclinic.webp"
               alt="Capacity building"
               width={300}
               height={200}
