@@ -27,11 +27,11 @@ export const useOverAllResistance = () => {
        }
      });
    }
-   export const useOverAllResistanceByGender = () => {
-    let endpoint = `/trends/gender_resistance`;
+   export const useOverAllResistanceByGender = (organism:string) => {
+    let endpoint = `/trends/gender_resistance?organism=${organism}`;
      return useQuery<any, Error, {data: any}>({
        queryFn: () => api.get(endpoint),
-       queryKey: ["gender_resistance"],
+       queryKey: ["gender_resistance",organism],
        meta: {
          errorMessage: "Failed to fetch resistance data",
        }

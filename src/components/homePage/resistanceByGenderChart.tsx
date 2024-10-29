@@ -7,12 +7,18 @@ import { Bar } from 'react-chartjs-2'; // Import Bar instead of Line
 import { useOverAllResistanceByGender } from "@/lib/hooks/useAMRTrends";
 import dynamic from "next/dynamic";
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
+import { organisms } from "./constants";
 
 Chart.register(CategoryScale);
 
 const ResistanceByGenderBarChart: React.FC = () => {
     const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
-    const { data, isLoading, error, isSuccess } = useOverAllResistanceByGender();
+    const [selectedOrganism, setSelectedOrganism] = useState('ecoli'); 
+    const { data, isLoading, error, isSuccess } = useOverAllResistanceByGender(selectedOrganism);
+
+    const handleOrganismChange = (e: any) => {
+        setSelectedOrganism(e.target.value);
+    };
 
     useEffect(() => {
         if (isSuccess && data) {
@@ -48,6 +54,23 @@ const ResistanceByGenderBarChart: React.FC = () => {
 
     return (
         <div className='w-full'>
+             <div className="mb-4 flex flex-row gap-5">
+                <div className='flex flex-col'>
+                    <label className="ml-4 mr-2">Organism</label>
+                    <select
+                        value={selectedOrganism}
+                        onChange={handleOrganismChange}
+                        className="border border-gray-300 rounded p-1 max-w-[15rem]"
+                    >
+                        {organisms.map((organism) => (
+                            <option key={organism.value} value={organism.value}>
+                                {organism.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+            {data?.data?.data.length === 0 && <div className="text-red-500 text-center">No Data Available</div>}
             <Bar data={chartData} /> 
         </div>
     );

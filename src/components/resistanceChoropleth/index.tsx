@@ -39,7 +39,7 @@ const ResistanceChoropleth: React.FC = () => {
 
   // Function to style each feature
   const getColor = (d: number) => {
-    if (d === 0) return "#FF9A9A"; // Very Light Red for 0 cases
+    if (d === 0) return "#CCCCCC"; // Very Light Red for 0 cases
     if (d > 0 && d <= 100) return "#FF6969"; // Light Red
     if (d > 100 && d <= 500) return "#FF3333"; // Moderate Red
     if (d > 500 && d <= 1000) return "#CC0000"; // Medium Red

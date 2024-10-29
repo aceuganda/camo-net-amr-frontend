@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link"; // Import Link for navigation
 
-const ResistanceLineChart = dynamic(() => import("./resistanceChart"), { ssr: false });
+// const ResistanceLineChart = dynamic(() => import("./resistanceChart"), { ssr: false });
 const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), { ssr: false });
 const OrganismResistanceByAge = dynamic(() => import("./resistanceByAgeAndOrganisms"), { ssr: false });
 const ResistanceLinesByGender = dynamic(() => import("./resistanceByGenderChart"), { ssr: false });
@@ -31,7 +31,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="text-center text-white max-w-4xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              Uganda AMR Data portal
+              CAMO-NET Uganda AMR data portal
             </h1>
             <p className="text-xl mb-4">
               A dedicated data portal for the Uganda hub, facilitating access to
@@ -53,14 +53,10 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-[17px] font-semibold text-[#003366] mb-4">
-              About CAMO-Net Uganda
+              About The Data Portal
             </h2>
             <p className="text-gray-700 text-[12px] mb-4">
-              The Infectious Diseases Institute (IDI) at Makerere University
-              serves as the center for the CAMO-Net Uganda Hub. Our mission is
-              to complement and enhance the existing ecosystem of global
-              programmes designed to alleviate the global burden of
-              antimicrobial resistance (AMR) and poorly treated infections.
+            The Data Portal connects to the central antimicrobial resistance (ARM) related Data Warehouse, serving as a user-friendly interface for accessing the data. Users can request access to specific datasets, and the portal also provides visualizations of key trends derived from the data stored in the warehouse, facilitating informed decision-making and research.
             </p>
             <Image
               src="/hubgroup.webp"
@@ -89,17 +85,17 @@ export default function HomePage() {
             <div className="space-y-8">
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
-                  Regional Distribution of AMR
+                  Over All resistance in 9 Regional Referral Hospitals
                 </h3>
                 <ResistanceChoropleth />
               </div>
               
-              <div className="bg-gray-50 p-6 rounded-lg">
+              {/* <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
                   Total Resistance cases
                 </h3>
                 <ResistanceLineChart />
-              </div>
+              </div> */}
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
                   Resistance Cases By Gender
@@ -108,16 +104,17 @@ export default function HomePage() {
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
-                  Percentage resistance of organisms as per antibiotics vs age
-                </h3>
-                <OrganismResistanceByAge />
-              </div>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
                   Percentage resistance of organisms as per antibiotics vs time
                 </h3>
                 <OrganismResistanceByTime />
               </div>
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
+                  Percentage resistance of organisms as per antibiotics vs age
+                </h3>
+                <OrganismResistanceByAge />
+              </div>
+              
             </div>
           </motion.div>
 
@@ -129,20 +126,12 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-2xl text-[17px] font-semibold text-[#003366] mb-4">
-              Key Research Themes
+              About The Data
             </h2>
-            <ul className="list-disc text-[12px] list-inside mb-6">
-              <li>Technology and Innovation</li>
-              <li>Context, Culture, and Behaviours</li>
-              <li>Medicines Management</li>
-            </ul>
-            <h2 className="text-2xl text-[17px] font-semibold text-[#003366] mb-4">
-              Capacity Building
-            </h2>
+            
             <p className="text-gray-700 text-[12px] mb-4">
-              Our capacity-building initiatives aim to enhance the skills and
-              knowledge of health workers, researchers, and policymakers through
-              tailored training programs, workshops, and mentorship.
+            Data about antimicrobial resistance (AMR), use and Economic burden data was collected from 9 regional referral hospitals (RRH) in Uganda by the Infectious Disease Institute namely: 
+            Jinja Regional Referral Hospital (RRH), Gulu (RRH), Arua RRH, Lira RRH, Soroti RRH, Mbale RRH, Masaka RRH, Mbarara RRH and Kabale RRH. 
             </p>
             <Image
               src="/capacity_build.webp"
@@ -152,9 +141,9 @@ export default function HomePage() {
               className="rounded-lg mb-4"
             />
             
-            <Link href="https://camonet.org/uganda/">
+            <Link href="/datasets/access">
               <button className="w-full py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-lightblue-600 transition duration-200">
-                Learn more
+                Request Access
               </button>
             </Link>
           </motion.div>
@@ -168,7 +157,7 @@ export default function HomePage() {
             A Wellcome Trust supported initiative to combat Antimicrobial Resistance
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Infectious Diseases Institute, McKinnell Knowledge Centre, Makerere University, P.O Box 22418, Kampala, Uganda
+            Infectious Diseases Institute, P.O Box 22418, Kampala, Uganda
           </p>
         </div>
       </footer>

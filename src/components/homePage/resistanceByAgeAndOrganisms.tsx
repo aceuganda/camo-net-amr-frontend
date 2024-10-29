@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import Chart from "chart.js/auto";
-import { CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
-import { Line } from 'react-chartjs-2';
+import { CategoryScale, LinearScale, BarElement, Tooltip, Legend } from "chart.js";
+import { Bar } from 'react-chartjs-2';
 import dynamic from "next/dynamic";
 import { useOrganismResistanceByAge } from "@/lib/hooks/useAMRTrends";
 import { organisms } from "./constants";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
+Chart.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const COLORS = [
     'rgba(255, 99, 132, 1)',  // Red
@@ -21,7 +21,7 @@ const COLORS = [
     'rgba(199, 99, 255, 1)'   // Violet
 ];
 
-const ResistanceLineChart: React.FC = () => {
+const ResistanceBarChart: React.FC = () => {
     const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
@@ -30,18 +30,19 @@ const ResistanceLineChart: React.FC = () => {
 
     useEffect(() => {
         if (isSuccess && data) {
-            const labels = generateDateLabels(data.data.data);  // Generate dates on X-axis
+            const labels = generateDateLabels(data.data.data);  // Generate age groups for X-axis
             const datasets = createDatasets(data.data.data);   // Create datasets for each antibiotic
 
             setChartData({ labels, datasets });
         }
     }, [isSuccess, data]);
-    const handleOrganismChange = (e:any) => {
+
+    const handleOrganismChange = (e: any) => {
         setSelectedOrganism(e.target.value);
     };
 
     const handleFilterChange = () => {
-        refetch()
+        refetch();
     };
 
     const generateDateLabels = (dataArray: any) => {
@@ -57,7 +58,7 @@ const ResistanceLineChart: React.FC = () => {
             "65-80": 65,
             ">=80": 80 
         };
-    
+
         const uniqueDates = new Set<string>();   
         dataArray.forEach((antibiotic: any) =>
             antibiotic.data.forEach((entry: any) => {
@@ -74,18 +75,12 @@ const ResistanceLineChart: React.FC = () => {
         return dataArray?.map((antibiotic: any, index: number) => ({
             label: antibiotic.antibiotic,
             data: generateDataPoints(antibiotic.data),
-            borderColor: COLORS[index % COLORS.length], // Cycle through colors
-            backgroundColor: `${COLORS[index % COLORS.length].replace('1)', '0.2)')}`, // Lighter fill
-            fill: false,
-            tension: 0.1,  // Smooth line
+            backgroundColor: COLORS[index % COLORS.length], // Bar color
         }));
     };
 
     const generateDataPoints = (entries: any) => {
-        return entries.map((entry: { age_group: string, percentage_resistance: number }) => ({
-            x: entry.age_group,
-            y: entry.percentage_resistance,
-        }));
+        return entries.map((entry: { age_group: string, percentage_resistance: number }) => entry.percentage_resistance);
     };
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'start' | 'end') => {
@@ -108,22 +103,22 @@ const ResistanceLineChart: React.FC = () => {
         <div>
             <div className="mb-4 flex flex-row gap-5">
                 <div className='flex flex-col'>
-                <label className="mr-2">Start Date</label>
-                <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => handleDateChange(e, 'start')}
-                    className="border border-gray-300 rounded p-1 max-w-[15rem]"
-                />
+                    <label className="mr-2">Start Date</label>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => handleDateChange(e, 'start')}
+                        className="border border-gray-300 rounded p-1 max-w-[15rem]"
+                    />
                 </div>
                 <div className='flex flex-col'>
-                <label className="ml-4 mr-2">End Date:</label>
-                <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => handleDateChange(e, 'end')}
-                    className="border border-gray-300 rounded p-1 max-w-[15rem]"
-                />
+                    <label className="ml-4 mr-2">End Date:</label>
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => handleDateChange(e, 'end')}
+                        className="border border-gray-300 rounded p-1 max-w-[15rem]"
+                    />
                 </div>
                 <div className='flex flex-col'>
                     <label className="ml-4 mr-2">Organism</label>
@@ -132,7 +127,7 @@ const ResistanceLineChart: React.FC = () => {
                         onChange={handleOrganismChange}
                         className="border border-gray-300 rounded p-1 max-w-[15rem]"
                     >
-                         {organisms.map((organism) => (
+                        {organisms.map((organism) => (
                             <option key={organism.value} value={organism.value}>
                                 {organism.name}
                             </option>
@@ -140,10 +135,10 @@ const ResistanceLineChart: React.FC = () => {
                     </select>
                 </div>
             </div>
-            {data?.data?.data.length == 0  && <div className="text-red-500 text-center">No Data Available</div>}
-            <Line data={chartData} />
+            {data?.data?.data.length === 0 && <div className="text-red-500 text-center">No Data Available</div>}
+            <Bar data={chartData} />
         </div>
     );
 };
 
-export default ResistanceLineChart;
+export default ResistanceBarChart;
