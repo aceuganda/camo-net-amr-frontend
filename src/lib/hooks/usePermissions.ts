@@ -19,7 +19,9 @@ import api from './../axios';
     return response.data; 
   };
 
-  export const denyAccess = async (id: string) => {
-    const response = await api.patch(`/permissions/${id}/deny`);
+  export const denyAccess = async (data: any) => {
+    const permId  = data.id
+    delete data['id']
+    const response = await api.patch(`/permissions/${permId}/deny`,data);
     return response.data; 
   };

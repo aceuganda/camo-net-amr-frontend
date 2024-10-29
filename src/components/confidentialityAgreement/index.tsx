@@ -45,7 +45,7 @@ const ConfidentialityAgreement = ({handleAgreedCallBack}:any) => {
         </p>
 
         <p className="mb-4">
-          1. The person agreeing to this Agreement shall use Information only for cleaning and organizing data for data science, shall hold Information in confidence using the same degree of care as they normally exercise to protect their own proprietary information, but not less than reasonable care, taking into account the nature of the Information, and shall grant access to Information only to those who need to know the progress, but only to the extent necessary to carry out the business purpose. The person shall comply with the provisions of this Agreement, shall reproduce Information only to the extent essential to fulfilling the Purpose, and shall prevent disclosure of Information to third parties.
+          1. The person agreeing to this Agreement shall use Information only for the reason stated in the description, shall hold Information in confidence using the same degree of care as they normally exercise to protect their own proprietary information, but not less than reasonable care, taking into account the nature of the Information, and shall grant access to Information only to those who need to know the progress, but only to the extent necessary to carry out the business purpose. The person shall comply with the provisions of this Agreement, shall reproduce Information only to the extent essential to fulfilling the Purpose, and shall prevent disclosure of Information to third parties.
         </p>
         
         <p className="mb-4">

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useGetDataSet } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import { useMutation } from "@tanstack/react-query";
-import { requestAccess, downloadData } from "@/lib/hooks/useDataSets";
+import { requestAccess, downloadData, ReRequestAccess } from "@/lib/hooks/useDataSets";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
@@ -42,7 +42,7 @@ interface DataSet {
   additional_notes: string;
   license: string;
   in_warehouse: boolean;
-  created_at: string;
+  created_at: Date;
   participant_count: string;
   acronym: string;
   amr_category: string;
@@ -54,8 +54,10 @@ interface UserPermission {
   data_set_id: string;
   resource: string;
   status: string;
-  created_at: string;
+  created_at: Date;
+  re_request_count: number;
   downloads_count: number;
+  last_update: Date;
 }
 
 interface Response {
@@ -65,7 +67,7 @@ interface Response {
 }
 
 export default function DatasetDetails({ id }: any) {
-  const { data, isLoading, error } = useGetDataSet(id);
+  const { data, isLoading, error, refetch } = useGetDataSet(id);
   const dataset: Response = data?.data || {};
   const userPermission = dataset.user_permission;
   const router = useRouter();
@@ -74,12 +76,12 @@ export default function DatasetDetails({ id }: any) {
   const [isAgreedToConfidentiality, setIsAgreedToConfidentiality] =
     useState(false);
   const [formValues, setFormValues] = useState({
-    purpose: "",
+    project_description: "",
     institution: "",
     title: "",
     agreed_to_privacy: false,
-    idi_staff: false,
-    staff_number: "",
+    project_title: "",
+    otherCategory: "",
     category: "",
   });
 
@@ -123,6 +125,15 @@ export default function DatasetDetails({ id }: any) {
     mutationFn: downloadData,
   });
   const {
+    data: reRequestedData,
+    isSuccess: reRequestSuccess,
+    error: reRequestError,
+    isPending: reRequestPending,
+    mutate: reRequestAccess,
+  } = useMutation({
+    mutationFn: ReRequestAccess,
+  });
+  const {
     data: requestData,
     isSuccess: isRequestSuccess,
     error: requestError,
@@ -141,6 +152,39 @@ export default function DatasetDetails({ id }: any) {
       );
     }
   };
+  function validRe_request(lastUpdate:Date|null) {
+    if (!lastUpdate){
+      return false
+    }
+    const today = new Date();
+    const lastUpdateDate = new Date(lastUpdate);
+    const differenceInMilliseconds = today.getTime() - lastUpdateDate.getTime();
+    // Convert the difference to days
+    const differenceInDays = Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24));
+    // Return true if the difference is less than 30 days
+    
+    return differenceInDays < 30;
+  }
+  function daysCalculator(lastUpdate:Date|null) {
+    if (!lastUpdate){
+      return 'Not defined'
+    }
+    const today = new Date();
+    const lastUpdateDate = new Date(lastUpdate);
+    const differenceInMilliseconds = today.getTime() - lastUpdateDate.getTime();
+    // Convert the difference to days
+    const differenceInDays = Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24));
+    // Return true if the difference is less than 30 days
+    const difference = (30 - differenceInDays)
+    return difference < 0 ? 0 : difference;
+  }
+
+  const handleReRequest = async () => {
+    if(userPermission && !validRe_request(userPermission.last_update) ){
+      await reRequestAccess(userPermission.id);
+    }
+      
+  };
   const handleRequest = async (e: any) => {
     e.preventDefault();
     setIsModalOpen(true);
@@ -148,16 +192,31 @@ export default function DatasetDetails({ id }: any) {
 
   const handleModalSubmit = () => {
     const {
-      purpose,
+      project_description,
       institution,
       title,
       agreed_to_privacy,
-      idi_staff,
-      staff_number,
+      project_title,
       category,
+      otherCategory,
     } = formValues;
-    if (purpose && institution && title && agreed_to_privacy && category) {
-      requestFn({ ...formValues, data_set_id: dataset.data_set.id });
+    if (
+      project_description &&
+      project_title &&
+      institution &&
+      title &&
+      agreed_to_privacy &&
+      category
+    ) {
+      const data = {
+        project_description,
+        institution,
+        title,
+        agreed_to_privacy,
+        project_title,
+        category: category === "other" ? otherCategory : category,
+      };
+      requestFn({ ...data, data_set_id: dataset.data_set.id });
       setIsModalOpen(false);
     } else {
       toast.error("Please fill in all fields before submitting.");
@@ -193,6 +252,13 @@ export default function DatasetDetails({ id }: any) {
     }
   }, [requestData, requestError, isRequestSuccess]);
 
+  useEffect(() => {
+    if (reRequestSuccess) {
+      toast.success('Request sent successfully')
+      refetch()
+    }
+  }, [reRequestSuccess]);
+
   const handleInputChange = (e: any) => {
     const { name, value, type, checked } = e.target;
     setFormValues({
@@ -200,6 +266,7 @@ export default function DatasetDetails({ id }: any) {
       [name]: type === "checkbox" ? checked : value,
     });
   };
+ 
 
   return (
     <main className="min-h-screen flex-col w-full flex items-start bg-gray-50">
@@ -219,6 +286,37 @@ export default function DatasetDetails({ id }: any) {
         <div className="min-h-screen w-[100%] ">
           <div className=" mx-auto px-4 w-[95%] sm:px-6 lg:px-8 py-8">
             {/* Breadcrumb and Actions */}
+            {permissionStatus === "requested" && (
+            <div className="flex flex-col ">
+              <div className="bg-yellow-100  p-[5px] text-gray-900 mb-[2rem]">
+                Your request should be responded to with in the next 30 day. If
+                not you will be eligible to re-request.
+               {userPermission && `You have ${userPermission.last_update ? daysCalculator(userPermission.last_update): daysCalculator(userPermission.created_at) } days left to re-request if not responded to`}
+              </div>
+              {(userPermission && !validRe_request(userPermission.last_update ? userPermission.last_update: userPermission.created_at)) && <button
+                    onClick={handleReRequest}
+                    className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center w-[20rem]"
+                  >
+                      <>
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                          />
+                        </svg>
+                        { reRequestPending?  <DotsLoader />:'Re-request Access'}
+                      </>
+                  </button>}
+               {reRequestError && <div className="text-red-600 text-[11px]">Failed to send a new request, please be sure you are in a valid date range before you try again.</div>}
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
               <div className="flex items-center space-x-2 text-sm mb-4 sm:mb-0">
                 <Link
@@ -249,7 +347,7 @@ export default function DatasetDetails({ id }: any) {
                     }`}
                   >
                     {downloadPending ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <DotsLoader/>
                     ) : (
                       <>
                         <svg
@@ -277,7 +375,7 @@ export default function DatasetDetails({ id }: any) {
                     className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center min-w-[10rem]"
                   >
                     {requestPending ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                       <DotsLoader />
                     ) : (
                       <>
                         <svg
@@ -477,7 +575,9 @@ export default function DatasetDetails({ id }: any) {
                               Main Project Name (if any)
                             </p>
                             <p className="mt-1 text-gray-900">
-                              {dataset.data_set.main_project_name ? dataset.data_set.main_project_name: 'N/A'}
+                              {dataset.data_set.main_project_name
+                                ? dataset.data_set.main_project_name
+                                : "N/A"}
                             </p>
                           </div>
                         </div>
@@ -524,18 +624,27 @@ export default function DatasetDetails({ id }: any) {
                         {dataset.data_set.country_protocol_id}
                       </p>
                     </div>
-                    {/* <div>
+                    <div>
                       <p className="text-sm font-medium text-gray-500">
-                        Version
+                        Number downloads
                       </p>
                       <p className="mt-1 text-gray-900">
-                        {dataset.data_set.version}
+                        {userPermission?.downloads_count}
                       </p>
-                    </div> */}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Number Re-requests sent
+                      </p>
+                      <p className="mt-1 text-gray-900">
+                      {userPermission?.re_request_count}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+           
           </div>
         </div>
       )}
@@ -575,11 +684,11 @@ export default function DatasetDetails({ id }: any) {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700">Purpose:</label>
+                <label className="block text-gray-700">Project title:</label>
                 <input
                   type="text"
-                  name="purpose"
-                  value={formValues.purpose}
+                  name="project_title"
+                  value={formValues.project_title}
                   onChange={handleInputChange}
                   className="w-full p-3 text-lg border rounded"
                   placeholder="Enter purpose"
@@ -587,32 +696,17 @@ export default function DatasetDetails({ id }: any) {
               </div>
               <div className="mb-4">
                 <label className="block text-gray-700">
-                  Are you an IDI staff member?
+                  Project Description/Abstract:
                 </label>
-                <input
-                  type="checkbox"
-                  name="idi_staff"
-                  checked={formValues.idi_staff}
+                <textarea
+                  name="project_description"
+                  value={formValues.project_description}
                   onChange={handleInputChange}
-                  className="mr-2 leading-tight"
+                  className="w-full p-3 text-lg border rounded h-30"
+                  placeholder="Enter purpose"
                 />
-                <span className="text-sm text-gray-600">
-                  Check if you are an IDI staff member.
-                </span>
               </div>
-              {formValues.idi_staff && (
-                <div className="mb-4">
-                  <label className="block text-gray-700">Staff Number:</label>
-                  <input
-                    type="text"
-                    name="staff_number"
-                    value={formValues.staff_number}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    placeholder="Enter your staff number"
-                  />
-                </div>
-              )}
+
               <div className="mb-4">
                 <label className="block text-gray-700">Category:</label>
                 <select
@@ -632,6 +726,21 @@ export default function DatasetDetails({ id }: any) {
                 <span className="text-sm text-gray-600">
                   Please select the category that best describes your role.
                 </span>
+                {formValues.category === "other" && (
+                  <div className="mt-2">
+                    <label className="block text-gray-700">
+                      Please specify:
+                    </label>
+                    <input
+                      type="text"
+                      name="otherCategory"
+                      value={formValues.otherCategory}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter your category"
+                    />
+                  </div>
+                )}
               </div>
             </form>
 

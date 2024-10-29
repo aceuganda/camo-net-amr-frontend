@@ -17,3 +17,9 @@ export const requestAccess = async (data: any) => {
   const response = await api.post("/permissions/request", data);
   return response.data;
 };
+
+
+export const ReRequestAccess = async (permission_id: string) => {
+  const response = await api.patch(`/permissions/${permission_id}/re_request`);
+  return response.data;
+};
