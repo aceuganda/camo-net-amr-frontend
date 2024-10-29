@@ -6,20 +6,21 @@ type SidebarMenuProps = {
   setIsMenuOpen: (open: boolean) => void;
   selectedCategories: string[];
   setSelectedCategories: any;
-  selectedTypes: string[];
-  setSelectedTypes: any;
+  selectedStatuses: string[];
+  setSelectedStatuses: any;
 };
 
 const categories = [
-  { name: "Economic" },
-  { name: "Demographic" },
-  { name: "Microbiology" },
-  { name: "Pharmacy" },
+  { name: "Economic burden" },
+  { name: "Use" },
+  { name: "Consumption" },
+  { name: "Resistance" },
 ];
 
-const types = [
-  { name: "Primary"},
-  { name: "Secondary" },
+const status = [
+  { name: "Active"},
+  { name: "Closed" },
+  { name: "On Hold" },
 ];
 
 export default function SidebarMenu({
@@ -27,11 +28,11 @@ export default function SidebarMenu({
   setIsMenuOpen,
   selectedCategories,
   setSelectedCategories,
-  selectedTypes,
-  setSelectedTypes,
+  selectedStatuses,
+  setSelectedStatuses,
 }: SidebarMenuProps) {
   const [isCategoryOpen, setIsCategoryOpen] = useState(true);
-  const [isTypeOpen, setIsTypeOpen] = useState(true);
+  const [isStatusOpen, setIsStatusOpen] = useState(true);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories((prev:any) =>
@@ -42,7 +43,7 @@ export default function SidebarMenu({
   };
 
   const handleTypeChange = (type: string) => {
-    setSelectedTypes((prev:any) =>
+    setSelectedStatuses((prev:any) =>
       prev.includes(type)
         ? prev.filter((t:any) => t !== type)
         : [...prev, type]
@@ -96,26 +97,26 @@ export default function SidebarMenu({
           <div className="mb-4">
             <h3
               className="font-[600] text-[15px] mb-[1.5rem] flex items-center text-[#24408E] cursor-pointer"
-              onClick={() => setIsTypeOpen(!isTypeOpen)}
+              onClick={() => setIsStatusOpen(!isStatusOpen)}
             >
-              {isTypeOpen ? (
+              {isStatusOpen ? (
                 <ChevronDownIcon className="w-6 h-6 text-[#00B9F1] mr-2" />
               ) : (
                 <ChevronRightIcon className="w-6 h-6 text-[#00B9F1] mr-2" />
               )}
-              TYPE
+              STATUS
             </h3>
-            {isTypeOpen && (
+            {isStatusOpen && (
               <ul className="pl-[0.2rem] text-[12px]">
-                {types.map((type, index) => (
+                {status.map((status, index) => (
                   <li key={index} className="flex py-1 items-center">
                     <input
                       type="checkbox"
-                      checked={selectedTypes.includes(type.name)}
-                      onChange={() => handleTypeChange(type.name)}
+                      checked={selectedStatuses.includes(status.name)}
+                      onChange={() => handleTypeChange(status.name)}
                       className="mr-2"
                     />
-                    <span>{type.name}</span>
+                    <span>{status.name}</span>
                   </li>
                 ))}
               </ul>

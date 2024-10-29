@@ -21,18 +21,11 @@ interface DataSet {
   db_name: string;
   size: string;
   version: string;
-  data_use_permissions: string;
-  data_storage_medium: string;
   data_format: string;
   data_capture_method: string;
   description: string | null;
   countries: string;
   category: string;
-  data_types_collected: string;
-  data_types_details: string;
-  data_collection_methods: string;
-  data_dictionary_available: boolean;
-  data_access_method: string;
   access_restrictions: string;
   start_date: string;
   end_date: string;
@@ -42,27 +35,17 @@ interface DataSet {
   project_status: string;
   protocol_id: string;
   country_protocol_id: string;
-  grant_code: string;
   thematic_area: string;
   main_project_name: string;
-  main_data_type: string;
-  principal_investigator: string;
-  pi_contact: string;
-  pi_email: string;
-  project_manager: string;
-  pm_contact: string;
-  pm_email: string;
-  coordinator_name: string;
-  coordinator_contact: string;
-  coordinator_email: string;
-  data_owner: string;
+  type: string;
   citation_info: string;
   additional_notes: string;
   license: string;
   in_warehouse: boolean;
   created_at: string;
-  on_hold_reason: string;
   participant_count: string;
+  acronym: string;
+  amr_category: string;
 }
 
 interface UserPermission {
@@ -88,15 +71,16 @@ export default function DatasetDetails({ id }: any) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
-  const [isAgreedToConfidentiality, setIsAgreedToConfidentiality] = useState(false);
+  const [isAgreedToConfidentiality, setIsAgreedToConfidentiality] =
+    useState(false);
   const [formValues, setFormValues] = useState({
     purpose: "",
     institution: "",
     title: "",
     agreed_to_privacy: false,
-    idi_staff: false, 
-    staff_number: "", 
-    category: "", 
+    idi_staff: false,
+    staff_number: "",
+    category: "",
   });
 
   const canDownload =
@@ -106,6 +90,28 @@ export default function DatasetDetails({ id }: any) {
   const showDownloadButton = dataset?.data_set?.in_warehouse;
 
   const permissionStatus = userPermission?.status || "none";
+  const getStatusBadge = (status: string) => {
+    const baseClasses = "py-2 px-4 rounded-full text-sm font-medium";
+    switch (status) {
+      case "approved":
+        return `${baseClasses} bg-green-100 text-green-800`;
+      case "denied":
+        return `${baseClasses} bg-red-100 text-red-800`;
+      case "requested":
+        return `${baseClasses} bg-yellow-100 text-yellow-800`;
+      default:
+        return `${baseClasses} bg-gray-100 text-gray-800`;
+    }
+  };
+
+  const formatDate = (date: any) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   const {
     data: downloadedData,
@@ -127,11 +133,12 @@ export default function DatasetDetails({ id }: any) {
   });
 
   const handleDwn = async () => {
-    if (isAgreedToConfidentiality){
+    if (isAgreedToConfidentiality) {
       await downloadFn(dataset.data_set.db_name);
-      
-    }else{
-      toast.error("Please agree to the confidentiality agreement before downloading the data");
+    } else {
+      toast.error(
+        "Please agree to the confidentiality agreement before downloading the data"
+      );
     }
   };
   const handleRequest = async (e: any) => {
@@ -140,12 +147,20 @@ export default function DatasetDetails({ id }: any) {
   };
 
   const handleModalSubmit = () => {
-    const { purpose, institution, title, agreed_to_privacy, idi_staff, staff_number, category } = formValues;
+    const {
+      purpose,
+      institution,
+      title,
+      agreed_to_privacy,
+      idi_staff,
+      staff_number,
+      category,
+    } = formValues;
     if (purpose && institution && title && agreed_to_privacy && category) {
-        requestFn({ ...formValues, data_set_id: dataset.data_set.id });
-        setIsModalOpen(false);
+      requestFn({ ...formValues, data_set_id: dataset.data_set.id });
+      setIsModalOpen(false);
     } else {
-        toast.error("Please fill in all fields before submitting.");
+      toast.error("Please fill in all fields before submitting.");
     }
   };
 
@@ -153,7 +168,7 @@ export default function DatasetDetails({ id }: any) {
     if (downloadedData && isDownloadSuccess) {
       if (downloadedData instanceof Blob) {
         FileSaver.saveAs(downloadedData, "data.csv");
-        setIsAgreementModalOpen(false)
+        setIsAgreementModalOpen(false);
       } else {
         toast.error("Downloaded data is not a valid file");
       }
@@ -187,7 +202,7 @@ export default function DatasetDetails({ id }: any) {
   };
 
   return (
-    <main className="min-h-screen flex-col w-full flex items-start ">
+    <main className="min-h-screen flex-col w-full flex items-start bg-gray-50">
       {isLoading && (
         <div className="text-center  mt-[1rem] w-full flex items-start h-[4rem] justify-center text-gray-500">
           <DotsLoader />
@@ -201,47 +216,91 @@ export default function DatasetDetails({ id }: any) {
       )}
 
       {data && !error && !isLoading && (
-        <div className="flex mx-auto flex-col sm:flex-row  gap-[1rem] items-start pt-[2rem] ">
-          <div className="flex flex-col w-full max-w-6xl px-4 lg:px-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-gray-600">
-                <span className="text-[#00B9F1]">
-                  <Link href={"/datasets/access"}>Datasets / </Link>
-                </span>
-                <span>{dataset.data_set.name}</span>
+        <div className="min-h-screen w-[100%] ">
+          <div className=" mx-auto px-4 w-[95%] sm:px-6 lg:px-8 py-8">
+            {/* Breadcrumb and Actions */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+              <div className="flex items-center space-x-2 text-sm mb-4 sm:mb-0">
+                <Link
+                  href="/datasets/access"
+                  className="text-[#00B9F1] hover:text-[#0090bd]"
+                >
+                  Datasets
+                </Link>
+                <span className="text-gray-400">/</span>
+                <span className="text-gray-600">{dataset.data_set.name}</span>
               </div>
-              <div className="flex space-x-4">
+
+              <div className="flex flex-wrap gap-3">
+                {!showDownloadButton && (
+                  <div className="text-red-700 text-[14px]">
+                    {" "}
+                    This dataset is not available for download yet{" "}
+                  </div>
+                )}
                 {showDownloadButton && (
                   <button
-                    onClick={()=>{setIsAgreementModalOpen(true)}}
-                    className={`p-2 sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem] rounded ${
-                      canDownload
-                        ? "bg-[#00B9F1] text-white"
-                        : "bg-gray-400 text-white cursor-not-allowed"
-                    }`}
+                    onClick={() => setIsAgreementModalOpen(true)}
                     disabled={!canDownload}
+                    className={`px-6 py-2 rounded-lg transition-all duration-200 flex items-center justify-center min-w-[10rem] ${
+                      canDownload
+                        ? "bg-[#00B9F1] text-white hover:bg-[#0090bd]"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
                   >
-                    {downloadPending ? <DotsLoader /> : "Download"}
+                    {downloadPending ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        Download
+                      </>
+                    )}
                   </button>
                 )}
+
                 {canRequestAccess && dataset.data_set.in_warehouse && (
                   <button
                     onClick={handleRequest}
-                    className="p-2   sm:min-w-[10rem] flex items-center justify-center min-h-[2.4rem]  bg-[#00b9f1] text-white rounded hover:bg-[#7ad4ef]"
+                    className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center min-w-[10rem]"
                   >
-                    {requestPending ? <DotsLoader /> : "Request Access"}
+                    {requestPending ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                          />
+                        </svg>
+                        Request Access
+                      </>
+                    )}
                   </button>
                 )}
+
                 {!canRequestAccess && (
-                  <span
-                    className={`py-2 px-4 rounded ${
-                      permissionStatus === "approved"
-                        ? "text-green-500"
-                        : permissionStatus === "denied"
-                        ? "text-red-500"
-                        : "text-yellow-500"
-                    }`}
-                  >
+                  <span className={getStatusBadge(permissionStatus)}>
                     {permissionStatus === "requested"
                       ? "Access Requested"
                       : permissionStatus === "denied"
@@ -251,95 +310,236 @@ export default function DatasetDetails({ id }: any) {
                 )}
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-[#24408E]">
+
+            <h1 className="text-3xl font-bold text-[#24408E] mb-8">
               {dataset.data_set.name}
             </h1>
-            <div className="bg-white p-6 mt-[1rem] min-w-[75vw] shadow-box">
-              <h2 className="text-xl font-semibold mb-4">About data</h2>
-              <p className="text-gray-700 mb-4">
-                {dataset.data_set.description}{" "}
-              </p>
-              <p className="text-gray-700 mb-4">{dataset.data_set.title} </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <p>
-                  <strong>Category:</strong> {dataset.data_set.category}
-                </p>
-                <p>
-                  <strong>Size:</strong> {dataset.data_set.size}
-                </p>
-                <p>
-                  <strong>Database Name:</strong> {dataset.data_set.db_name}
-                </p>
-                <p>
-                  <strong>Countries:</strong> {dataset.data_set.countries}
-                </p>
-                <p>
-                  <strong>Type:</strong> {dataset.data_set.data_types_collected}
-                </p>
-                <p>
-                  <strong>Project Status:</strong>{" "}
-                  {dataset.data_set.project_status}
-                </p>
-                <p>
-                  <strong>Title:</strong> {dataset.data_set.title}
-                </p>
-                <p>
-                  <strong>Thematic Area:</strong>{" "}
-                  {dataset.data_set.thematic_area}
-                </p>
-                <p>
-                  <strong>Study Design:</strong> {dataset.data_set.study_design}
-                </p>
-                <p>
-                  <strong>Data Format:</strong> {dataset.data_set.data_format}
-                </p>
-                <p>
-                  <strong>Study Population:</strong>{" "}
-                  {dataset.data_set.study_population}
-                </p>
-                <p>
-                  <strong>In Warehouse:</strong>{" "}
-                  {dataset.data_set.in_warehouse ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Start Date:</strong> {dataset.data_set.start_date}
-                </p>
-                <p>
-                  <strong>End Date:</strong> {dataset.data_set.end_date}
-                </p>
-                <p>
-                  <strong>PI Email:</strong> {dataset.data_set.pi_email}
-                </p>
-                <p>
-                  <strong>PI Contact:</strong> {dataset.data_set.pi_contact}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white p-6 border-t border-b border-[#24408E] min-w-[17rem] mt-[7rem]">
-            <h2 className="text-xl font-semibold mb-4">Summary</h2>
-            <div className="text-gray-700">
-              <p>
-                <strong>Version:</strong> {dataset.data_set.version}
-              </p>
 
-              <p>
-                <strong>License:</strong> {dataset.data_set.license}
-              </p>
-              <p>
-                <strong>Protocol ID:</strong> {dataset.data_set.protocol_id}
-              </p>
-              <p>
-                <strong>Citations:</strong> {dataset.data_set.citation_info}
-              </p>
-              <p>
-                <strong>Country Protocol ID</strong>{" "}
-                {dataset.data_set.country_protocol_id}
-              </p>
+            <div className="flex flex-col  lg:flex-row gap-8">
+              {/* Main Content */}
+              <div className="flex-grow min-w-[80%]">
+                <div className="bg-white rounded-xl shadow-sm mb-8">
+                  <div className="p-6">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                      About Dataset
+                    </h2>
+                    <div className="prose max-w-none">
+                      <p className="text-gray-700 mb-4">
+                        {dataset.data_set.description}
+                      </p>
+                      <p className="text-gray-700 mb-6">
+                        {dataset.data_set.title}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Category
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.category}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Thematic area
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.thematic_area}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              AMR Category
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.amr_category}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Status
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.project_status}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Size
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.size}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Participants
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.participant_count
+                                ? dataset.data_set.participant_count
+                                : "UNK"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Study Design
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.study_design}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Countries
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.countries}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Timeline
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {formatDate(dataset.data_set.start_date)} -{" "}
+                              {formatDate(dataset.data_set.end_date)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Export Data Format
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.data_format}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Study Population
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.study_population}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Data capture method
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.data_capture_method}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Access restrictions
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.access_restrictions}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">
+                              Main Project Name (if any)
+                            </p>
+                            <p className="mt-1 text-gray-900">
+                              {dataset.data_set.main_project_name ? dataset.data_set.main_project_name: 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full lg:w-80">
+                <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                    Credibility
+                  </h2>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        License
+                      </p>
+                      <p className="mt-1 text-gray-900">
+                        {dataset.data_set.license}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Protocol ID
+                      </p>
+                      <p className="mt-1 text-gray-900">
+                        {dataset.data_set.protocol_id}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Citations
+                      </p>
+                      <p className="mt-1 text-gray-900">
+                        {dataset.data_set.citation_info}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Country Protocol ID
+                      </p>
+                      <p className="mt-1 text-gray-900">
+                        {dataset.data_set.country_protocol_id}
+                      </p>
+                    </div>
+                    {/* <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Version
+                      </p>
+                      <p className="mt-1 text-gray-900">
+                        {dataset.data_set.version}
+                      </p>
+                    </div> */}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
+
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -347,92 +547,103 @@ export default function DatasetDetails({ id }: any) {
         cancelText="Cancel"
         submitText={requestPending ? <DotsLoader /> : "Submit"}
       >
-        <div>   
-          <div className="max-h-[50vh] overflow-y-auto">  
-          <form>
+        <div>
+          <div className="max-h-[50vh] overflow-y-auto">
+            <form>
+              <div className="mb-4">
+                <label className="block text-gray-700">
+                  Institution / Organization:
+                </label>
+                <input
+                  type="text"
+                  name="institution"
+                  value={formValues.institution}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter institution"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Title/Position:</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formValues.title}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter title"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">Purpose:</label>
+                <input
+                  type="text"
+                  name="purpose"
+                  value={formValues.purpose}
+                  onChange={handleInputChange}
+                  className="w-full p-3 text-lg border rounded"
+                  placeholder="Enter purpose"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700">
+                  Are you an IDI staff member?
+                </label>
+                <input
+                  type="checkbox"
+                  name="idi_staff"
+                  checked={formValues.idi_staff}
+                  onChange={handleInputChange}
+                  className="mr-2 leading-tight"
+                />
+                <span className="text-sm text-gray-600">
+                  Check if you are an IDI staff member.
+                </span>
+              </div>
+              {formValues.idi_staff && (
                 <div className="mb-4">
-                  <label className="block text-gray-700">Institution / Organization:</label>
+                  <label className="block text-gray-700">Staff Number:</label>
                   <input
                     type="text"
-                    name="institution"
-                    value={formValues.institution}
+                    name="staff_number"
+                    value={formValues.staff_number}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
-                    placeholder="Enter institution"
+                    placeholder="Enter your staff number"
                   />
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">Title/Position:</label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formValues.title}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    placeholder="Enter title"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">Purpose:</label>
-                  <input
-                    type="text"
-                    name="purpose"
-                    value={formValues.purpose}
-                    onChange={handleInputChange}
-                    className="w-full p-3 text-lg border rounded"
-                    placeholder="Enter purpose"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700">Are you an IDI staff member?</label>
-                  <input
-                    type="checkbox"
-                    name="idi_staff"
-                    checked={formValues.idi_staff}
-                    onChange={handleInputChange}
-                    className="mr-2 leading-tight"
-                  />
-                  <span className="text-sm text-gray-600">Check if you are an IDI staff member.</span>
-                </div>
-                {formValues.idi_staff && (
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Staff Number:</label>
-                    <input
-                      type="text"
-                      name="staff_number"
-                      value={formValues.staff_number}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded"
-                      placeholder="Enter your staff number"
-                    />
-                  </div>
-                )}
-                <div className="mb-4">
-                  <label className="block text-gray-700">Category:</label>
-                  <select
-                    name="category"
-                    value={formValues.category}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                  >
-                    <option value="" disabled>Select your category</option>
-                    <option value="student">Student</option>
-                    <option value="researcher">Researcher</option>
-                    <option value="developer">Data scientist</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <span className="text-sm text-gray-600">Please select the category that best describes your role.</span>
-                </div>
-              </form>
-              
-              <ConfidentialityAgreement
-                handleAgreedCallBack={(agreed: boolean) => {
-                  if (agreed) setFormValues({
+              )}
+              <div className="mb-4">
+                <label className="block text-gray-700">Category:</label>
+                <select
+                  name="category"
+                  value={formValues.category}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="" disabled>
+                    Select your category
+                  </option>
+                  <option value="student">Student</option>
+                  <option value="researcher">Researcher</option>
+                  <option value="developer">Data scientist</option>
+                  <option value="other">Other</option>
+                </select>
+                <span className="text-sm text-gray-600">
+                  Please select the category that best describes your role.
+                </span>
+              </div>
+            </form>
+
+            <ConfidentialityAgreement
+              handleAgreedCallBack={(agreed: boolean) => {
+                if (agreed)
+                  setFormValues({
                     ...formValues,
                     agreed_to_privacy: true,
                   });
-                }}
-              />
+              }}
+            />
           </div>
         </div>
       </Modal>
@@ -441,11 +652,14 @@ export default function DatasetDetails({ id }: any) {
         onClose={() => setIsAgreementModalOpen(false)}
         onSubmit={handleDwn}
         cancelText="Cancel"
-        submitText={downloadPending ? <DotsLoader/>: "Download"}
+        submitText={downloadPending ? <DotsLoader /> : "Download"}
       >
-       <ConfidentialityAgreement handleAgreedCallBack={(agreed:boolean)=>{if(agreed) setIsAgreedToConfidentiality(true)}}/>
+        <ConfidentialityAgreement
+          handleAgreedCallBack={(agreed: boolean) => {
+            if (agreed) setIsAgreedToConfidentiality(true);
+          }}
+        />
       </Modal>
-
     </main>
   );
 }

@@ -14,17 +14,19 @@ type FetchedDataset = {
   category: string;
   type: string;
   study_design: string;
-  size: number;
+  project_status: string;
+  participant_count: string;
   data_use_permissions: string;
-  access: string,
-  in_warehouse: boolean,
+  in_warehouse: boolean;
+  amr_category: string;
+  access: string;
 };
 
 export default function UserCatalogue() {
   const { searchTerm } = useSearch();
   const [selectedDataset, setSelectedDataset] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const { data, isLoading, error } = useGetUserCatalogue();
   const datasets: FetchedDataset[] = data?.data || [];
@@ -33,8 +35,8 @@ export default function UserCatalogue() {
 
   const filteredDatasets = datasets.filter((dataset) => {
     const matchesSearchTerm = dataset.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(cat => dataset.category.toLowerCase().includes(cat.toLowerCase()));
-    const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => dataset.type.toLowerCase().includes(type.toLowerCase()));
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(cat => dataset.amr_category.toLowerCase().includes(cat.toLowerCase()));
+    const matchesType = selectedStatuses.length === 0 || selectedStatuses.some(status => dataset.project_status.toLowerCase().includes(status.toLowerCase()));
     return matchesSearchTerm && matchesCategory && matchesType;
   });
 
@@ -52,8 +54,8 @@ export default function UserCatalogue() {
           setIsMenuOpen={setIsMenuOpen}
           selectedCategories={selectedCategories}
           setSelectedCategories={setSelectedCategories}
-          selectedTypes={selectedTypes}
-          setSelectedTypes={setSelectedTypes}
+          selectedStatuses={selectedStatuses}
+          setSelectedStatuses={setSelectedStatuses}
         
         />
         
@@ -79,7 +81,7 @@ export default function UserCatalogue() {
               </div>
             )}
             
-            {filteredDatasets.length === 0 && (selectedCategories.length > 0 || selectedTypes.length > 0) && (
+            {filteredDatasets.length === 0 && (selectedCategories.length > 0 || selectedStatuses.length > 0) && (
               <div className="text-center w-full flex items-start justify-center text-gray-500">
                 No data matches the selected filters.
               </div>
@@ -93,12 +95,13 @@ export default function UserCatalogue() {
                     <tr>
                       <th className="p-5 text-left">Name</th>
                       <th className="p-5 text-left">Study</th>
+                      <th className="p-5 text-left">AMR Category</th>
                       <th className="p-5 text-left">Category</th>
-                      <th className="p-5 text-left">Type</th>
-                      <th className="p-5 text-left">Size</th>
-                      <th className="p-5 text-left">Data Use Permission</th>
-                      <th className="p-5 text-left">Access</th>
+                      <th className="p-5 text-left">Status</th>
+                      <th className="p-5 text-left">Entries</th>
+                      {/* <th className="p-5 text-left">Data Use Permission</th> */}
                       <th className="p-5 text-left">Available For download</th>
+                      <th className="p-5 text-left">Access</th>
                     </tr>
                   </thead>
 
@@ -114,10 +117,11 @@ export default function UserCatalogue() {
                       >
                         <td className="p-5">{dataset.name}</td>
                         <td className="p-5">{dataset.study_design}</td>
+                        <td className="p-5">{dataset.amr_category}</td>
                         <td className="p-5">{dataset.category}</td>
-                        <td className="p-5">{dataset.type}</td>
-                        <td className="p-5">{dataset.size}</td>
-                        <td className="p-5">{dataset.data_use_permissions}</td>
+                        <td className="p-5">{dataset.project_status}</td>
+                        <td className="p-5">{dataset.participant_count}</td>
+                        {/* <td className="p-5">{dataset.data_use_permissions}</td> */}
                         <td className="p-5">{dataset.in_warehouse.toString()}</td>
                         <td className="p-5">
                           {dataset.access === "approved" && (

@@ -87,7 +87,7 @@ const convertToCSV = (datasets: FetchedDataset[]) => {
     "Data Collection Methods",
     "Study Population",
     "Data Format",
-    "Participant Count",
+    "Entries",
     "Access Restrictions",
     "Citation Info",
     "Study Design",
@@ -150,7 +150,7 @@ export default function HomeCatalogue() {
   const { searchTerm } = useSearch();
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const { data, isLoading, error } = useGetCatalogue();
   const datasets: FetchedDataset[] = data?.data || [];
@@ -162,14 +162,14 @@ export default function HomeCatalogue() {
     const matchesCategory =
       selectedCategories.length === 0 ||
       selectedCategories.some((cat) =>
-        dataset.category.toLowerCase().includes(cat.toLowerCase())
+        dataset.amr_category?.toLowerCase().includes(cat.toLowerCase())
       );
-    const matchesType =
-      selectedTypes.length === 0 ||
-      selectedTypes.some((type) =>
-        dataset.type.toLowerCase().includes(type.toLowerCase())
+    const matchesStatus =
+      selectedStatuses.length === 0 ||
+      selectedStatuses.some((status) =>
+        dataset.project_status.toLowerCase().includes(status.toLowerCase())
       );
-    return matchesSearchTerm && matchesCategory && matchesType;
+    return matchesSearchTerm && matchesCategory && matchesStatus;
   });
 
   const handleSelectAll = (e: any) => {
@@ -210,8 +210,8 @@ export default function HomeCatalogue() {
           setIsMenuOpen={setIsMenuOpen}
           selectedCategories={selectedCategories}
           setSelectedCategories={setSelectedCategories}
-          selectedTypes={selectedTypes}
-          setSelectedTypes={setSelectedTypes}
+          selectedStatuses={selectedStatuses}
+          setSelectedStatuses={setSelectedStatuses}
         />
 
         <div
@@ -242,7 +242,7 @@ export default function HomeCatalogue() {
             )}
 
             {filteredDatasets.length === 0 &&
-              (selectedCategories.length > 0 || selectedTypes.length > 0) && (
+              (selectedCategories.length > 0 || selectedStatuses.length > 0) && (
                 <div className="text-center w-full flex items-start justify-center text-gray-500">
                   No data matches the selected filters.
                 </div>
@@ -267,7 +267,7 @@ export default function HomeCatalogue() {
                         "Title",
                         "Acronym",
                         "Description",
-                        "Antimicrobial Category",
+                        "AMR Category",
                         "Category",
                         "Type",
                         "Thematic Area",
@@ -277,7 +277,7 @@ export default function HomeCatalogue() {
                         "Data Collection Methods",
                         "Study Population",
                         "Data Format",
-                        "Participant Count",
+                        "Entries",
                         "Access Restrictions",
                         "Citation Info",
                         "Study Design",
