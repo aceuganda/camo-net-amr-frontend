@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import {
@@ -10,10 +10,10 @@ import {
 } from "@radix-ui/react-icons";
 import { useSearch } from "@/context/searchContext";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import SidebarMenu from "../filter";
 
-const DotsLoader = dynamic(() => import('../ui/dotsLoader'), { ssr: false });
+const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
 type FetchedDataset = {
   id: string;
@@ -30,6 +30,119 @@ type FetchedDataset = {
   data_format: string;
   study_population: string;
   in_warehouse: boolean;
+  start_date: string;
+  end_date: string;
+  protocol_id: string;
+  country_protocol_id: string;
+  on_hold_reason: string;
+  data_collection_methods: string;
+  participant_count: string;
+  access_restrictions: string;
+  citation_info: string;
+  data_dictionary_available: boolean;
+  project_type: string;
+  main_project_name: string;
+  data_capture_method: string;
+  license: string;
+  amr_category: string;
+  acronym: string;
+  description: string;
+};
+
+const formatDate = (date: any) => {
+  if (!date) return "N/A";
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+// Helper function to escape CSV values
+const escapeCSVValue = (value: any) => {
+  if (value === null || value === undefined) return ""; // Handle null or undefined values
+  const stringValue = value.toString(); // Convert to string
+
+  if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
+    return `"${stringValue.replace(/"/g, '""')}"`; // Escape double quotes
+  }
+  return stringValue;
+};
+
+
+// Function to convert datasets to CSV format
+const convertToCSV = (datasets: FetchedDataset[]) => {
+  const headers = [
+    "Name",
+    "Title",
+    "Acronym",
+    "Description",
+    "Antimicrobial Category",
+    "Category",
+    "Type",
+    "Thematic Area",
+    "Project Status",
+    "On-hold Reason",
+    "Countries",
+    "Data Collection Methods",
+    "Study Population",
+    "Data Format",
+    "Participant Count",
+    "Access Restrictions",
+    "Citation Info",
+    "Study Design",
+    "Data Dictionary Available",
+    "Project Type",
+    "Main Project Name",
+    "Data Capture Method",
+    "In Warehouse",
+    "License",
+    "Data Use Permissions",
+    "Protocol ID",
+    "Country Protocol ID",
+    "Start Date",
+    "End Date",
+  ];
+
+  const rows = datasets.map((dataset) => [
+    dataset.name,
+    dataset.title,
+    dataset.acronym,
+    dataset.description,
+    dataset.amr_category,
+    dataset.category,
+    dataset.type,
+    dataset.thematic_area,
+    dataset.project_status,
+    dataset.on_hold_reason,
+    dataset.countries,
+    dataset.data_collection_methods,
+    dataset.study_population,
+    dataset.data_format,
+    dataset.participant_count,
+    dataset.access_restrictions,
+    dataset.citation_info,
+    dataset.study_design,
+    dataset.data_dictionary_available ? "Yes" : "No",
+    dataset.project_type,
+    dataset.main_project_name,
+    dataset.data_capture_method,
+    dataset.in_warehouse ? "Yes" : "No",
+    dataset.license,
+    dataset.data_use_permissions,
+    dataset.protocol_id,
+    dataset.country_protocol_id,
+    formatDate(dataset.start_date),
+    formatDate(dataset.end_date),
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers, ...rows]
+      .map((row) => row.map(escapeCSVValue).join(","))
+      .join("\n");
+
+  return encodeURI(csvContent);
 };
 
 
@@ -39,16 +152,25 @@ export default function HomeCatalogue() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const { data, isLoading, error, } = useGetCatalogue();
+  const { data, isLoading, error } = useGetCatalogue();
   const datasets: FetchedDataset[] = data?.data || [];
 
   const filteredDatasets = datasets.filter((dataset) => {
-    const matchesSearchTerm = dataset.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(cat => dataset.category.toLowerCase().includes(cat.toLowerCase()));
-    const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => dataset.type.toLowerCase().includes(type.toLowerCase()));
+    const matchesSearchTerm = dataset.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      selectedCategories.some((cat) =>
+        dataset.category.toLowerCase().includes(cat.toLowerCase())
+      );
+    const matchesType =
+      selectedTypes.length === 0 ||
+      selectedTypes.some((type) =>
+        dataset.type.toLowerCase().includes(type.toLowerCase())
+      );
     return matchesSearchTerm && matchesCategory && matchesType;
   });
-
 
   const handleSelectAll = (e: any) => {
     if (e.target.checked) {
@@ -70,10 +192,20 @@ export default function HomeCatalogue() {
     }
   };
 
+  const handleExport = () => {
+    const csvContent = convertToCSV(filteredDatasets);
+    const link = document.createElement("a");
+    link.setAttribute("href", csvContent);
+    link.setAttribute("download", "catalogue_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center ">
       <div className=" w-full flex flex-row  justify-between overflow-x-hidden">
-      <SidebarMenu
+        <SidebarMenu
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
           selectedCategories={selectedCategories}
@@ -82,15 +214,18 @@ export default function HomeCatalogue() {
           setSelectedTypes={setSelectedTypes}
         />
 
-        <div className={`ml-[2rem] w-[90%] ${!isMenuOpen? "" :"sm:w-[80%]" } `}>
+        <div
+          className={`ml-[2rem] w-[90%] ${!isMenuOpen ? "" : "sm:w-[80%]"} `}
+        >
           <div className="text-[#24408E] font-[700] w-full gap-[7px] flex-row flex items-center justify-end px-[1rem] my-[30px]">
-            <DownloadIcon /> <span>EXPORT</span>
+            <DownloadIcon onClick={handleExport} className="cursor-pointer" /> 
+            <span className="cursor-pointer" onClick={handleExport}>EXPORT</span>
           </div>
 
           <div>
             {isLoading && (
               <div className="text-center w-full flex items-start h-[4rem] justify-center text-gray-500">
-                <DotsLoader/>
+                <DotsLoader />
               </div>
             )}
 
@@ -106,11 +241,12 @@ export default function HomeCatalogue() {
               </div>
             )}
 
-            {filteredDatasets.length === 0 && (selectedCategories.length > 0 || selectedTypes.length > 0) && (
-              <div className="text-center w-full flex items-start justify-center text-gray-500">
-                No data matches the selected filters.
-              </div>
-            )}
+            {filteredDatasets.length === 0 &&
+              (selectedCategories.length > 0 || selectedTypes.length > 0) && (
+                <div className="text-center w-full flex items-start justify-center text-gray-500">
+                  No data matches the selected filters.
+                </div>
+              )}
 
             {filteredDatasets.length > 0 && !error && !isLoading && (
               <div className="w-[98%] overflow-x-auto">
@@ -126,19 +262,41 @@ export default function HomeCatalogue() {
                           checked={selectedRows.length === datasets.length}
                         />
                       </th>
-                      <th className="p-5 text-left">Name</th>
-                      <th className="p-5 text-left">Category</th>
-                      <th className="p-5 text-left">Type</th>
-                      <th className="p-5 text-left">Sample Size</th>
-                      <th className="p-5 text-left">Countries</th>
-                      <th className="p-5 text-left">Protocol name</th>
-                      <th className="p-5 text-left">Thematic area</th>
-                      <th className="p-5 text-left">Study design</th>
-                      <th className="p-5 text-left">Data format</th>
-                      <th className="p-5 text-left">Study Population</th>
-                      <th className="p-5 text-left">Project Status</th>
-                      <th className="p-5 text-left">Data Use Permission</th>
-                      <th className="p-5 text-left">Available For download</th>
+                      {[
+                        "Name",
+                        "Title",
+                        "Acronym",
+                        "Description",
+                        "Antimicrobial Category",
+                        "Category",
+                        "Type",
+                        "Thematic Area",
+                        "Project Status",
+                        "On-hold Reason",
+                        "Countries",
+                        "Data Collection Methods",
+                        "Study Population",
+                        "Data Format",
+                        "Participant Count",
+                        "Access Restrictions",
+                        "Citation Info",
+                        "Study Design",
+                        "Data Dictionary Available",
+                        "Project Type",
+                        "Main Project Name",
+                        "Data Capture Method",
+                        "In Warehouse",
+                        "License",
+                        "Data Use Permissions",
+                        "Protocol ID",
+                        "Country Protocol ID",
+                        "Start Date",
+                        "End Date",
+                      ].map((header) => (
+                        <th key={header} className="p-5 text-left">
+                          {header}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
 
@@ -159,19 +317,45 @@ export default function HomeCatalogue() {
                             checked={selectedRows.includes(dataset.id)}
                           />
                         </td>
-                        <td className="p-5">{dataset.name}</td>
-                        <td className="p-5">{dataset.category}</td>
-                        <td className="p-5">{dataset.type}</td>
-                        <td className="p-5">{dataset.size}</td>
-                        <td className="p-5">{dataset.countries}</td>
-                        <td className="p-5">{dataset.title}</td>
-                        <td className="p-5">{dataset.thematic_area}</td>
-                        <td className="p-5">{dataset.study_design}</td>
-                        <td className="p-5">{dataset.data_format}</td>
-                        <td className="p-5">{dataset.study_population}</td>
-                        <td className="p-5">{dataset.project_status}</td>
-                        <td className="p-5">{dataset.data_use_permissions}</td>
-                        <td className="p-5">{dataset.in_warehouse.toString()}</td>
+
+                        {[
+                          dataset.name,
+                          dataset.title,
+                          dataset.acronym,
+                          dataset.description,
+                          dataset.amr_category,
+                          dataset.category,
+                          dataset.type,
+                          dataset.thematic_area,
+                          dataset.project_status,
+                          dataset.on_hold_reason,
+                          dataset.countries,
+                          dataset.data_collection_methods,
+                          dataset.study_population,
+                          dataset.data_format,
+                          dataset.participant_count,
+                          dataset.access_restrictions,
+                          dataset.citation_info,
+                          dataset.study_design,
+                          dataset.data_dictionary_available?.toString(),
+                          dataset.project_type,
+                          dataset.main_project_name,
+                          dataset.data_capture_method,
+                          dataset.in_warehouse?.toString(),
+                          dataset.license,
+                          dataset.data_use_permissions,
+                          dataset.protocol_id,
+                          dataset.country_protocol_id,
+                          formatDate(dataset.start_date),
+                          formatDate(dataset.end_date),
+                        ].map((value, idx) => (
+                          <td
+                            key={idx}
+                            className="p-5 max-w-[150px] h-[50px] whitespace-nowrap overflow-hidden text-ellipsis hover:overflow-visible hover:whitespace-normal hover:max-w-none hover:h-full"
+                          >
+                            {value}
+                          </td>
+                        ))}
                       </tr>
                     ))}
                   </tbody>

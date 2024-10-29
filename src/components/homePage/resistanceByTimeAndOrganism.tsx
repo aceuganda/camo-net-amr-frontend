@@ -65,7 +65,8 @@ const ResistanceByAgeLineChart: React.FC = () => {
             borderColor: COLORS[index % COLORS.length], // Cycle through colors
             backgroundColor: `${COLORS[index % COLORS.length].replace('1)', '0.2)')}`, // Lighter fill
             fill: false,
-            tension: 0.1,  // Smooth line
+            
+            tension: 0.3,  
         }));
     };
 
