@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arm_portal_deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: arm_portal
+  template:
+    metadata:
+      labels:
+        app: arm_portal
+    spec:
+      containers:
+        - name: arm_portal_container
+          image: khalifan1126/amr_portal:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: arm_portal_service
+spec:
+  selector:
+    app: arm_portal
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer  

@@ -22,7 +22,7 @@ export default function HomePage() {
         transition={{ duration: 1 }}
       >
         <Image
-          src="/idi_building.webp"
+          src="/antibios.png"
           alt="Research laboratory"
           fill
           objectFit="cover"
