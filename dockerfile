@@ -9,7 +9,7 @@ COPY package.json yarn.lock ./
 
 COPY . .
 
-RUN yarn run build
+RUN yarn build
 
 
 FROM node:18-alpine
