@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: arm_portal_deployment
+  name: arm-portal-deployment
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: arm_portal
+      app: arm-portal
   template:
     metadata:
       labels:
-        app: arm_portal
+        app: arm-portal
     spec:
       containers:
-        - name: arm_portal_container
+        - name: arm-portal-container
           image: khalifan1126/amr_portal:latest
           ports:
             - containerPort: 80
@@ -21,10 +21,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: arm_portal_service
+  name: arm-portal-service
 spec:
   selector:
-    app: arm_portal
+    app: arm-portal
   ports:
     - protocol: TCP
       port: 80
