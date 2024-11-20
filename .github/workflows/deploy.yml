@@ -38,8 +38,15 @@ jobs:
       
       - name: Create Kubernetes Secrets
         run: |
-          kubectl create secret generic amr-portal-env-secrets \
-            --from-literal=NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }} \
+          kubectl apply -f - <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: amr-portal-env-secrets
+          type: Opaque
+          stringData:
+            NEXT_PUBLIC_API_BASE_URL: "${{ secrets.NEXT_PUBLIC_API_BASE_URL }}"
+          EOF
 
       - name: Deploy frontend to Kubernetes
         run: |
