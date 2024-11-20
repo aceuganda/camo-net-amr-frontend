@@ -14,7 +14,7 @@ const cspHeader = `
     form-action 'self';
     frame-ancestors 'none';
     upgrade-insecure-requests;
-    connect-src 'self' https://amrdb.idi.co.ug/serve http://localhost:8000;
+    connect-src 'self' https://amrdb.idi.co.ug http://localhost:8000;
 ` 
 
 const nextConfig = {
