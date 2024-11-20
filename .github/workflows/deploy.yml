@@ -9,6 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env: # Env variables needed during build for frontend
+      NEXT_PUBLIC_API_BASE_URL:  ${{secrets.NEXT_PUBLIC_API_BASE_URL}}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
