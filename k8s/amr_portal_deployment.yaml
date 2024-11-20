@@ -17,6 +17,12 @@ spec:
           image: khalifan1126/amr_portal:latest
           ports:
             - containerPort: 80
+          env:
+            - name: NEXT_PUBLIC_API_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: amr-portal-env-secrets
+                  key: NEXT_PUBLIC_API_BASE_URL
 ---
 apiVersion: v1
 kind: Service
@@ -29,4 +35,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-  type: ClusterIP  
+  type: ClusterIP
