@@ -54,4 +54,7 @@ jobs:
 
       - name: Deploy frontend to Kubernetes
         run: |
+          kubectl patch deployment amr-portal-deployment -p \
+            "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"kubectl.kubernetes.io/restartedAt\":\"$(date +'%Y-%m-%dT%H:%M:%S%z')\"}}}}}"
+          
           kubectl apply -f k8s/amr_portal_deployment.yaml

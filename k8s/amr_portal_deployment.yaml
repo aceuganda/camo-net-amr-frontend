@@ -17,6 +17,7 @@ spec:
           image: khalifan1126/amr_portal:latest
           ports:
             - containerPort: 80
+          imagePullPolicy: Always 
           env:
             - name: NEXT_PUBLIC_API_BASE_URL
               valueFrom:
