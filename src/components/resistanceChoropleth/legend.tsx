@@ -3,11 +3,11 @@ import React from 'react';
 
 const colorScale = [
     { range: 'Unknown', color: '#CCCCCC' },      // Very Light Red (0 cases)
-    { range: '1 - 100', color: '#FF6969' }, // Light Red
-    { range: '101 - 500', color: '#FF3333' }, // Moderate Red
-    { range: '501 - 1000', color: '#CC0000' }, // Medium Red
-    { range: '1001 - 5000', color: '#990000' }, // High Red
-    { range: '5001+', color: '#660000' }    // Dark Red (Very High)
+    { range: '1 - 50', color: '#FF6969' }, // Light Red
+    { range: '51 - 100', color: '#FF3333' }, // Moderate Red
+    { range: '101 - 500', color: '#CC0000' }, // Medium Red
+    { range: '501 - 1000', color: '#990000' }, // High Red
+    { range: '1001+', color: '#660000' }    // Dark Red (Very High)
 ];
 
 

@@ -3,14 +3,14 @@ import api from './../axios';
 
 
 
-export const useMapRegionalResistance = (year: number|null) => {
- let endpoint = `/trends/regional_resistance`;
+export const useMapRegionalResistance = (year: number|null, organism: string, antibiotic: string) => {
+ let endpoint = `/trends/regional_resistance?antibiotic=${antibiotic}&organism=${organism}`;
   if (year) {
-    endpoint += `?year=${year}`;
+    endpoint += `&year=${year}`;
   }
   return useQuery<any, Error, {data: any}>({
     queryFn: () => api.get(endpoint),
-    queryKey: ["regional_resistance", year],
+    queryKey: ["regional_resistance", year, organism, antibiotic],
     meta: {
       errorMessage: "Failed to fetch regional resistance data",
     }

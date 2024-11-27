@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useMapRegionalResistance } from "@/lib/hooks/useAMRTrends";
@@ -8,6 +8,7 @@ import Legend from "./legend";
 import useScreenSize from "@/lib/hooks/useScreenSize";
 import dynamic from "next/dynamic";
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
+import { organisms, antibiotics } from "../homePage/constants";
 
 interface FacilityData {
   facility_name: string;
@@ -24,11 +25,16 @@ const getZoomLevel = (screenSize: number): number => {
 
 const ResistanceChoropleth: React.FC = () => {
   const [year, setYear] = useState<number | null>(null);
-  const { data, isLoading, error, isSuccess } = useMapRegionalResistance(year);
+
   const screenSize = useScreenSize(); // Get the current screen size
   const zoomLevel = getZoomLevel(screenSize);
+  const [selectedOrganism, setSelectedOrganism] = useState("ecoli");
+  const [selectedAntibiotic, setSelectedAntibiotic] = useState(
+    antibiotics[0].value
+  );
+  const { data, isLoading, error, isSuccess, isPending, refetch } =
+    useMapRegionalResistance(year, selectedOrganism, selectedAntibiotic);
 
-  // Create a mapping of facility names to resistance cases
   const resistanceMap = data?.data?.data?.reduce(
     (acc: any, facility: FacilityData) => {
       acc[facility.facility_name.trim()] = facility.resistant_cases;
@@ -36,15 +42,24 @@ const ResistanceChoropleth: React.FC = () => {
     },
     {} as Record<string, number>
   );
+  useEffect(() => {
+    refetch();
+  }, [year, selectedAntibiotic, selectedOrganism]);
 
-  // Function to style each feature
+  const handleOrganismChange = (e: any) => {
+    setSelectedOrganism(e.target.value);
+  };
+  const handleAntibioticChange = (e: any) => {
+    setSelectedAntibiotic(e.target.value);
+  };
+
   const getColor = (d: number) => {
     if (d === 0) return "#CCCCCC"; // Very Light Red for 0 cases
-    if (d > 0 && d <= 100) return "#FF6969"; // Light Red
-    if (d > 100 && d <= 500) return "#FF3333"; // Moderate Red
-    if (d > 500 && d <= 1000) return "#CC0000"; // Medium Red
-    if (d > 1000 && d <= 5000) return "#990000"; // High Red
-    if (d > 5000) return "#660000"; // Dark Red (Very High)
+    if (d > 0 && d <= 50) return "#FF6969"; // Light Red
+    if (d > 50 && d <= 100) return "#FF3333"; // Moderate Red
+    if (d > 100 && d <= 500) return "#CC0000"; // Medium Red
+    if (d > 500 && d <= 1000) return "#990000"; // High Red
+    if (d > 1000) return "#660000"; // Dark Red (Very High)
     return "#FF9A9A"; // Default to very light red if none match
   };
 
@@ -63,7 +78,7 @@ const ResistanceChoropleth: React.FC = () => {
 
   const onEachFeature = (feature: any, layer: L.Layer) => {
     const facilityName = feature.properties.name;
-    const resistantCases = resistanceMap[facilityName.trim()] || 'unknown';
+    const resistantCases = resistanceMap[facilityName.trim()] || "unknown";
     layer.bindPopup(
       `<strong>${facilityName}</strong><br/>Resistant Cases: ${resistantCases}`
     );
@@ -71,32 +86,62 @@ const ResistanceChoropleth: React.FC = () => {
 
   return (
     <div className="relative flex flex-col">
-      <label className="text-black font-semibold mb-2">
-        Year:
-        <select
-          value={year || ""}
-          onChange={(e) =>
-            setYear(
-              e.target.value === "overall" ? null : parseInt(e.target.value)
-            )
-          }
-          className="ml-2 border border-gray-300 rounded-md bg-white text-gray-700 py-2 px-3 shadow-sm focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="overall">Overall</option>
-          <option value="2020">2020</option>
-          <option value="2021">2021</option>
-          <option value="2022">2022</option>
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
-        </select>
-      </label>
+      <div className="mb-4 flex flex-row gap-5">
+        <div className="flex flex-col text-black  mb-2">
+          <label className="ml-4 mr-2">Year</label>
+          <select
+            value={year || ""}
+            onChange={(e) =>
+              setYear(
+                e.target.value === "overall" ? null : parseInt(e.target.value)
+              )
+            }
+            className="border border-gray-300 rounded p-1 max-w-[15rem]"
+          >
+            <option value="overall">Overall</option>
+            {/* <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option> */}
+            {/* Hide year filter for now */}
+          </select>
+        </div>
+        <div className="flex flex-col">
+          <label className="ml-4 mr-2">Organism</label>
+          <select
+            value={selectedOrganism}
+            onChange={handleOrganismChange}
+            className="border border-gray-300 rounded p-1 max-w-[15rem]"
+          >
+            {organisms.map((organism) => (
+              <option key={organism.value} value={organism.value}>
+                {organism.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col">
+          <label className="ml-4 mr-2">Antibiotic</label>
+          <select
+            value={selectedAntibiotic}
+            onChange={handleAntibioticChange}
+            className="border border-gray-300 rounded p-1 max-w-[15rem]"
+          >
+            {antibiotics.map((anti) => (
+              <option key={anti.value} value={anti.value}>
+                {anti.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {isLoading && (
         <div className="flex justify-center items-center min-h-[300px]">
           <span className="loader">
             <DotsLoader />
           </span>{" "}
-          {/* You can replace this with a spinner component */}
         </div>
       )}
 
@@ -129,7 +174,7 @@ const ResistanceChoropleth: React.FC = () => {
               onEachFeature={onEachFeature}
             />
           </MapContainer>
-          <Legend /> {/* Add margin for spacing */}
+          <Legend />
         </div>
       )}
     </div>

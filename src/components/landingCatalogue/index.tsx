@@ -23,12 +23,12 @@ type FetchedDataset = {
   size: number;
   countries: string[];
   project_status: string;
-  data_use_permissions: string;
+
   title: string;
   thematic_area: string;
   study_design: string;
   data_format: string;
-  study_population: string;
+  source: string;
   in_warehouse: boolean;
   start_date: string;
   end_date: string;
@@ -36,14 +36,14 @@ type FetchedDataset = {
   country_protocol_id: string;
   on_hold_reason: string;
   data_collection_methods: string;
-  participant_count: string;
-  access_restrictions: string;
+  entries_count: string;
+
   citation_info: string;
-  data_dictionary_available: boolean;
+
   project_type: string;
   main_project_name: string;
   data_capture_method: string;
-  license: string;
+
   amr_category: string;
   acronym: string;
   description: string;
@@ -80,24 +80,19 @@ const convertToCSV = (datasets: FetchedDataset[]) => {
     "Antimicrobial Category",
     "Category",
     "Type",
-    "Thematic Area",
+
     "Project Status",
     "On-hold Reason",
     "Countries",
-
-    "Study Population",
+    "Source",
     "Data Format",
     "Entries",
-    "Access Restrictions",
     "Citation Info",
     "Study Design",
-    "Data Dictionary Available",
     "Project Type",
     "Main Project Name",
     "Data Capture Method",
     "In Warehouse",
-    "License",
-    "Data Use Permissions",
     "Protocol ID",
     "Country Protocol ID",
     "Start Date",
@@ -112,24 +107,23 @@ const convertToCSV = (datasets: FetchedDataset[]) => {
     dataset.amr_category,
     dataset.category,
     dataset.type,
-    dataset.thematic_area,
+
     dataset.project_status,
     dataset.on_hold_reason,
     dataset.countries,
 
-    dataset.study_population,
+    dataset.source,
     dataset.data_format,
-    dataset.participant_count,
-    dataset.access_restrictions,
+    dataset.entries_count,
+
     dataset.citation_info,
     dataset.study_design,
-    dataset.data_dictionary_available ? "Yes" : "No",
+
     dataset.project_type,
     dataset.main_project_name,
     dataset.data_capture_method,
     dataset.in_warehouse ? "Yes" : "No",
-    dataset.license,
-    dataset.data_use_permissions,
+
     dataset.protocol_id,
     dataset.country_protocol_id,
     formatDate(dataset.start_date),
@@ -270,24 +264,23 @@ export default function HomeCatalogue() {
                         "AMR Category",
                         "Category",
                         "Type",
-                        "Thematic Area",
+                        
                         "Project Status",
                         "On-hold Reason",
                         "Countries",
 
-                        "Study Population",
+                        "Source",
                         "Data Format",
                         "Entries",
-                        "Access Restrictions",
+                      
                         "Citation Info",
                         "Study Design",
-                        "Data Dictionary Available",
+                       
                         "Project Type",
                         "Main Project Name",
                         "Data Capture Method",
                         "In Warehouse",
-                        "License",
-                        "Data Use Permissions",
+                        
                         "Protocol ID",
                         "Country Protocol ID",
                         "Start Date",
@@ -326,24 +319,24 @@ export default function HomeCatalogue() {
                           dataset.amr_category,
                           dataset.category,
                           dataset.type,
-                          dataset.thematic_area,
+             
                           dataset.project_status,
                           dataset.on_hold_reason,
                           dataset.countries,
 
-                          dataset.study_population,
+                          dataset.source,
                           dataset.data_format,
-                          dataset.participant_count,
-                          dataset.access_restrictions,
+                          dataset.entries_count,
+                         
                           dataset.citation_info,
                           dataset.study_design,
-                          dataset.data_dictionary_available?.toString(),
+                          
                           dataset.project_type,
                           dataset.main_project_name,
                           dataset.data_capture_method,
                           dataset.in_warehouse?.toString(),
-                          dataset.license,
-                          dataset.data_use_permissions,
+                         
+                          
                           dataset.protocol_id,
                           dataset.country_protocol_id,
                           formatDate(dataset.start_date),
