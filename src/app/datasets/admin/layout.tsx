@@ -9,7 +9,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { data, isLoading, error } = useUserInfor(); 
   const [roles, setRoles] = useState<string | null | undefined>(null);
-  const [isCollapsed, setIsCollapsed] = useState(false); // State for sidebar collapse
+  const [isCollapsed, setIsCollapsed] = useState(false); 
   const pathname = usePathname();
   const router = useRouter();
 
@@ -41,9 +41,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link href="/datasets/admin">Requests</Link>
             </li>
             {roles?.includes("super_admin") && (
+              <>
               <li className={`mb-2 ${pathname === '/datasets/admin/users' ? 'text-[#24408E]' : ''}`}>
                 <Link href="/datasets/admin/users">Users</Link>
               </li>
+              <li className={`mb-2 ${pathname === '/datasets/admin/datasets' ? 'text-[#24408E]' : ''}`}>
+                <Link href="/datasets/admin/datasets">Datasets</Link>
+              </li>
+              </>
             )}
           </ul>
         </nav>

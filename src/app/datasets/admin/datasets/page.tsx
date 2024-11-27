@@ -1,11 +1,11 @@
 "use client";
-import AdminUsers from "@/components/users";
+
 import { useEffect } from "react";
 import { useUserInfor } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import DatasetEditPage from "@/components/adminDatasetEdit";
 
-export default function Requests() {
+export default function DatasetUpdater() {
   const { data, isLoading, error } = useUserInfor();
   const router = useRouter();
 
@@ -25,6 +25,6 @@ export default function Requests() {
     return <p>Error: Unable to fetch user information</p>;
   }
   return (
-      <AdminUsers />
+      <DatasetEditPage />
   );
 }

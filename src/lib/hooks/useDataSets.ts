@@ -23,3 +23,5 @@ export const ReRequestAccess = async (permission_id: string) => {
   const response = await api.patch(`/permissions/${permission_id}/re_request`);
   return response.data;
 };
+
+
