@@ -26,10 +26,10 @@ interface DataSet {
   description: string | null;
   countries: string;
   category: string;
-  access_restrictions: string;
+
   start_date: string;
   end_date: string;
-  study_population: string;
+  source: string;
   study_design: string;
   project_type: string;
   project_status: string;
@@ -40,10 +40,10 @@ interface DataSet {
   type: string;
   citation_info: string;
   additional_notes: string;
-  license: string;
+
   in_warehouse: boolean;
   created_at: Date;
-  participant_count: string;
+  entries_count: string;
   acronym: string;
   amr_category: string;
 }
@@ -486,11 +486,11 @@ export default function DatasetDetails({ id }: any) {
                         <div className="flex items-start space-x-3">
                           <div>
                             <p className="text-sm font-medium text-gray-500">
-                              Participants
+                              Entries
                             </p>
                             <p className="mt-1 text-gray-900">
-                              {dataset.data_set.participant_count
-                                ? dataset.data_set.participant_count
+                              {dataset.data_set.entries_count
+                                ? dataset.data_set.entries_count
                                 : "UNK"}
                             </p>
                           </div>
@@ -542,10 +542,10 @@ export default function DatasetDetails({ id }: any) {
                         <div className="flex items-start space-x-3">
                           <div>
                             <p className="text-sm font-medium text-gray-500">
-                              Study Population
+                              Source
                             </p>
                             <p className="mt-1 text-gray-900">
-                              {dataset.data_set.study_population}
+                              {dataset.data_set.source}
                             </p>
                           </div>
                         </div>
@@ -559,16 +559,7 @@ export default function DatasetDetails({ id }: any) {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Access restrictions
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.access_restrictions}
-                            </p>
-                          </div>
-                        </div>
+                        
                         <div className="flex items-start space-x-3">
                           <div>
                             <p className="text-sm font-medium text-gray-500">
@@ -592,14 +583,7 @@ export default function DatasetDetails({ id }: any) {
                     Credibility
                   </h2>
                   <div className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        License
-                      </p>
-                      <p className="mt-1 text-gray-900">
-                        {dataset.data_set.license}
-                      </p>
-                    </div>
+                   
                     <div>
                       <p className="text-sm font-medium text-gray-500">
                         Protocol ID

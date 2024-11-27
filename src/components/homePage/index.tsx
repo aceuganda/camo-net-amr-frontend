@@ -31,10 +31,10 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="text-center text-white max-w-4xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              CAMO-NET Uganda AMR data portal
+              AMRDB
             </h1>
             <p className="text-xl mb-4">
-              A dedicated data portal for the Uganda hub, facilitating access to
+              A dedicated data portal facilitating access to
               antimicrobial resistance (AMR) data and insights to enhance public
               health initiatives.
             </p>
@@ -79,13 +79,13 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-2xl text-center font-semibold text-[#003366] mb-6">
+            {/* <h2 className="text-2xl text-center font-semibold text-[#003366] mb-6">
               AMR Trends & Impact
-            </h2>
+            </h2> */}
             <div className="space-y-8">
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
-                  Over All resistance in 9 Regional Referral Hospitals
+                  Overall pathogen-antibiotic number of resistance cases in 9 Regional Referral Hospitals
                 </h3>
                 <ResistanceChoropleth />
               </div>
@@ -96,7 +96,7 @@ export default function HomePage() {
                 </h3>
                 <ResistanceLineChart />
               </div> */}
-              <div className="bg-gray-50 p-6 rounded-lg">
+              {/* <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
                   Resistance Cases By Gender
                 </h3>
@@ -113,7 +113,7 @@ export default function HomePage() {
                   Percentage resistance of organisms as per antibiotics vs age
                 </h3>
                 <OrganismResistanceByAge />
-              </div>
+              </div> */}
               
             </div>
           </motion.div>
