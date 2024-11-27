@@ -2,16 +2,13 @@
 
 import { useState } from "react";
 import {
-  ChevronRightIcon,
-  LayersIcon,
-  Cross1Icon,
-  ChevronDownIcon,
   DownloadIcon,
 } from "@radix-ui/react-icons";
 import { useSearch } from "@/context/searchContext";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import SidebarMenu from "../filter";
+
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -58,13 +55,13 @@ const formatDate = (date: any) => {
   });
 };
 
-// Helper function to escape CSV values
+
 const escapeCSVValue = (value: any) => {
-  if (value === null || value === undefined) return ""; // Handle null or undefined values
-  const stringValue = value.toString(); // Convert to string
+  if (value === null || value === undefined) return ""; 
+  const stringValue = value.toString(); 
 
   if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
-    return `"${stringValue.replace(/"/g, '""')}"`; // Escape double quotes
+    return `"${stringValue.replace(/"/g, '""')}"`;
   }
   return stringValue;
 };

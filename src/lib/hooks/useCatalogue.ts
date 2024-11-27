@@ -32,3 +32,11 @@ export const useGetDataSet = (id:string) => {
     }
   });
 }
+
+export const updateCatalogueDataset = async (data: any) => {
+  const dataId = data.id 
+  delete data['id']
+
+  const response = await api.patch(`/data_sets/${dataId}`, data);
+  return response.data;
+};
