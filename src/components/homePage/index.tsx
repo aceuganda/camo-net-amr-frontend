@@ -3,14 +3,17 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link"; 
+import Link from "next/link";
 import { useUserInfor } from "@/lib/hooks/useAuth";
 
-const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), { ssr: false });
 
+
+const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), {
+  ssr: false,
+});
 
 export default function HomePage() {
-  const { data, error } = useUserInfor(); 
+  const { data, error } = useUserInfor();
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // useEffect(() => {
@@ -19,7 +22,7 @@ export default function HomePage() {
   //     setIsLoggedIn(data.data.logged_in);
   //   }
   // }, [data, error]);
-  
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-white text-gray-800">
       {/* Introduction */}
@@ -42,9 +45,9 @@ export default function HomePage() {
               AMRDB
             </h1>
             <p className="text-xl mb-4">
-              A dedicated data portal facilitating access to
-              antimicrobial resistance (AMR) data and insights to enhance public
-              health initiatives.
+              A dedicated data portal facilitating access to antimicrobial
+              resistance (AMR) data and insights to enhance public health
+              initiatives.
             </p>
           </div>
         </div>
@@ -64,7 +67,12 @@ export default function HomePage() {
               About The Data Portal
             </h2>
             <p className="text-gray-700 text-[12px] mb-4">
-            The Data Portal connects to the central antimicrobial resistance (ARM) related Data Warehouse, serving as a user-friendly interface for accessing the data. Users can request access to specific datasets, and the portal also provides visualizations of key trends derived from the data stored in the warehouse, facilitating informed decision-making and research.
+              The Data Portal connects to the central antimicrobial resistance
+              (ARM) related Data Warehouse, serving as a user-friendly interface
+              for accessing the data. Users can request access to specific
+              datasets, and the portal also provides visualizations of key
+              trends derived from the data stored in the warehouse, facilitating
+              informed decision-making and research.
             </p>
             <Image
               src="/data_visualization.webp"
@@ -93,19 +101,18 @@ export default function HomePage() {
             <div className="space-y-8">
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
-                  Overall pathogen-antibiotic number of resistance cases in 9 Regional Referral Hospitals
+                  Overall pathogen-antibiotic number of resistance cases in 9
+                  Regional Referral Hospitals
                 </h3>
                 <ResistanceChoropleth />
               </div>
-              
+
               {/* <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
                   Total Resistance cases
                 </h3>
                 <ResistanceLineChart />
               </div> */}
-
-              
             </div>
           </motion.div>
 
@@ -119,10 +126,13 @@ export default function HomePage() {
             <h2 className="text-2xl text-[17px] font-semibold text-[#003366] mb-4">
               About The Data
             </h2>
-            
+
             <p className="text-gray-700 text-[12px] mb-4">
-            Data about antimicrobial resistance (AMR), use and Economic burden data was collected from 9 regional referral hospitals (RRH) in Uganda by the Infectious Disease Institute namely: 
-            Jinja Regional Referral Hospital (RRH), Gulu (RRH), Arua RRH, Lira RRH, Soroti RRH, Mbale RRH, Masaka RRH, Mbarara RRH and Kabale RRH. 
+              Data about antimicrobial resistance (AMR), use and Economic burden
+              data was collected from 9 regional referral hospitals (RRH) in
+              Uganda by the Infectious Disease Institute namely: Jinja Regional
+              Referral Hospital (RRH), Gulu (RRH), Arua RRH, Lira RRH, Soroti
+              RRH, Mbale RRH, Masaka RRH, Mbarara RRH and Kabale RRH.
             </p>
             <Image
               src="/idiclinic.webp"
@@ -131,7 +141,7 @@ export default function HomePage() {
               height={200}
               className="rounded-lg mb-4"
             />
-            
+
             <Link href="/datasets/access">
               <button className="w-full py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-lightblue-600 transition duration-200">
                 Request Access
@@ -145,7 +155,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-gray-600">© 2024 CAMO-Net Uganda Hub</p>
           <p className="text-sm text-gray-500 mt-2">
-            A Wellcome Trust supported initiative to combat Antimicrobial Resistance
+            A Wellcome Trust supported initiative to combat Antimicrobial
+            Resistance
           </p>
           <p className="text-sm text-gray-500 mt-2">
             Infectious Diseases Institute, P.O Box 22418, Kampala, Uganda
