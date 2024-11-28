@@ -104,7 +104,7 @@ export default function HomePage() {
                 </h3>
                 <ResistanceLineChart />
               </div> */}
-             
+
               
             </div>
           </motion.div>
