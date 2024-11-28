@@ -161,9 +161,9 @@ export default function DatasetDetails({ id }: any) {
     const differenceInMilliseconds = today.getTime() - lastUpdateDate.getTime();
     // Convert the difference to days
     const differenceInDays = Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24));
-    // Return true if the difference is less than 30 days
+    // Return true if the difference is less than 14 days
     
-    return differenceInDays < 30;
+    return differenceInDays < 14;
   }
   function daysCalculator(lastUpdate:Date|null) {
     if (!lastUpdate){
@@ -174,8 +174,8 @@ export default function DatasetDetails({ id }: any) {
     const differenceInMilliseconds = today.getTime() - lastUpdateDate.getTime();
     // Convert the difference to days
     const differenceInDays = Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24));
-    // Return true if the difference is less than 30 days
-    const difference = (30 - differenceInDays)
+    // Return true if the difference is less than 14 days
+    const difference = (14 - differenceInDays)
     return difference < 0 ? 0 : difference;
   }
 
@@ -289,7 +289,7 @@ export default function DatasetDetails({ id }: any) {
             {permissionStatus === "requested" && (
             <div className="flex flex-col ">
               <div className="bg-yellow-100  p-[5px] text-gray-900 mb-[2rem]">
-                Your request should be responded to with in the next 30 day. If
+                Your request should be responded to with in the next 14 days. If
                 not you will be eligible to re-request.
                {userPermission && `You have ${userPermission.last_update ? daysCalculator(userPermission.last_update): daysCalculator(userPermission.created_at) } days left to re-request if not responded to`}
               </div>

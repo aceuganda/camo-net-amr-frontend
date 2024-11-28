@@ -102,11 +102,12 @@ function RegistrationForm() {
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false);
+  const [isInformationAccurate, setIsInformationAccurate] = useState(false);
+
   const { data, isSuccess, error, isPending, mutate } = useMutation({
     mutationFn: Register,
   });
-
-  
 
   useEffect(() => {
     if (isSuccess) {
@@ -120,10 +121,24 @@ function RegistrationForm() {
 
   const handleRegistrationSubmit = async (e:any) => {
     e.preventDefault();
+    if (!email || !fullName || !password) {
+      toast.error("Please fill all the required fields");
+      return;
+    }
     if (password !== confirmPassword) {
       toast.error("Please make sure the passwords you have entered match");
       return;
     }
+    if (!isPrivacyAccepted) {
+      toast.error("Please agree to the privacy policy before you continue");
+      return;
+    }
+    if (!isInformationAccurate) {
+      toast.error("Please agree that you have submitted the correct information");
+      return;
+    }
+    
+
     mutate({ email, name: fullName, password });
   };
 
@@ -190,6 +205,34 @@ function RegistrationForm() {
         </button>
         <Link  href="authenticate/privacy-policy" className="text-blue-500 hover:underline max-sm:text-[10px]">Privacy Policy</Link>
       </div>
+
+      <div className="flex flex-col mt-2">
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            id="privacyPolicy"
+            className="mr-2"
+            checked={isPrivacyAccepted}
+            onChange={(e) => setIsPrivacyAccepted(e.target.checked)}
+          />
+          <label htmlFor="privacyPolicy" className="text-sm">
+            I accept the Privacy Policy.
+          </label>
+
+        </div>
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            id="informationAccuracy"
+            className="mr-2"
+            checked={isInformationAccurate}
+            onChange={(e) => setIsInformationAccurate(e.target.checked)}
+          />
+          <label htmlFor="informationAccuracy" className="text-sm">
+            I confirm that the information provided is accurate to the best of my knowledge.
+          </label>
+        </div>
+      </div>
     </form>
   );
 }
@@ -254,13 +297,19 @@ function AuthComponent() {
         </div>
       </div>
       {showCookieConsent && (
-        <div className="fixed bottom-0 left-0 w-full bg-white p-4 shadow-md flex justify-between items-center">
+        <div className="fixed bottom-0 left-0 w-full bg-white p-4 shadow-md flex gap-2  items-end  ">
           <p className="text-gray-700">This site uses cookies to enhance your experience. By continuing, you agree to our use of cookies.</p>
           <button
             onClick={handleAcceptCookies}
             className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
           >
             Accept
+          </button>
+          <button
+            onClick={()=> {setShowCookieConsent(false)}}
+            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          >
+            Reject
           </button>
         </div>
       )}

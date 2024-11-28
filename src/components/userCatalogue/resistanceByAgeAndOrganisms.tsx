@@ -100,32 +100,32 @@ const ResistanceBarChart: React.FC = () => {
     }
 
     return (
-        <div>
-            <div className="mb-4 flex flex-row gap-5">
-                <div className='flex flex-col'>
-                    <label className="mr-2">Start Date</label>
+        <div className="p-4">
+            <div className="mb-4 flex flex-col sm:flex-row gap-5">
+                <div className="flex flex-col w-full sm:w-auto">
+                    <label className="mr-2 text-sm sm:text-base">Start Date</label>
                     <input
                         type="date"
                         value={startDate}
                         onChange={(e) => handleDateChange(e, 'start')}
-                        className="border border-gray-300 rounded p-1 max-w-[15rem]"
+                        className="border border-gray-300 rounded p-2 w-full sm:max-w-[15rem] text-sm sm:text-base"
                     />
                 </div>
-                <div className='flex flex-col'>
-                    <label className="ml-4 mr-2">End Date:</label>
+                <div className="flex flex-col w-full sm:w-auto">
+                    <label className="mr-2 text-sm sm:text-base">End Date:</label>
                     <input
                         type="date"
                         value={endDate}
                         onChange={(e) => handleDateChange(e, 'end')}
-                        className="border border-gray-300 rounded p-1 max-w-[15rem]"
+                        className="border border-gray-300 rounded p-2 w-full sm:max-w-[15rem] text-sm sm:text-base"
                     />
                 </div>
-                <div className='flex flex-col'>
-                    <label className="ml-4 mr-2">Organism</label>
+                <div className="flex flex-col w-full sm:w-auto">
+                    <label className="mr-2 text-sm sm:text-base">Organism</label>
                     <select
                         value={selectedOrganism}
                         onChange={handleOrganismChange}
-                        className="border border-gray-300 rounded p-1 max-w-[15rem]"
+                        className="border border-gray-300 rounded p-2 w-full sm:max-w-[15rem] text-sm sm:text-base"
                     >
                         {organisms.map((organism) => (
                             <option key={organism.value} value={organism.value}>
@@ -135,8 +135,14 @@ const ResistanceBarChart: React.FC = () => {
                     </select>
                 </div>
             </div>
-            {data?.data?.data.length === 0 && <div className="text-red-500 text-center">No Data Available</div>}
-            <Bar data={chartData} />
+            {data?.data?.data.length === 0 && (
+                <div className="text-red-500 text-center text-sm sm:text-base">
+                    No Data Available
+                </div>
+            )}
+            <div className="mt-4">
+                <Bar data={chartData} />
+            </div>
         </div>
     );
 };

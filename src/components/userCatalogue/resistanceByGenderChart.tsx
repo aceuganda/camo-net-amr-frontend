@@ -55,8 +55,8 @@ const ResistanceByGenderBarChart: React.FC = () => {
     return (
         <div className='w-full'>
              <div className="mb-4 flex flex-row gap-5">
-                <div className='flex flex-col'>
-                    <label className="ml-4 mr-2">Organism</label>
+                <div className='flex flex-col max-sm:text-[10px] '>
+                    <label className="ml-4 mr-2 ">Organism</label>
                     <select
                         value={selectedOrganism}
                         onChange={handleOrganismChange}
