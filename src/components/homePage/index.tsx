@@ -3,15 +3,23 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link"; // Import Link for navigation
+import Link from "next/link"; 
+import { useUserInfor } from "@/lib/hooks/useAuth";
 
-// const ResistanceLineChart = dynamic(() => import("./resistanceChart"), { ssr: false });
 const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), { ssr: false });
-const OrganismResistanceByAge = dynamic(() => import("./resistanceByAgeAndOrganisms"), { ssr: false });
-const ResistanceLinesByGender = dynamic(() => import("./resistanceByGenderChart"), { ssr: false });
-const OrganismResistanceByTime = dynamic(() => import("./resistanceByTimeAndOrganism"), { ssr: false });
+
 
 export default function HomePage() {
+  const { data, error } = useUserInfor(); 
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // useEffect(() => {
+  //   if (data?.data) {
+  //     const roles = data.data.user.roles;
+  //     setIsLoggedIn(data.data.logged_in);
+  //   }
+  // }, [data, error]);
+  
   return (
     <main className="flex min-h-screen flex-col items-center bg-white text-gray-800">
       {/* Introduction */}
@@ -96,24 +104,7 @@ export default function HomePage() {
                 </h3>
                 <ResistanceLineChart />
               </div> */}
-              {/* <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
-                  Resistance Cases By Gender
-                </h3>
-                <ResistanceLinesByGender />
-              </div>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
-                  Percentage resistance of organisms as per antibiotics vs time
-                </h3>
-                <OrganismResistanceByTime />
-              </div>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
-                  Percentage resistance of organisms as per antibiotics vs age
-                </h3>
-                <OrganismResistanceByAge />
-              </div> */}
+             
               
             </div>
           </motion.div>
