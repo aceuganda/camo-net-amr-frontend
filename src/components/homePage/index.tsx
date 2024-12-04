@@ -3,17 +3,14 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "next/link"; 
 import { useUserInfor } from "@/lib/hooks/useAuth";
 
+const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), { ssr: false });
 
-
-const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), {
-  ssr: false,
-});
 
 export default function HomePage() {
-  const { data, error } = useUserInfor();
+  const { data, error } = useUserInfor(); 
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // useEffect(() => {
@@ -22,7 +19,7 @@ export default function HomePage() {
   //     setIsLoggedIn(data.data.logged_in);
   //   }
   // }, [data, error]);
-
+  
   return (
     <main className="flex min-h-screen flex-col items-center bg-white text-gray-800">
       {/* Introduction */}
@@ -113,6 +110,8 @@ export default function HomePage() {
                 </h3>
                 <ResistanceLineChart />
               </div> */}
+
+              
             </div>
           </motion.div>
 
