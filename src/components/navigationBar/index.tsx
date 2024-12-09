@@ -14,6 +14,12 @@ import { useMutation } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
+import { appMenuSteps } from "../GuideTour/steps";
+
+
+const GuideTour = dynamic(() => import("@/components/GuideTour"), { ssr: false });
+
+
 const NavigationBar = () => {
   const pathname = usePathname();
   const queryClient = useQueryClient();
@@ -53,19 +59,20 @@ const NavigationBar = () => {
   };
 
   return (
+    <>
     <div className="bg-[#24408E] max-sm:text-[10px] w-full h-[2.5rem] flex justify-between items-center px-[1rem] text-white">
       <div className="w-[40%] flex gap-[0.4rem] sm:gap-[1rem] items-start">
         <Link
           href="/"
-          className={`flex flex-row items-center justify-center ${
+          className={`home_button flex flex-row items-center justify-center ${
             isActive("/") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
-          <HomeIcon /> <span className="ml-2">Home</span>
+          <HomeIcon /> <span className=" ml-2">Home</span>
         </Link>
         <Link
           href="/datasets"
-          className={`flex flex-row items-center justify-center ${
+          className={`catalogue_button flex flex-row items-center justify-center ${
             isActive("/datasets") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
@@ -73,7 +80,7 @@ const NavigationBar = () => {
         </Link>
         <Link
           href="/datasets/publication"
-          className={`flex flex-row items-center justify-center ${
+          className={`publications_button flex flex-row items-center justify-center ${
             isActive("/datasets/publication") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
@@ -81,7 +88,7 @@ const NavigationBar = () => {
         </Link>
         <Link
           href={isLoggedIn ? "/datasets/access" : "/authenticate"}
-          className={`flex flex-row items-center justify-center text-nowrap ${
+          className={`data_access_button flex flex-row items-center justify-center text-nowrap ${
             pathname.includes("/datasets/access") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
@@ -111,7 +118,7 @@ const NavigationBar = () => {
         </div>}
         <Link
           href={'/guide'}
-          className={`flex flex-row items-center justify-center text-nowrap ${
+          className={`guide_button flex flex-row items-center justify-center text-nowrap ${
             pathname.includes("/guide") ? "text-[#00B9F1]" : "text-white"
           }`}
         >
@@ -123,18 +130,20 @@ const NavigationBar = () => {
           <button onClick={handleLogout}>{logoutPending ?<DotsLoader/>:"LOGOUT"}</button>
           <Link
               href="/profile"
-              className="flex items-center justify-center hover:text-[#00B9F1]"
+              className="profile_button flex items-center justify-center hover:text-[#00B9F1]"
               title="View Profile"
             >
               <PersonIcon className="w-5 h-5" />
             </Link>
           </>
         ) : (
-          <Link href="/authenticate">LOGIN</Link>
+          <Link className="auth_button" href="/authenticate">LOGIN</Link>
         )}
       </div>
-
+     
     </div>
+     <GuideTour steps={appMenuSteps} guideKey="menu-page" />
+    </>
   );
 };
 

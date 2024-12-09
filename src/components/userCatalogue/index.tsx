@@ -5,8 +5,10 @@ import { useGetUserCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import SidebarMenu from "../filter";
 import { useRouter } from "next/navigation";
-
+import { dataAccessPage } from "../GuideTour/steps";
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
+const GuideTour = dynamic(() => import("@/components/GuideTour"), { ssr: false });
+
 const OrganismResistanceByAge = dynamic(
   () => import("./resistanceByAgeAndOrganisms"),
   { ssr: false }
@@ -80,6 +82,7 @@ export default function UserCatalogue() {
   };
 
   return (
+    <>
     <main className="flex min-h-screen flex-col items-center ">
       <div className=" w-full flex flex-row overflow-x-hidden">
         <SidebarMenu
@@ -89,6 +92,7 @@ export default function UserCatalogue() {
           setSelectedCategories={setSelectedCategories}
           selectedStatuses={selectedStatuses}
           setSelectedStatuses={setSelectedStatuses}
+          className="menu_button"
         />
 
         <div className="m-[2rem] w-full ">
@@ -121,7 +125,7 @@ export default function UserCatalogue() {
             )}
 
           {filteredDatasets.length > 0 && !error && !isLoading && (
-            <div className="w-[100%] overflow-x-auto">
+            <div className="data_access_table w-[100%] overflow-x-auto">
               <table className=" text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden ">
                 <thead className="bg-[#00B9F1] text-white">
                   <tr>
@@ -184,7 +188,7 @@ export default function UserCatalogue() {
       {/* Button to toggle trends menu */}
       <button
         onClick={() => setIsTrendsMenuOpen(!isTrendsMenuOpen)}
-        className="absolute top-[9rem] right-4 p-2 bg-[#00B9F1] text-white rounded"
+        className="show_trends_button absolute top-[9rem] right-4 p-2 bg-[#00B9F1] text-white rounded"
       >
         {isTrendsMenuOpen ? "Hide Trends" : "Show Trends"}
       </button>
@@ -225,5 +229,7 @@ export default function UserCatalogue() {
         </div>
       </div>
     </main>
+    <GuideTour steps={dataAccessPage} guideKey="data_access_page" />
+    </>
   );
 }
