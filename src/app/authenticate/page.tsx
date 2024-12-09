@@ -9,8 +9,9 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Cookies from 'js-cookie';
+import { AxiosError } from 'axios';
 
-const LogoHeader = dynamic(() => import("@/components/logosHeader"), { ssr: false });
+
 const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), { ssr: false });
 
 function LoginForm() {
@@ -37,7 +38,12 @@ function LoginForm() {
       }, 2000);
     }
     if (error) {
-      toast.error(`Failed to login: make sure you have the right login credentials`);
+      const axiosError = (error as AxiosError).response
+      if(axiosError  && axiosError.status === 409){
+        toast.error(`Failed to login: This user's access has been revoked`);
+      }else{
+        toast.error(`Failed to login: make sure you have the right login credentials`);
+      }
     }
   }, [loginSuccess, error, router]);
 

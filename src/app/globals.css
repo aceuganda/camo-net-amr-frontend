@@ -10,3 +10,7 @@
 .shadow-box {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.1);
 }
+
+.background-net{
+  background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url(/backgroundImageNet.webp)
+}

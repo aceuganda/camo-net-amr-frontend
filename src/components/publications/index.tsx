@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { ChevronLeftIcon, FileTextIcon, ExternalLinkIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import data from "./publications.json"
-
-
+import { useRouter } from "next/navigation";
 
 
 export default function Publication() {
   const [currentPage, setCurrentPage] = useState(1);
   const publicationsPerPage = 10;
+  const router = useRouter();
 
   // Calculate the index range for the current page
   const indexOfLastPublication = currentPage * publicationsPerPage;
@@ -24,11 +24,11 @@ export default function Publication() {
   const totalPages = Math.ceil(data.publications.length / publicationsPerPage);
 
   return (
-    <div style={{ backgroundImage: "url(/backgroundImageNet.webp)" }} className=" min-h-[90vh] bg-no-repeat bg-cover relative bg-fixed bg-center p-6">
+    <div className="background-net bg-opacity-50 min-h-[90vh] bg-no-repeat bg-cover relative bg-fixed bg-center p-6">
       
-
+     
       <div className="flex items-center mb-6">
-        <ChevronLeftIcon className="h-6 w-6 text-blue-600 mr-3" />
+        <ChevronLeftIcon className="h-6 w-6 text-blue-600 mr-3 cursor-pointer" onClick={()=>{router.back()}} />
         <h1 className="text-2xl font-semibold">Publications</h1>
       </div>
 
@@ -59,7 +59,7 @@ export default function Publication() {
         ))}
       </div>
 
-      <div className="flex justify-center space-x-2 mt-6">
+     {data.publications.length > 10 && <div className="flex justify-center space-x-2 mt-6">
         <button
           onClick={() => paginate(currentPage - 1)}
           disabled={currentPage === 1}
@@ -83,7 +83,7 @@ export default function Publication() {
         >
           Next
         </button>
-      </div>
+      </div>}
     </div>
   );
 }

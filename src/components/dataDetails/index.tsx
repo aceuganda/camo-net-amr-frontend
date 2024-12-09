@@ -5,15 +5,25 @@ import Link from "next/link";
 import { useGetDataSet } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import { useMutation } from "@tanstack/react-query";
-import { requestAccess, downloadData, ReRequestAccess } from "@/lib/hooks/useDataSets";
+import {
+  requestAccess,
+  downloadData,
+  ReRequestAccess,
+  useDatasetVariables,
+} from "@/lib/hooks/useDataSets";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
 import { Modal } from "../modal";
 import ConfidentialityAgreement from "../confidentialityAgreement";
-import { Cross2Icon } from '@radix-ui/react-icons';
+import { Cross2Icon, DownloadIcon } from "@radix-ui/react-icons";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
+
+interface VariableInfo {
+  type: string;
+  description: string;
+}
 
 interface DataSet {
   id: string;
@@ -68,12 +78,28 @@ interface Response {
 }
 
 export default function DatasetDetails({ id }: any) {
-  const { data, isLoading, error, refetch } = useGetDataSet(id);
+  const { data, isLoading, isSuccess, error, refetch } = useGetDataSet(id);
   const dataset: Response = data?.data || {};
   const userPermission = dataset.user_permission;
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
+  const {
+    data: dictionaryData,
+    isSuccess: dictionarySuccess,
+    isLoading: dictionaryDataLoading,
+    error: dictionaryDataError,
+    refetch: getDictionary,
+  } = useDatasetVariables(
+    dataset?.data_set &&
+      dataset?.data_set?.category.toLocaleLowerCase().includes("economic")
+      ? "economic"
+      : !dataset?.data_set
+      ? ""
+      : !dataset?.data_set.in_warehouse
+      ? ""
+      : dataset.data_set.thematic_area
+  );
   const [isAgreedToConfidentiality, setIsAgreedToConfidentiality] =
     useState(false);
   const [formValues, setFormValues] = useState({
@@ -86,7 +112,7 @@ export default function DatasetDetails({ id }: any) {
     category: "",
     referee_name: "",
     referee_email: "",
-    irb_number: ""
+    irb_number: "",
   });
 
   const canDownload =
@@ -125,8 +151,9 @@ export default function DatasetDetails({ id }: any) {
     error: downloadError,
     isPending: downloadPending,
     mutate: downloadFn,
-  } = useMutation({
-    mutationFn: downloadData,
+  } = useMutation<any, Error, { source: string; selectedVariables: string[] }>({
+    mutationFn: ({ source, selectedVariables }) =>
+      downloadData(source, selectedVariables),
   });
   const {
     data: reRequestedData,
@@ -147,47 +174,41 @@ export default function DatasetDetails({ id }: any) {
     mutationFn: requestAccess,
   });
 
-  const handleDwn = async () => {
-    if (isAgreedToConfidentiality) {
-      await downloadFn(dataset.data_set.db_name);
-    } else {
-      toast.error(
-        "Please agree to the confidentiality agreement before downloading the data"
-      );
-    }
-  };
-  function validRe_request(lastUpdate:Date|null) {
-    if (!lastUpdate){
-      return false
+  function validRe_request(lastUpdate: Date | null) {
+    if (!lastUpdate) {
+      return false;
     }
     const today = new Date();
     const lastUpdateDate = new Date(lastUpdate);
     const differenceInMilliseconds = today.getTime() - lastUpdateDate.getTime();
     // Convert the difference to days
-    const differenceInDays = Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24));
+    const differenceInDays = Math.floor(
+      differenceInMilliseconds / (1000 * 60 * 60 * 24)
+    );
     // Return true if the difference is less than 14 days
-    
+
     return differenceInDays < 14;
   }
-  function daysCalculator(lastUpdate:Date|null) {
-    if (!lastUpdate){
-      return 'Not defined'
+  function daysCalculator(lastUpdate: Date | null) {
+    if (!lastUpdate) {
+      return "Not defined";
     }
     const today = new Date();
     const lastUpdateDate = new Date(lastUpdate);
     const differenceInMilliseconds = today.getTime() - lastUpdateDate.getTime();
     // Convert the difference to days
-    const differenceInDays = Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24));
+    const differenceInDays = Math.floor(
+      differenceInMilliseconds / (1000 * 60 * 60 * 24)
+    );
     // Return true if the difference is less than 14 days
-    const difference = (14 - differenceInDays)
+    const difference = 14 - differenceInDays;
     return difference < 0 ? 0 : difference;
   }
 
   const handleReRequest = async () => {
-    if(userPermission && !validRe_request(userPermission.last_update) ){
+    if (userPermission && !validRe_request(userPermission.last_update)) {
       await reRequestAccess(userPermission.id);
     }
-      
   };
   const handleRequest = async (e: any) => {
     e.preventDefault();
@@ -205,7 +226,7 @@ export default function DatasetDetails({ id }: any) {
       otherCategory,
       referee_name,
       referee_email,
-      irb_number
+      irb_number,
     } = formValues;
     if (
       project_description &&
@@ -227,7 +248,7 @@ export default function DatasetDetails({ id }: any) {
         category: category === "other" ? otherCategory : category,
         referee_name,
         referee_email,
-        irb_number
+        irb_number,
       };
       requestFn({ ...data, data_set_id: dataset.data_set.id });
       setIsModalOpen(false);
@@ -252,6 +273,40 @@ export default function DatasetDetails({ id }: any) {
       );
     }
   }, [downloadedData, isDownloadSuccess, downloadError]);
+  function generateCSVFromDataset() {
+  const csvRows: string[] = [];
+ 
+  if(dictionaryData?.data?.data){
+   const dictionary = dictionaryData.data.data as VariableInfo
+  csvRows.push("variable,type,description");
+
+  // Iterate through the dataset and construct rows
+  for (const [key, value] of Object.entries(dictionary)) {
+    const row = `${key},${value.type},${value.description}`;
+    csvRows.push(row);
+  }
+
+  // Join rows with newlines to form the final CSV string
+  const csvContent = csvRows.join("\n");
+  // Create a Blob object from the CSV content
+  const blob = new Blob([csvContent], { type: "text/csv" });
+
+
+  const url = URL.createObjectURL(blob);
+
+  // Create a temporary anchor element for downloading
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "dictionary.csv"; 
+  document.body.appendChild(a);
+  a.click();
+
+  // Clean up 
+  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+
+}
+}
 
   useEffect(() => {
     if (requestData && isRequestSuccess) {
@@ -267,8 +322,8 @@ export default function DatasetDetails({ id }: any) {
 
   useEffect(() => {
     if (reRequestSuccess) {
-      toast.success('Request sent successfully')
-      refetch()
+      toast.success("Request sent successfully");
+      refetch();
     }
   }, [reRequestSuccess]);
 
@@ -279,7 +334,43 @@ export default function DatasetDetails({ id }: any) {
       [name]: type === "checkbox" ? checked : value,
     });
   };
- 
+  const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
+
+  const handleCheckboxChange = (variable: string) => {
+    setSelectedVariables((prev) => {
+      if (prev.includes(variable)) {
+        return prev.filter((item) => item !== variable);
+      } else {
+        return [...prev, variable];
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (dictionaryData?.data?.data) {
+      setSelectedVariables(Object.keys(dictionaryData.data.data));
+    }
+  }, [dictionaryData]);
+
+  useEffect(() => {
+    if (isSuccess && dataset) {
+      getDictionary();
+    }
+  }, [isSuccess]);
+
+  const handleDwn = async () => {
+    if (selectedVariables.length < 1) {
+      toast.error("You need to select at least 1 variable do download");
+      return;
+    }
+    if (isAgreedToConfidentiality) {
+      await downloadFn({ source: dataset.data_set.db_name, selectedVariables });
+    } else {
+      toast.error(
+        "Please agree to the confidentiality agreement before downloading the data"
+      );
+    }
+  };
 
   return (
     <main className="min-h-screen flex-col w-full flex items-start bg-gray-50">
@@ -298,18 +389,28 @@ export default function DatasetDetails({ id }: any) {
       {data && !error && !isLoading && (
         <div className="min-h-screen w-[100%] ">
           <div className=" mx-auto px-4 w-[95%] sm:px-6 lg:px-8 py-8">
-            {/* Breadcrumb and Actions */}
             {permissionStatus === "requested" && (
-            <div className="flex flex-col ">
-              <div className="bg-yellow-100  p-[5px] text-gray-900 mb-[2rem]">
-                Your request should be responded to with in the next 14 days. If
-                not you will be eligible to re-request.
-               {userPermission && `You have ${userPermission.last_update ? daysCalculator(userPermission.last_update): daysCalculator(userPermission.created_at) } days left to re-request if not responded to`}
-              </div>
-              {(userPermission && !validRe_request(userPermission.last_update ? userPermission.last_update: userPermission.created_at)) && <button
-                    onClick={handleReRequest}
-                    className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center w-[20rem]"
-                  >
+              <div className="flex flex-col ">
+                <div className="bg-yellow-100  p-[5px] text-gray-900 mb-[2rem]">
+                  Your request should be responded to with in the next 14 days.
+                  If not you will be eligible to re-request.
+                  {userPermission &&
+                    `You have ${
+                      userPermission.last_update
+                        ? daysCalculator(userPermission.last_update)
+                        : daysCalculator(userPermission.created_at)
+                    } days left to re-request if not responded to`}
+                </div>
+                {userPermission &&
+                  !validRe_request(
+                    userPermission.last_update
+                      ? userPermission.last_update
+                      : userPermission.created_at
+                  ) && (
+                    <button
+                      onClick={handleReRequest}
+                      className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center w-[20rem]"
+                    >
                       <>
                         <svg
                           className="w-5 h-5 mr-2"
@@ -324,10 +425,20 @@ export default function DatasetDetails({ id }: any) {
                             d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
                           />
                         </svg>
-                        { reRequestPending?  <DotsLoader />:'Re-request Access'}
+                        {reRequestPending ? (
+                          <DotsLoader />
+                        ) : (
+                          "Re-request Access"
+                        )}
                       </>
-                  </button>}
-               {reRequestError && <div className="text-red-600 text-[11px]">Failed to send a new request, please be sure you are in a valid date range before you try again.</div>}
+                    </button>
+                  )}
+                {reRequestError && (
+                  <div className="text-red-600 text-[11px]">
+                    Failed to send a new request, please be sure you are in a
+                    valid date range before you try again.
+                  </div>
+                )}
               </div>
             )}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -360,7 +471,7 @@ export default function DatasetDetails({ id }: any) {
                     }`}
                   >
                     {downloadPending ? (
-                      <DotsLoader/>
+                      <DotsLoader />
                     ) : (
                       <>
                         <svg
@@ -388,7 +499,7 @@ export default function DatasetDetails({ id }: any) {
                     className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center min-w-[10rem]"
                   >
                     {requestPending ? (
-                       <DotsLoader />
+                      <DotsLoader />
                     ) : (
                       <>
                         <svg
@@ -427,7 +538,6 @@ export default function DatasetDetails({ id }: any) {
             </h1>
 
             <div className="flex flex-col  lg:flex-row gap-8">
-              {/* Main Content */}
               <div className="flex-grow min-w-[80%]">
                 <div className="bg-white rounded-xl shadow-sm mb-8">
                   <div className="p-6">
@@ -572,7 +682,7 @@ export default function DatasetDetails({ id }: any) {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-start space-x-3">
                           <div>
                             <p className="text-sm font-medium text-gray-500">
@@ -596,7 +706,6 @@ export default function DatasetDetails({ id }: any) {
                     Credibility
                   </h2>
                   <div className="space-y-4">
-                   
                     <div>
                       <p className="text-sm font-medium text-gray-500">
                         Protocol ID
@@ -634,37 +743,85 @@ export default function DatasetDetails({ id }: any) {
                         Number Re-requests sent
                       </p>
                       <p className="mt-1 text-gray-900">
-                      {userPermission?.re_request_count}
+                        {userPermission?.re_request_count}
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-           
+            {dataset.data_set.in_warehouse && (
+              <div className="p-4">
+                <div className="flex flex-row items-center justify-start gap-5 mb-4">
+                <h2 className="text-2xl font-semibold text-[#003366] ">
+                  Data Download Variables
+                </h2>
+                  <div title="Download dictionary"> <DownloadIcon width={20} height={20}  onClick={generateCSVFromDataset} className="cursor-pointer" /> </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {dictionaryDataLoading && <DotsLoader />}
+                  {dictionaryDataError && (
+                    <p className="text-red-600">
+                      Failed to fetch data dictionary please refresh
+                    </p>
+                  )}
+                  {!dictionaryData?.data?.data && isSuccess && (
+                    <p className="text-red-600">
+                      Variables not available
+                    </p>
+                  )}
+                  {dictionarySuccess &&
+                    dictionaryData?.data?.data &&
+                    Object.entries(
+                      dictionaryData?.data.data as VariableInfo
+                    ).map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="border rounded-lg p-4 bg-white shadow-md hover:shadow-lg transition-shadow"
+                      >
+                        <div className="flex items-center mb-2">
+                         
+                          <label htmlFor={key} className="font-medium">
+                            Name: {key}
+                          </label>
+                        </div>
+                        <p className="text-gray-600 text-sm">
+                          <strong>Type:</strong> {value?.type}
+                        </p>
+                        <p className="text-gray-600 text-sm">
+                          {String(value?.description)}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
-       
-       <div 
+
+      <div
         className={`fixed inset-y-0 right-0 w-[500px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
-          ${isModalOpen ? 'translate-x-0' : 'translate-x-full'} 
+          ${isModalOpen ? "translate-x-0" : "translate-x-full"} 
           z-50 overflow-y-auto p-8`}
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Request Access</h2>
-          <button 
+          <button
             onClick={() => setIsModalOpen(false)}
             className="text-gray-600 hover:text-gray-900"
           >
-            <Cross2Icon/>
+            <Cross2Icon />
           </button>
         </div>
-        
+
         <form>
           <div className="space-y-4">
             <div>
-              <label className="block text-gray-700 mb-2">Institution / Organization:</label>
+              <label className="block text-gray-700 mb-2">
+                Institution / Organization:
+              </label>
               <input
                 type="text"
                 name="institution"
@@ -676,7 +833,9 @@ export default function DatasetDetails({ id }: any) {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Title/Position:</label>
+              <label className="block text-gray-700 mb-2">
+                Title/Position:
+              </label>
               <input
                 type="text"
                 name="title"
@@ -736,7 +895,9 @@ export default function DatasetDetails({ id }: any) {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Project Description/Abstract:</label>
+              <label className="block text-gray-700 mb-2">
+                Project Description/Abstract:
+              </label>
               <textarea
                 name="project_description"
                 value={formValues.project_description}
@@ -754,7 +915,9 @@ export default function DatasetDetails({ id }: any) {
                 onChange={handleInputChange}
                 className="w-full p-2 border rounded"
               >
-                <option value="" disabled>Select your category</option>
+                <option value="" disabled>
+                  Select your category
+                </option>
                 <option value="student">Student</option>
                 <option value="researcher">Researcher</option>
                 <option value="developer">Data scientist</option>
@@ -762,7 +925,9 @@ export default function DatasetDetails({ id }: any) {
               </select>
               {formValues.category === "other" && (
                 <div className="mt-2">
-                  <label className="block text-gray-700 mb-2">Please specify:</label>
+                  <label className="block text-gray-700 mb-2">
+                    Please specify:
+                  </label>
                   <input
                     type="text"
                     name="otherCategory"
@@ -794,20 +959,78 @@ export default function DatasetDetails({ id }: any) {
           </div>
         </form>
       </div>
-    
-      <Modal
-        isOpen={isAgreementModalOpen}
-        onClose={() => setIsAgreementModalOpen(false)}
-        onSubmit={handleDwn}
-        cancelText="Cancel"
-        submitText={downloadPending ? <DotsLoader /> : "Download"}
+
+      <div
+        className={`fixed inset-y-0 right-0 w-[50%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
+          ${isAgreementModalOpen ? "translate-x-0" : "translate-x-full"} 
+          z-50 overflow-y-auto p-8`}
       >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Download Data</h2>
+          <button
+            onClick={() => setIsAgreementModalOpen(false)}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <Cross2Icon />
+          </button>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Select variables to download
+        </h2>
+
+        {
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {dictionaryDataLoading && <DotsLoader />}
+            {dictionaryDataError && (
+              <p className="text-red-600">
+                Failed to fetch data dictionary please refresh
+              </p>
+            )}
+            {dictionarySuccess &&
+              dictionaryData?.data?.data &&
+              Object.entries(dictionaryData?.data.data as VariableInfo).map(
+                ([key, value]) => (
+                  <div
+                    key={key}
+                    className="border rounded-lg p-4 text-[12px] bg-white shadow-md hover:shadow-lg transition-shadow"
+                  >
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id={key}
+                        checked={selectedVariables.includes(key)}
+                        onChange={() => handleCheckboxChange(key)}
+                        className="mr-2"
+                      />
+                      <label htmlFor={key} className="font-medium">
+                        {key}
+                      </label>
+                    </div>
+                    <p className="text-gray-600 text-sm">
+                      <strong>Type:</strong> {value?.type}
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      {String(value?.description)}
+                    </p>
+                  </div>
+                )
+              )}
+          </div>
+        }
+
         <ConfidentialityAgreement
           handleAgreedCallBack={(agreed: boolean) => {
             if (agreed) setIsAgreedToConfidentiality(true);
           }}
         />
-      </Modal>
+
+        <button
+          onClick={handleDwn}
+          className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
+        >
+          {downloadPending ? <DotsLoader /> : "Download"}
+        </button>
+      </div>
     </main>
   );
 }
