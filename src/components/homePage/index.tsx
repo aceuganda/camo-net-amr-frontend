@@ -124,7 +124,7 @@ export default function HomePage() {
             {/* <h2 className="text-2xl text-[17px] font-semibold text-[#003366] mb-4">
               About The Data
             </h2>
-            
+
             <p className="text-gray-700 text-[12px] mb-4">
             Data about antimicrobial resistance (AMR), use and Economic burden data was collected from 9 regional referral hospitals (RRH) in Uganda by the Infectious Disease Institute namely: 
             Jinja Regional Referral Hospital (RRH), Gulu (RRH), Arua RRH, Lira RRH, Soroti RRH, Mbale RRH, Masaka RRH, Mbarara RRH and Kabale RRH. 
