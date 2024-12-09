@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
 import { Modal } from "../modal";
 import ConfidentialityAgreement from "../confidentialityAgreement";
-import { Cross2Icon } from "@radix-ui/react-icons";
+import { Cross2Icon, DownloadIcon } from "@radix-ui/react-icons";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -273,6 +273,40 @@ export default function DatasetDetails({ id }: any) {
       );
     }
   }, [downloadedData, isDownloadSuccess, downloadError]);
+  function generateCSVFromDataset() {
+  const csvRows: string[] = [];
+ 
+  if(dictionaryData?.data?.data){
+   const dictionary = dictionaryData.data.data as VariableInfo
+  csvRows.push("variable,type,description");
+
+  // Iterate through the dataset and construct rows
+  for (const [key, value] of Object.entries(dictionary)) {
+    const row = `${key},${value.type},${value.description}`;
+    csvRows.push(row);
+  }
+
+  // Join rows with newlines to form the final CSV string
+  const csvContent = csvRows.join("\n");
+  // Create a Blob object from the CSV content
+  const blob = new Blob([csvContent], { type: "text/csv" });
+
+
+  const url = URL.createObjectURL(blob);
+
+  // Create a temporary anchor element for downloading
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "dictionary.csv"; 
+  document.body.appendChild(a);
+  a.click();
+
+  // Clean up 
+  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+
+}
+}
 
   useEffect(() => {
     if (requestData && isRequestSuccess) {
@@ -355,7 +389,6 @@ export default function DatasetDetails({ id }: any) {
       {data && !error && !isLoading && (
         <div className="min-h-screen w-[100%] ">
           <div className=" mx-auto px-4 w-[95%] sm:px-6 lg:px-8 py-8">
-            {/* Breadcrumb and Actions */}
             {permissionStatus === "requested" && (
               <div className="flex flex-col ">
                 <div className="bg-yellow-100  p-[5px] text-gray-900 mb-[2rem]">
@@ -719,9 +752,13 @@ export default function DatasetDetails({ id }: any) {
             </div>
             {dataset.data_set.in_warehouse && (
               <div className="p-4">
-                <h2 className="text-2xl font-semibold text-[#003366] mb-4">
+                <div className="flex flex-row items-center justify-start gap-5 mb-4">
+                <h2 className="text-2xl font-semibold text-[#003366] ">
                   Data Download Variables
                 </h2>
+                  <div title="Download dictionary"> <DownloadIcon width={20} height={20}  onClick={generateCSVFromDataset} className="cursor-pointer" /> </div>
+                </div>
+                
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {dictionaryDataLoading && <DotsLoader />}
                   {dictionaryDataError && (
