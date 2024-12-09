@@ -2,7 +2,7 @@
 import React from 'react';
 
 const colorScale = [
-    { range: 'Unknown', color: '#CCCCCC' },      // Very Light Red (0 cases)
+    { range: 'No data', color: '#CCCCCC' },      // Very Light Red (0 cases)
     { range: '1 - 50', color: '#FF6969' }, // Light Red
     { range: '51 - 100', color: '#FF3333' }, // Moderate Red
     { range: '101 - 500', color: '#CC0000' }, // Medium Red

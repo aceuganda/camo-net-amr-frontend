@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQueryClient } from '@tanstack/react-query';
-import { HomeIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { HomeIcon, MagnifyingGlassIcon, PersonIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { logout } from "@/lib/hooks/useAuth";
 import { usePathname } from "next/navigation";
@@ -72,6 +72,14 @@ const NavigationBar = () => {
           <span className="ml-2">Catalogue</span>
         </Link>
         <Link
+          href="/datasets/publication"
+          className={`flex flex-row items-center justify-center ${
+            isActive("/datasets/publication") ? "text-[#00B9F1]" : "text-white"
+          }`}
+        >
+          <span className="ml-2">Publications</span>
+        </Link>
+        <Link
           href={isLoggedIn ? "/datasets/access" : "/authenticate"}
           className={`flex flex-row items-center justify-center text-nowrap ${
             pathname.includes("/datasets/access") ? "text-[#00B9F1]" : "text-white"
@@ -111,11 +119,21 @@ const NavigationBar = () => {
         </Link>
 
         {isLoggedIn ? (
+          <>
           <button onClick={handleLogout}>{logoutPending ?<DotsLoader/>:"LOGOUT"}</button>
+          <Link
+              href="/profile"
+              className="flex items-center justify-center hover:text-[#00B9F1]"
+              title="View Profile"
+            >
+              <PersonIcon className="w-5 h-5" />
+            </Link>
+          </>
         ) : (
           <Link href="/authenticate">LOGIN</Link>
         )}
       </div>
+
     </div>
   );
 };

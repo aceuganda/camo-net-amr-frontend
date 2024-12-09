@@ -10,6 +10,8 @@ interface RegisterData {
   email: string;
   password: string;
   name: string;
+  institution: string;
+  age_range: string;
 }
 
 
@@ -46,4 +48,24 @@ export const Register = async (data: RegisterData) => {
 export const logout = async () => {
   const response =  await api.post('/logout');
   return true;
+};
+
+export const updateUser = async (data: any) => {
+  const response = await api.patch('/users', data);
+  return response.data;
+};
+
+export const useGetRequestUser =  (perms_id: string | null) => {
+  return useQuery<any, Error, {data: any}>({
+    queryFn: () => api.get(`/permissions/${perms_id}/user`),
+    queryKey: ["fetch_perms_user"],
+    meta: {
+      errorMessage: "Failed to permissions user"
+    }
+  });
+};
+
+export const submitReference = async (data: any) => {
+  const response = await api.post('/referee_responses', data);
+  return response.data;
 };

@@ -216,6 +216,7 @@ export default function UserCatalogue() {
             <OrganismResistanceByTime />
           </div>
           <div className="bg-gray-50 p-6 rounded-lg">
+            
             <h3 className="text-[11px]  sm:text-xl  text-center font-semibold text-[#003366] mb-4">
               Percentage resistance of organisms as per antibiotics vs age
             </h3>
