@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
 import { Modal } from "../modal";
 import ConfidentialityAgreement from "../confidentialityAgreement";
+import { Cross2Icon } from '@radix-ui/react-icons';
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -83,6 +84,9 @@ export default function DatasetDetails({ id }: any) {
     project_title: "",
     otherCategory: "",
     category: "",
+    referee_name: "",
+    referee_email: "",
+    irb_number: ""
   });
 
   const canDownload =
@@ -199,6 +203,9 @@ export default function DatasetDetails({ id }: any) {
       project_title,
       category,
       otherCategory,
+      referee_name,
+      referee_email,
+      irb_number
     } = formValues;
     if (
       project_description &&
@@ -206,7 +213,10 @@ export default function DatasetDetails({ id }: any) {
       institution &&
       title &&
       agreed_to_privacy &&
-      category
+      category &&
+      referee_name &&
+      referee_email &&
+      irb_number
     ) {
       const data = {
         project_description,
@@ -215,6 +225,9 @@ export default function DatasetDetails({ id }: any) {
         agreed_to_privacy,
         project_title,
         category: category === "other" ? otherCategory : category,
+        referee_name,
+        referee_email,
+        irb_number
       };
       requestFn({ ...data, data_set_id: dataset.data_set.id });
       setIsModalOpen(false);
@@ -632,101 +645,135 @@ export default function DatasetDetails({ id }: any) {
           </div>
         </div>
       )}
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleModalSubmit}
-        cancelText="Cancel"
-        submitText={requestPending ? <DotsLoader /> : "Submit"}
+       
+       <div 
+        className={`fixed inset-y-0 right-0 w-[500px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
+          ${isModalOpen ? 'translate-x-0' : 'translate-x-full'} 
+          z-50 overflow-y-auto p-8`}
       >
-        <div>
-          <div className="max-h-[50vh] overflow-y-auto">
-            <form>
-              <div className="mb-4">
-                <label className="block text-gray-700">
-                  Institution / Organization:
-                </label>
-                <input
-                  type="text"
-                  name="institution"
-                  value={formValues.institution}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter institution"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700">Title/Position:</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formValues.title}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter title"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700">Project title:</label>
-                <input
-                  type="text"
-                  name="project_title"
-                  value={formValues.project_title}
-                  onChange={handleInputChange}
-                  className="w-full p-3 text-lg border rounded"
-                  placeholder="Enter purpose"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700">
-                  Project Description/Abstract:
-                </label>
-                <textarea
-                  name="project_description"
-                  value={formValues.project_description}
-                  onChange={handleInputChange}
-                  className="w-full p-3 text-lg border rounded h-30"
-                  placeholder="Enter purpose"
-                />
-              </div>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Request Access</h2>
+          <button 
+            onClick={() => setIsModalOpen(false)}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <Cross2Icon/>
+          </button>
+        </div>
+        
+        <form>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-gray-700 mb-2">Institution / Organization:</label>
+              <input
+                type="text"
+                name="institution"
+                value={formValues.institution}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                placeholder="Enter institution"
+              />
+            </div>
 
-              <div className="mb-4">
-                <label className="block text-gray-700">Category:</label>
-                <select
-                  name="category"
-                  value={formValues.category}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="" disabled>
-                    Select your category
-                  </option>
-                  <option value="student">Student</option>
-                  <option value="researcher">Researcher</option>
-                  <option value="developer">Data scientist</option>
-                  <option value="other">Other</option>
-                </select>
-                <span className="text-sm text-gray-600">
-                  Please select the category that best describes your role.
-                </span>
-                {formValues.category === "other" && (
-                  <div className="mt-2">
-                    <label className="block text-gray-700">
-                      Please specify:
-                    </label>
-                    <input
-                      type="text"
-                      name="otherCategory"
-                      value={formValues.otherCategory}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded"
-                      placeholder="Enter your category"
-                    />
-                  </div>
-                )}
-              </div>
-            </form>
+            <div>
+              <label className="block text-gray-700 mb-2">Title/Position:</label>
+              <input
+                type="text"
+                name="title"
+                value={formValues.title}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                placeholder="Enter title"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Referee Name:</label>
+              <input
+                type="text"
+                name="referee_name"
+                value={formValues.referee_name}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                placeholder="Enter referee name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Referee Email:</label>
+              <input
+                type="email"
+                name="referee_email"
+                value={formValues.referee_email}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                placeholder="Enter referee email"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">IRB Number:</label>
+              <input
+                type="text"
+                name="irb_number"
+                value={formValues.irb_number}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                placeholder="Enter IRB number"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Project Title:</label>
+              <input
+                type="text"
+                name="project_title"
+                value={formValues.project_title}
+                onChange={handleInputChange}
+                className="w-full p-3 text-lg border rounded"
+                placeholder="Enter project title"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Project Description/Abstract:</label>
+              <textarea
+                name="project_description"
+                value={formValues.project_description}
+                onChange={handleInputChange}
+                className="w-full p-3 text-lg border rounded h-30"
+                placeholder="Enter project description"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Category:</label>
+              <select
+                name="category"
+                value={formValues.category}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+              >
+                <option value="" disabled>Select your category</option>
+                <option value="student">Student</option>
+                <option value="researcher">Researcher</option>
+                <option value="developer">Data scientist</option>
+                <option value="other">Other</option>
+              </select>
+              {formValues.category === "other" && (
+                <div className="mt-2">
+                  <label className="block text-gray-700 mb-2">Please specify:</label>
+                  <input
+                    type="text"
+                    name="otherCategory"
+                    value={formValues.otherCategory}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter your category"
+                  />
+                </div>
+              )}
+            </div>
 
             <ConfidentialityAgreement
               handleAgreedCallBack={(agreed: boolean) => {
@@ -737,9 +784,17 @@ export default function DatasetDetails({ id }: any) {
                   });
               }}
             />
+
+            <button
+              onClick={handleModalSubmit}
+              className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
+            >
+              {requestPending ? <DotsLoader /> : "Submit Request"}
+            </button>
           </div>
-        </div>
-      </Modal>
+        </form>
+      </div>
+    
       <Modal
         isOpen={isAgreementModalOpen}
         onClose={() => setIsAgreementModalOpen(false)}

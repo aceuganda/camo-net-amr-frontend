@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import {
-  DownloadIcon,
-} from "@radix-ui/react-icons";
+import { DownloadIcon } from "@radix-ui/react-icons";
 import { useSearch } from "@/context/searchContext";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import SidebarMenu from "../filter";
-
+import { InfoCircledIcon, HeartFilledIcon, HandIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -55,19 +54,20 @@ const formatDate = (date: any) => {
   });
 };
 
-
 const escapeCSVValue = (value: any) => {
-  if (value === null || value === undefined) return ""; 
-  const stringValue = value.toString(); 
+  if (value === null || value === undefined) return "";
+  const stringValue = value.toString();
 
-  if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
+  if (
+    stringValue.includes(",") ||
+    stringValue.includes('"') ||
+    stringValue.includes("\n")
+  ) {
     return `"${stringValue.replace(/"/g, '""')}"`;
   }
   return stringValue;
 };
 
-
-// Function to convert datasets to CSV format
 const convertToCSV = (datasets: FetchedDataset[]) => {
   const headers = [
     "Name",
@@ -135,7 +135,6 @@ const convertToCSV = (datasets: FetchedDataset[]) => {
 
   return encodeURI(csvContent);
 };
-
 
 export default function HomeCatalogue() {
   const { searchTerm } = useSearch();
@@ -208,10 +207,24 @@ export default function HomeCatalogue() {
         <div
           className={`ml-[2rem] w-[90%] ${!isMenuOpen ? "" : "sm:w-[80%]"} `}
         >
-          <div className="text-[#24408E] font-[700] w-full gap-[7px] flex-row flex items-center justify-end px-[1rem] my-[30px]">
-            <DownloadIcon onClick={handleExport} className="cursor-pointer" /> 
-            <span className="cursor-pointer" onClick={handleExport}>EXPORT</span>
+          <div className="text-[#24408E] font-[700] w-full  flex-row gap-4 flex items-center justify-end px-[1rem] my-[30px]">
+            <div className="flex flex-row gap-2 items-center">
+              <DownloadIcon onClick={handleExport} className="cursor-pointer" />
+              <span className="cursor-pointer" onClick={handleExport}>
+                EXPORT CATALOGUE
+              </span>
+            </div>
+            <div className="flex flex-row items-center">
+     
+            <Link
+           href={'/datasets/external'}
+          className="bg-blue-500 flex flex-row items-center gap-1 text-white px-4 py-2 rounded"
+        >
+          <HandIcon/> Contribute a dataset
+        </Link>
+            </div>
           </div>
+
 
           <div>
             {isLoading && (
@@ -233,7 +246,8 @@ export default function HomeCatalogue() {
             )}
 
             {filteredDatasets.length === 0 &&
-              (selectedCategories.length > 0 || selectedStatuses.length > 0) && (
+              (selectedCategories.length > 0 ||
+                selectedStatuses.length > 0) && (
                 <div className="text-center w-full flex items-start justify-center text-gray-500">
                   No data matches the selected filters.
                 </div>
@@ -254,43 +268,77 @@ export default function HomeCatalogue() {
                         />
                       </th>
                       {[
-                        "Name",
-                        "Title",
-                        "Acronym",
-                        "Description",
-                        "AMR Category",
-                        "Category",
-                        "Type",
-                        
-                        "Project Status",
-                        "On-hold Reason",
-                        "Countries",
+                        { header: "Name" },
+                        { header: "Title" },
+                        {
+                          header: "Acronym",
+                          tooltip: "Shortened form of the project name.",
+                        },
+                        { header: "Description" },
+                        {
+                          header: "AMR Category",
+                          tooltip: "Antimicrobial Resistance category.",
+                        },
+                        { header: "Category" },
+                        { header: "Type" },
+                        { header: "Project Status" },
+                        {
+                          header: "On-hold Reason",
+                          tooltip: "Reason why the project is on hold.",
+                        },
+                        { header: "Countries" },
+                        {
+                          header: "Source",
+                          tooltip: "Origin or provider(s) of the data.",
+                        },
+                        {
+                          header: "Data Format",
+                          tooltip: "Data download format",
+                        },
+                        {
+                          header: "Entries",
+                          tooltip: "Number of data records.",
+                        },
 
-                        "Source",
-                        "Data Format",
-                        "Entries",
-                      
-                        "Citation Info",
-                        "Study Design",
-                       
-                        "Project Type",
-                        "Main Project Name",
-                        "Data Capture Method",
-                        "In Warehouse",
-                        
-                        "Protocol ID",
-                        "Country Protocol ID",
-                        "Start Date",
-                        "End Date",
-                      ].map((header) => (
-                        <th key={header} className="p-5 text-left">
-                          {header}
+                        { header: "Study Design" },
+                        { header: "Project Type" },
+                        { header: "Main Project Name" },
+                        {
+                          header: "Data Capture Method",
+                          tooltip: "Technique used to collect data.",
+                        },
+                        {
+                          header: "In Warehouse",
+                          tooltip: "True is data is available for download",
+                        },
+                        { header: "Protocol ID" },
+                        { header: "Country Protocol ID" },
+                        { header: "Start Date" },
+                        { header: "End Date" },
+                        {
+                          header: "Citation Info",
+                        },
+                      ].map(({ header, tooltip }) => (
+                        <th
+                          key={header}
+                          className="p-5 text-left relative group"
+                        >
+                          <div className="flex items-center">
+                            {header}
+                            {tooltip && (
+                              <div className="relative ml-2 group">
+                                <InfoCircledIcon className="w-4 h-4 text-white cursor-help" />
+                                <div className="absolute -top-10 left-0 bg-gray-800 text-white text-xs rounded p-2 shadow-md whitespace-nowrap hidden group-hover:block">
+                                  {tooltip}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </th>
                       ))}
                     </tr>
                   </thead>
 
-                  {/* Table Body */}
                   <tbody>
                     {filteredDatasets.map((dataset, index) => (
                       <tr
@@ -316,7 +364,7 @@ export default function HomeCatalogue() {
                           dataset.amr_category,
                           dataset.category,
                           dataset.type,
-             
+
                           dataset.project_status,
                           dataset.on_hold_reason,
                           dataset.countries,
@@ -324,16 +372,15 @@ export default function HomeCatalogue() {
                           dataset.source,
                           dataset.data_format,
                           dataset.entries_count,
-                         
-                          dataset.citation_info,
+
+                          // dataset.citation_info,
                           dataset.study_design,
-                          
+
                           dataset.project_type,
                           dataset.main_project_name,
                           dataset.data_capture_method,
                           dataset.in_warehouse?.toString(),
-                         
-                          
+
                           dataset.protocol_id,
                           dataset.country_protocol_id,
                           formatDate(dataset.start_date),
@@ -346,6 +393,23 @@ export default function HomeCatalogue() {
                             {value}
                           </td>
                         ))}
+                        <td className="p-5 max-w-[150px] h-[50px] relative group">
+                          <div className="truncate ">
+                            {dataset.citation_info ? (
+                              <span>Citation Available</span>
+                            ) : (
+                              <span className="text-gray-500 italic">
+                                No citations
+                              </span>
+                            )}
+                          </div>
+                          {dataset.citation_info && (
+                            <div className="absolute top-full left-[-70%] mt-2 bg-gray-800 text-white text-[10px] rounded p-2 shadow-md hidden group-hover:block z-10">
+                              <p className="font-bold mb-1">Citations</p>
+                              <p>{dataset.citation_info}</p>
+                            </div>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

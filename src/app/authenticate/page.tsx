@@ -100,6 +100,8 @@ function LoginForm() {
 function RegistrationForm() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const [institution, setInstitution] = useState("");
+  const [ageRange, setAgeRange] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false);
@@ -121,7 +123,7 @@ function RegistrationForm() {
 
   const handleRegistrationSubmit = async (e:any) => {
     e.preventDefault();
-    if (!email || !fullName || !password) {
+    if (!email || !fullName || !password || !institution || !ageRange) {
       toast.error("Please fill all the required fields");
       return;
     }
@@ -138,12 +140,12 @@ function RegistrationForm() {
       return;
     }
     
-
-    mutate({ email, name: fullName, password });
+    mutate({ email, name: fullName, password, institution: institution, age_range: ageRange, });
+    
   };
 
   return (
-    <form onSubmit={handleRegistrationSubmit} className="space-y-3">
+    <form onSubmit={handleRegistrationSubmit} className="h-[27rem] overflow-auto space-y-3">
       <div>
         <label className="block text-gray-700">
           Email Address <span className="text-red-600 text-[11px]">(Required)</span>
@@ -169,6 +171,36 @@ function RegistrationForm() {
           placeholder="Full Name"
           required
         />
+      </div>
+      <div>
+        <label className="block text-gray-700">
+          Institution <span className="text-red-600 text-[11px]">(Required)</span>
+        </label>
+        <input
+          type="text"
+          value={institution}
+          onChange={(e) => setInstitution(e.target.value)}
+          className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+          placeholder="Institution"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-gray-700">
+          Age Range <span className="text-red-600 text-[11px]">(Required)</span>
+        </label>
+        <select
+          value={ageRange}
+          onChange={(e) => setAgeRange(e.target.value)}
+          className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+          required
+        >
+          <option className=" text-gray-700" value="" disabled>Select Age Range</option>
+          <option value="18 to 24">18 to 24</option>
+          <option value="25 to 34">25 to 34</option>
+          <option value="35 to 44">35 to 44</option>
+          <option value="45 and above">45 and above</option>
+        </select>
       </div>
       <div>
         <label className="block text-gray-700">

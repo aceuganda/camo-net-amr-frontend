@@ -48,14 +48,14 @@ const ConfidentialityAgreement = ({handleAgreedCallBack}:any) => {
           1. The person agreeing to this Agreement shall use Information only for the reason stated in the data request form, shall hold Information in confidence using the same degree of care as they normally exercise to protect their own proprietary information, but not less than reasonable care, taking into account the nature of the Information, and shall grant access to Information only to those who need to know the progress, but only to the extent necessary to carry out the business purpose. The person shall comply with the provisions of this Agreement, shall reproduce Information only to the extent essential to fulfilling the Purpose, and shall prevent disclosure of Information to third parties. 
         </p>
         
-        <p className="mb-4">
-        2. The person agrees to retain in strict confidence and not disclose to any third party the Confidential Information, which will be provided by IDI and will have access to in the course of carrying out their duties. The person will hold in strict confidence any and all Confidential Information, except: 
+        <div className="mb-4">
+          2. The person agrees to retain in strict confidence and not disclose to any third party the Confidential Information, which will be provided by IDI and will have access to in the course of carrying out their duties. The person will hold in strict confidence any and all Confidential Information, except:
           <ul className="list-disc list-inside ml-4">
             <li>Information which at the time of disclosure is publicly known or available;</li>
             <li>Information and data which, after disclosure, is publicly known or available by publication or otherwise, except by breach of the terms of this Agreement; </li>
             <li>Information and data which the person receives from a third party, provided, however, that such information and data were not obtained by such third party by breach of a confidentiality covenant entered into, with IDI. </li>
           </ul>
-        </p>
+        </div>
         
         <p className="mb-4">
           3. The person undertakes not to pass on the Confidential Information or a part thereof to third parties even under a corresponding secrecy agreement and agrees to take such steps as may reasonably be necessary to prevent the disclosure of the Confidential Information in whole or in part to any third party.

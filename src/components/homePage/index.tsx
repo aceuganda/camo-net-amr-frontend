@@ -3,14 +3,15 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link"; 
+import Link from "next/link";
 import { useUserInfor } from "@/lib/hooks/useAuth";
 
-const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), { ssr: false });
-
+const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), {
+  ssr: false,
+});
 
 export default function HomePage() {
-  const { data, error } = useUserInfor(); 
+  const { data, error } = useUserInfor();
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // useEffect(() => {
@@ -19,7 +20,7 @@ export default function HomePage() {
   //     setIsLoggedIn(data.data.logged_in);
   //   }
   // }, [data, error]);
-  
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-white text-gray-800">
       {/* Introduction */}
@@ -110,8 +111,6 @@ export default function HomePage() {
                 </h3>
                 <ResistanceLineChart />
               </div> */}
-
-              
             </div>
           </motion.div>
 
@@ -122,16 +121,28 @@ export default function HomePage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-2xl text-[17px] font-semibold text-[#003366] mb-4">
+            {/* <h2 className="text-2xl text-[17px] font-semibold text-[#003366] mb-4">
               About The Data
             </h2>
 
             <p className="text-gray-700 text-[12px] mb-4">
-              Data about antimicrobial resistance (AMR), use and Economic burden
-              data was collected from 9 regional referral hospitals (RRH) in
-              Uganda by the Infectious Disease Institute namely: Jinja Regional
-              Referral Hospital (RRH), Gulu (RRH), Arua RRH, Lira RRH, Soroti
-              RRH, Mbale RRH, Masaka RRH, Mbarara RRH and Kabale RRH.
+            Data about antimicrobial resistance (AMR), use and Economic burden data was collected from 9 regional referral hospitals (RRH) in Uganda by the Infectious Disease Institute namely: 
+            Jinja Regional Referral Hospital (RRH), Gulu (RRH), Arua RRH, Lira RRH, Soroti RRH, Mbale RRH, Masaka RRH, Mbarara RRH and Kabale RRH. 
+            </p> */}
+            <h3 className="text-xl font-semibold text-[#003366] mb-2">
+              Acknowledgments
+            </h3>
+            <p className="text-gray-700 text-[12px] mb-4">
+              We would like to extend our heartfelt gratitude to{" "}
+              <span className="font-[600]">CAMONET</span> for their significant
+              assistance and involvement in this project. We also wish to
+              express our sincere appreciation to the{" "}
+              <span className="font-[600]">Fleming Fund</span> for their
+              generous funding and contributions to this research. Additionally,
+              we would like to thank the{" "}
+              <span className="font-[600]">Ministry of Health Uganda</span> for
+              their invaluable support and collaboration throughout the data
+              collection process.
             </p>
             <Image
               src="/idiclinic.webp"

@@ -6,6 +6,7 @@ import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { SearchProvider } from "@/context/searchContext";
 
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -19,8 +20,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  
   return (
     <html lang="en">
+
       <Providers>
         <SearchProvider>
           <body className={inter.className}>
