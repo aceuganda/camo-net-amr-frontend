@@ -132,7 +132,7 @@ const AdminUsers = () => {
 
       {error && (
         <div className="text-red-600 text-center bg-red-50 p-4 rounded-lg">
-          Failed to load users. Make sure you're a super admin.
+          Failed to load users. Make sure you&rsquo;re a super admin.
         </div>
       )}
 
