@@ -8,6 +8,8 @@ import dynamic from "next/dynamic";
 import SidebarMenu from "../filter";
 import { InfoCircledIcon, HeartFilledIcon, HandIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import { catalogueSteps } from "../GuideTour/steps";
+const GuideTour = dynamic(() => import("@/components/GuideTour"), { ssr: false });
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -193,6 +195,7 @@ export default function HomeCatalogue() {
   };
 
   return (
+    <>
     <main className="flex min-h-screen flex-col items-center ">
       <div className=" w-full flex flex-row  justify-between overflow-x-hidden">
         <SidebarMenu
@@ -202,13 +205,14 @@ export default function HomeCatalogue() {
           setSelectedCategories={setSelectedCategories}
           selectedStatuses={selectedStatuses}
           setSelectedStatuses={setSelectedStatuses}
+          className="menu_view"
         />
 
         <div
           className={`ml-[2rem] w-[90%] ${!isMenuOpen ? "" : "sm:w-[80%]"} `}
         >
           <div className="text-[#24408E] font-[700] w-full  flex-row gap-4 flex items-center justify-end px-[1rem] my-[30px]">
-            <div className="flex flex-row gap-2 items-center">
+            <div className="export_button flex flex-row gap-2 items-center">
               <DownloadIcon onClick={handleExport} className="cursor-pointer" />
               <span className="cursor-pointer" onClick={handleExport}>
                 EXPORT CATALOGUE
@@ -218,7 +222,7 @@ export default function HomeCatalogue() {
      
             <Link
            href={'/datasets/external'}
-          className="bg-blue-500 flex flex-row items-center gap-1 text-white px-4 py-2 rounded"
+          className="external_dataset_button bg-blue-500 flex flex-row items-center gap-1 text-white px-4 py-2 rounded"
         >
           <HandIcon/> Contribute a dataset
         </Link>
@@ -420,5 +424,7 @@ export default function HomeCatalogue() {
         </div>
       </div>
     </main>
+    <GuideTour steps={catalogueSteps} guideKey="catalogue_page" />
+    </>
   );
 }

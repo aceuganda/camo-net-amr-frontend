@@ -8,6 +8,7 @@ type SidebarMenuProps = {
   setSelectedCategories: any;
   selectedStatuses: string[];
   setSelectedStatuses: any;
+  className: string
 };
 
 const categories = [
@@ -30,6 +31,7 @@ export default function SidebarMenu({
   setSelectedCategories,
   selectedStatuses,
   setSelectedStatuses,
+  className
 }: SidebarMenuProps) {
   const [isCategoryOpen, setIsCategoryOpen] = useState(true);
   const [isStatusOpen, setIsStatusOpen] = useState(true);
@@ -51,7 +53,7 @@ export default function SidebarMenu({
   };
 
   return (
-    <div className={`transition-all h-[70vh] duration-300 ${isMenuOpen ? "w-[30rem] px-[3rem]" : "w-16"} bg-[#F7F7F7] shadow-lg flex flex-col p-4 rounded-b-[10px] max-sm:hidden`}>
+    <div className={`${className} transition-all h-[70vh] duration-300 ${isMenuOpen ? "w-[30rem] px-[3rem]" : "w-16"} bg-[#F7F7F7] shadow-lg flex flex-col p-4 rounded-b-[10px] max-sm:hidden`}>
       <div className="flex items-center justify-between border-b pb-2 mb-2">
         {isMenuOpen && <span className="font-semibold">Filters</span>}
         <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2">
