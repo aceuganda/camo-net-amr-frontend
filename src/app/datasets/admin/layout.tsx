@@ -30,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex">
       <div className={`bg-gray-200 h-screen p-4 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className={`text-2xl font-bold ${isCollapsed ? 'hidden' : ''}`}>Admin</h2>
+          <h2 className={`text-2xl font-bold ${isCollapsed ? 'hidden' : ''}`}>Admin Menu</h2>
           <button onClick={toggleSidebar}>
             {isCollapsed ? <ChevronRightIcon className="h-5 w-5" /> : <ChevronLeftIcon className="h-5 w-5" />}
           </button>

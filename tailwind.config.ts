@@ -34,6 +34,12 @@ const config = {
         "bounce200": 'bounce 1s infinite 200ms',
         "bounce400": 'bounce 1s infinite 400ms',
       },
+      colors: {
+        primary: {
+          DEFAULT: '#00B9F1',
+          foreground: 'white',
+        },
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

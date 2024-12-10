@@ -2,12 +2,34 @@
 import { useState, useEffect } from "react";
 import { useAdminUsersWith } from "@/lib/hooks/useRoles";
 import { useMutation } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
-import { assignRole, removeRole } from "@/lib/hooks/useRoles";
+import { assignRole, removeRole, revokeAccess } from "@/lib/hooks/useRoles";
 import { toast } from "sonner";
 import { useSearch } from "@/context/searchContext";
-
-const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription 
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 interface Role {
   id: string;
@@ -21,6 +43,7 @@ interface User {
   email: string;
   is_active: boolean;
   name: string;
+  disabled: boolean | null;
   hashed_password: string;
   is_superuser: boolean;
   roles: Role[];
@@ -30,147 +53,304 @@ const AdminUsers = () => {
   const { searchTerm } = useSearch();
   const { data, isLoading, error } = useAdminUsersWith();
   const users: User[] = data?.data || [];
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const itemsPerPage = 8;
 
   const {
-    data: assignData,
-    isSuccess: isAssignSuccess,
     mutate: assignAdmin,
-    error: assignError,
     isPending: isAssigningAdmin,
-  } = useMutation({ mutationFn: assignRole });
+  } = useMutation({ 
+    mutationFn: assignRole,
+    onSuccess: () => {
+      toast.success("Role updated successfully");
+      window.location.reload();
+    },
+    onError: () => {
+      toast.error("Failed to update role");
+    }
+  });
 
   const {
-    data: removeData,
-    isSuccess: isRemoveSuccess,
     mutate: removeAdmin,
-    error: removeError,
     isPending: isRemovingAdmin,
-  } = useMutation({ mutationFn: removeRole });
+  } = useMutation({ 
+    mutationFn: removeRole,
+    onSuccess: () => {
+      toast.success("Role updated successfully");
+      window.location.reload();
+    },
+    onError: () => {
+      toast.error("Failed to update role");
+    }
+  });
+
+  const {
+    mutate: revokeAccessFn,
+    isPending: isRevokingAccess,
+  } = useMutation({ 
+    mutationFn: revokeAccess,
+    onSuccess: () => {
+      toast.success("Access revoked successfully");
+      window.location.reload();
+    },
+    onError: () => {
+      toast.error("Failed to revoke access");
+    }
+  });
 
   const filteredUsers = users.filter((user) =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAssignAdmin = (userId: string) => {
-    assignAdmin({ user_id: userId, role: "admin" });
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedData = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleViewDetails = (user: User) => {
+    setSelectedUser(user);
+    setSheetOpen(true);
   };
 
-  const handleRemoveAdmin = (userId: string) => {
-    removeAdmin({ user_id: userId, role: "admin" });
-  };
-
-  useEffect(() => {
-    if (assignData && isAssignSuccess) {
-      toast.success("Role updated successfully ");
-      window.location.reload();
-    }
-    if (assignError) {
-      toast.error(`Failed to update role`);
-    }
-  }, [assignData, isAssignSuccess, assignError]);
-
-  useEffect(() => {
-    if (removeData && isRemoveSuccess) {
-      toast.success("Role updated successfully ");
-      window.location.reload();
-    }
-    if (removeError) {
-      toast.error(`Failed to update the role`);
-    }
-  }, [removeData, isRemoveSuccess, removeError]);
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US");
 
   return (
-    <div className="flex-1 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Users</h1>
+    <div className="p-6 min-h-screen flex flex-col bg-white">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-[#00B9F1]">User Management</h1>
       </div>
 
       {isLoading && (
-        <div className="flex justify-center">
-          <DotsLoader />
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#00B9F1]"></div>
         </div>
       )}
 
       {error && (
-        <div className="text-red-600 text-center">
-          {"Failed to load users. Make sure your super admin ;}."}
+        <div className="text-red-600 text-center bg-red-50 p-4 rounded-lg">
+          Failed to load users. Make sure you're a super admin.
         </div>
       )}
+
       {filteredUsers.length === 0 && searchTerm && (
-        <div className="text-center w-full flex items-start justify-center text-gray-500">
-          No data for search term: {searchTerm}{" "}
+        <div className="text-center text-gray-500 bg-gray-50 p-4 rounded-lg">
+          No users found for search term: <strong>{searchTerm}</strong>
         </div>
       )}
 
-      {filteredUsers.length > 0 && !isLoading && !error && (
-        <div className="overflow-auto">
-          <table className="text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden">
-            <thead className="bg-[#00B9F1] text-white">
-              <tr>
-                <th className="p-5 text-left">Name</th>
-                <th className="p-5 text-left">Email</th>
-                <th className="p-5 text-left">Roles</th>
-                <th className="p-5 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((user) => {
-                const isAdmin = user.roles.some(
-                  (role) => role.role === "admin"
-                );
+      <div className="flex-1 overflow-auto">
+        {filteredUsers.length > 0 && !isLoading && !error && (
+          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader className="bg-[#00B9F1] text-white">
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Roles</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((user) => {
+                  const isAdmin = user.roles.some(role => role.role === "admin");
+                  return (
+                    <TableRow
+                      key={user.id}
+                      className="hover:bg-[#F1F8FC] transition-colors cursor-pointer"
+                      onClick={() => handleViewDetails(user)}
+                    >
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.roles.map(role => role.role).join(", ")}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          user.is_active 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          {isAdmin ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:bg-red-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeAdmin({ user_id: user.id, role: "admin" });
+                              }}
+                              disabled={isRemovingAdmin}
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              Remove Admin
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-green-600 hover:bg-green-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                assignAdmin({ user_id: user.id, role: "admin" });
+                              }}
+                              disabled={isAssigningAdmin}
+                            >
+                              <CheckCircle2 className="mr-2 h-4 w-4" />
+                              Assign Admin
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
 
-                return (
-                  <tr
-                    key={user.id}
-                    className="even:bg-[#EBF7FD] hover:bg-[#f0f9ff]"
+            <Pagination className="p-4 bg-gray-50">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(Math.max(1, currentPage - 1));
+                    }}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+                {[...Array(totalPages)].map((_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(i + 1);
+                      }}
+                      isActive={currentPage === i + 1}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(Math.min(totalPages, currentPage + 1));
+                    }}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+      </div>
+
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="w-[500px] overflow-y-auto">
+          {selectedUser && (
+            <div className="p-6 space-y-6">
+              <SheetHeader>
+                <SheetTitle className="text-2xl text-[#00B9F1]">
+                  User Details
+                </SheetTitle>
+                <SheetDescription>
+                  Review and manage user information
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-2">
+                  <p className="font-semibold">Name:</p>
+                  <p>{selectedUser.name}</p>
+
+                  <p className="font-semibold mt-4">Email:</p>
+                  <p>{selectedUser.email}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-semibold">Status:</p>
+                  <p className={selectedUser.is_active ? 'text-green-600' : 'text-red-600'}>
+                    {selectedUser.is_active ? 'Active' : 'Inactive'}
+                  </p>
+
+                  <p className="font-semibold mt-4">Super User:</p>
+                  <p>{selectedUser.is_superuser ? 'Yes' : 'No'}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="font-semibold">Roles:</p>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    {selectedUser.roles.length > 0 
+                      ? selectedUser.roles.map(role => role.role).join(", ")
+                      : 'No roles assigned'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button 
+                  variant={selectedUser.disabled? "default" : "destructive"}
+                  className="w-full"
+                  onClick={() => {
+                    if(selectedUser.disabled){
+                      revokeAccessFn({ user_id: selectedUser.id, disabled: false });
+                    }else{
+                      revokeAccessFn({ user_id: selectedUser.id, disabled: true });
+                    }
+                    
+                    setSheetOpen(false);
+                  }}
+                  disabled={isRevokingAccess}
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                 { selectedUser.disabled ? "Enable User": "Disable user" }
+                </Button>
+                {selectedUser.roles.some(role => role.role === "admin") ? (
+                  <Button 
+                    variant="default" 
+                    className="w-full bg-red-600 hover:bg-red-700"
+                    onClick={() => {
+                      removeAdmin({ user_id: selectedUser.id, role: "admin" });
+                      setSheetOpen(false);
+                    }}
+                    disabled={isRemovingAdmin}
                   >
-                    <td className="border p-5 text-left">{user.name}</td>
-                    <td className="border p-5 text-left">{user.email}</td>
-                    <td className="border p-5 text-left">
-                      {user.roles.map((role) => role.role).join(", ")}
-                    </td>
-                    <td className="border p-5 text-left">
-                      <div className="flex flex-row gap-4">
-                        {isAdmin ? (
-                          <button
-                            onClick={() => handleRemoveAdmin(user.id)}
-                            className="text-red-600 flex items-center gap-2 hover:text-red-800 transition"
-                          >
-                            {isRemovingAdmin ? (
-                              <DotsLoader />
-                            ) : (
-                           
-                                <span className="inline-block">
-                                  Remove Admin
-                                </span>
-                            
-                            )}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleAssignAdmin(user.id)}
-                            className="text-green-600 flex items-center gap-2 hover:text-green-800 transition"
-                          >
-                            {isAssigningAdmin ? (
-                              <DotsLoader />
-                            ) : (
-                             
-                                <span className="inline-block">
-                                  Assign Admin
-                                </span>
-                          
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Remove Admin
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="default" 
+                    className="w-full bg-[#00B9F1] hover:bg-[#00A0D0]"
+                    onClick={() => {
+                      assignAdmin({ user_id: selectedUser.id, role: "admin" });
+                      setSheetOpen(false);
+                    }}
+                    disabled={isAssigningAdmin}
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Assign Admin
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

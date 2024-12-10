@@ -1,15 +1,40 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription 
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
 import { useFetchAdminPermissions } from "@/lib/hooks/usePermissions";
-import dynamic from "next/dynamic";
 import { denyAccess, allowAccess } from "@/lib/hooks/usePermissions";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Modal } from "../modal";
 import { useSearch } from "@/context/searchContext";
-
-const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
+import { 
+  CheckCircle2, 
+  XCircle, 
+  ChevronLeft, 
+  ChevronRight 
+} from "lucide-react";
 
 interface Permission {
   permission_id: string;
@@ -28,15 +53,14 @@ interface Permission {
 const AdminRequests = () => {
   const { data, isLoading, error } = useFetchAdminPermissions();
   const datasets: Permission[] = data?.data || [];
-  const [selectedRequest, setSelectedRequest] = useState<Permission | null>(
-    null
-  );
-  const [modalType, setModalType] = useState<"approve" | "deny" | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Permission | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { searchTerm } = useSearch();
   const [denyReason, setDenyReason] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const {
-    data: denyData,
     isSuccess: isDenySuccess,
     error: denyError,
     isPending: denyPending,
@@ -44,8 +68,8 @@ const AdminRequests = () => {
   } = useMutation({
     mutationFn: denyAccess,
   });
+
   const {
-    data: allowData,
     isSuccess: allowSuccess,
     error: allowError,
     isPending: allowPending,
@@ -58,39 +82,41 @@ const AdminRequests = () => {
     data.user_email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("en-US");
 
+  const handleViewDetails = (request: Permission) => {
+    setSelectedRequest(request);
+    setSheetOpen(true);
+  };
+
   const handleAccept = async (id: string) => {
-    setSelectedRequest(
-      datasets.find((request) => request.permission_id === id) || null
-    );
-    setModalType("approve");
-  };
-
-  const handleDeny = async (id: string) => {
-    setSelectedRequest(
-      datasets.find((request) => request.permission_id === id) || null
-    );
-    setModalType("deny");
-  };
-
-  const handleModalSubmit = async () => {
-    if (modalType === "approve" && selectedRequest) {
-      await allowFn(selectedRequest.permission_id);
+    const request = datasets.find((r) => r.permission_id === id);
+    if (request) {
+      await allowFn(request.permission_id);
     }
-    if (modalType === "deny" && selectedRequest) {
-      if(!denyReason){
-        toast.error('Please add a reason for denial')
-        return
-      }
+  };
+
+  const handleDeny = async () => {
+    if (!denyReason) {
+      toast.error('Please add a reason for denial');
+      return;
+    }
+    if (selectedRequest) {
       await denyFn({
         id: selectedRequest.permission_id,
         reason: denyReason,
       });
+      setSheetOpen(false);
+      setDenyReason("");
     }
-    setModalType(null);
-    setDenyReason(""); // Reset denial reason
   };
 
   useEffect(() => {
@@ -114,161 +140,221 @@ const AdminRequests = () => {
   }, [allowSuccess, allowError]);
 
   return (
-    <div className="flex-1 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Requests</h1>
+    <div className="p-6 min-h-screen flex flex-col  bg-white ">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-[#00B9F1]">Data Access Requests</h1>
       </div>
 
       {isLoading && (
-        <div className="flex justify-center">
-          <DotsLoader />
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#00B9F1]"></div>
         </div>
       )}
 
       {error && (
-        <div className="text-red-600 text-center">
+        <div className="text-red-600 text-center bg-red-50 p-4 rounded-lg">
           Failed to load data. Please try again later.
         </div>
       )}
 
       {filteredData.length === 0 && searchTerm && (
-        <div className="text-center text-gray-500">
+        <div className="text-center text-gray-500 bg-gray-50 p-4 rounded-lg">
           No data found for search term: <strong>{searchTerm}</strong>
         </div>
       )}
-
+      <div className="flex-1 overflow-auto">
       {filteredData.length > 0 && !isLoading && !error && (
-        <div className="overflow-auto">
-          <table className="w-full border-separate border-spacing-0 rounded-lg shadow-md">
-            <thead className="bg-[#00B9F1] text-white">
-              <tr>
-                <th className="p-4 text-left">Dataset</th>
-                <th className="p-4 text-left">Requester Name</th>
-                <th className="p-4 text-left">Email</th>
-                <th className="p-4 text-left">Date of Request</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Institution</th>
-                <th className="p-4 text-left">Title</th>
-                <th className="p-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((request) => (
-                <tr key={request.permission_id} className="even:bg-[#F1F8FC]">
-                  <td className="p-4">{request.data_set_name}</td>
-                  <td className="p-4">{request.user_name}</td>
-                  <td className="p-4">{request.user_email}</td>
-                  <td className="p-4">{formatDate(request.created_at)}</td>
-                  <td className="p-4">{request.status}</td>
-                  <td className="p-4">{request.institution}</td>
-                  <td className="p-4">{request.title}</td>
-                  <td className="p-4 flex gap-4 justify-center">
-                    <button
-                      onClick={() => handleAccept(request.permission_id)}
-                      className="text-green-600 hover:underline"
+        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader className="bg-[#00B9F1] text-white">
+              <TableRow>
+                <TableHead className="w-[150px]">Dataset</TableHead>
+                <TableHead>Requester</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedData.map((request) => (
+                <TableRow 
+                  key={request.permission_id} 
+                  className="hover:bg-[#F1F8FC] transition-colors cursor-pointer"
+                  onClick={() => handleViewDetails(request)}
+                >
+                  <TableCell className="font-medium">{request.data_set_name}</TableCell>
+                  <TableCell>{request.user_name}</TableCell>
+                  <TableCell>{request.user_email}</TableCell>
+                  <TableCell>{formatDate(request.created_at)}</TableCell>
+                  <TableCell>
+                    <span 
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        request.status === 'Pending' 
+                          ? 'bg-yellow-100 text-yellow-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}
                     >
-                      {allowPending ? <DotsLoader /> : "Accept"}
-                    </button>
-                    <span>|</span>
-                    <button
-                      onClick={() => handleDeny(request.permission_id)}
-                      className="text-red-600 hover:underline"
-                    >
-                      {denyPending ? <DotsLoader /> : "Deny"}
-                    </button>
-                  </td>
-                </tr>
+                      {request.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-green-600 hover:bg-green-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDetails(request);
+                        }}
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" /> Accept
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-600 hover:bg-red-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDetails(request);
+                        }}
+                      >
+                        <XCircle className="mr-2 h-4 w-4" /> Deny
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
+
+          <Pagination className="p-4 bg-gray-50">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  href="#" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage(Math.max(1, currentPage - 1));
+                  }}
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+              {[...Array(totalPages)].map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(i + 1);
+                    }}
+                    isActive={currentPage === i + 1}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext 
+                  href="#" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage(Math.min(totalPages, currentPage + 1));
+                  }}
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
+      </div>
 
-      <Modal
-        isOpen={modalType !== null}
-        onClose={() => setModalType(null)}
-        onSubmit={handleModalSubmit}
-        submitText={modalType === "approve" ? "Approve" : "Deny"}
-        cancelText="Cancel"
-      >
-        {selectedRequest && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center text-gray-700">
-              Request Details
-            </h2>
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="w-[500px] overflow-y-auto">
+          {selectedRequest && (
+            <div className="p-6 space-y-6">
+              <SheetHeader>
+                <SheetTitle className="text-2xl text-[#00B9F1]">
+                  Request Details
+                </SheetTitle>
+                <SheetDescription>
+                  Review the details of this data access request
+                </SheetDescription>
+              </SheetHeader>
 
-            {/* Grid for Primary Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <p>
-                  <span className="font-semibold">Title:</span>{" "}
-                  {selectedRequest.title}
-                </p>
-                <p>
-                  <span className="font-semibold">Dataset:</span>{" "}
-                  {selectedRequest.data_set_name}
-                </p>
-                <p>
-                  <span className="font-semibold">Project Title:</span>{" "}
-                  {selectedRequest.project_title}
-                </p>
-                <p>
-                  <span className="font-semibold">Requester Name:</span>{" "}
-                  {selectedRequest.user_name}
-                </p>
-                <p>
-                  <span className="font-semibold">Email:</span>{" "}
-                  {selectedRequest.user_email}
-                </p>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-2">
+                  <p className="font-semibold">Dataset:</p>
+                  <p>{selectedRequest.data_set_name}</p>
+
+                  <p className="font-semibold mt-4">Requester Name:</p>
+                  <p>{selectedRequest.user_name}</p>
+
+                  <p className="font-semibold mt-4">Email:</p>
+                  <p>{selectedRequest.user_email}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-semibold">Institution:</p>
+                  <p>{selectedRequest.institution || 'Not specified'}</p>
+
+                  <p className="font-semibold mt-4">Request Date:</p>
+                  <p>{formatDate(selectedRequest.created_at)}</p>
+
+                  <p className="font-semibold mt-4">Status:</p>
+                  <p>{selectedRequest.status}</p>
+                </div>
               </div>
 
               <div className="space-y-2">
-                <p>
-                  <span className="font-semibold">Institution:</span>{" "}
-                  {selectedRequest.institution}
-                </p>
-                <p>
-                  <span className="font-semibold">Date of Request:</span>{" "}
-                  {formatDate(selectedRequest.created_at)}
-                </p>
-                <p>
-                  <span className="font-semibold">Status:</span>{" "}
-                  {selectedRequest.status}
-                </p>
-                <p>
-                  <span className="font-semibold">User category:</span>{" "}
-                  {selectedRequest.category}
-                </p>
+                <p className="font-semibold">Project Description:</p>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    {selectedRequest.project_description || 'No description provided.'}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <p className="font-semibold">Project Description:</p>
-              <div className="p-4 border rounded-lg bg-gray-50">
-                <p className="text-sm text-gray-600">
-                  {selectedRequest.project_description ||
-                    "No description provided."}
-                </p>
-              </div>
-            </div>
-
-            {modalType === "deny" && (
-              <div className="mt-4">
-                <label className="block font-semibold mb-2">
-                  Reason for Denial
-                </label>
+              <div className="space-y-2">
+                <label className="font-semibold block">Reason for Denial</label>
                 <textarea
                   value={denyReason}
                   onChange={(e) => setDenyReason(e.target.value)}
-                  className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#00B9F1]"
                   rows={4}
                   placeholder="Provide a reason for denying this request..."
                 />
               </div>
-            )}
-          </div>
-        )}
-      </Modal>
+
+              <div className="flex gap-4">
+                <Button 
+                  variant="destructive" 
+                  className="w-full"
+                  onClick={handleDeny}
+                  disabled={denyPending}
+                >
+                  <XCircle className="mr-2 h-4 w-4" /> 
+                  {denyPending ? 'Denying...' : 'Deny Request'}
+                </Button>
+                <Button 
+                  variant="default" 
+                  className="w-full bg-[#00B9F1] hover:bg-[#00A0D0]"
+                  onClick={() => {
+                    handleAccept(selectedRequest.permission_id);
+                    setSheetOpen(false);
+                  }}
+                  disabled={allowPending}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" /> 
+                  {allowPending ? 'Approving...' : 'Approve Request'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
