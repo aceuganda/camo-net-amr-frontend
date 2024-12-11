@@ -66,7 +66,7 @@ export default function HomePage() {
             </h2>
             <p className="text-gray-700 text-[12px] mb-4">
               The Data Portal connects to the central antimicrobial resistance
-              (ARM) related Data Warehouse, serving as a user-friendly interface
+              (AMR) related Data Warehouse, serving as a user-friendly interface
               for accessing the data. Users can request access to specific
               datasets, and the portal also provides visualizations of key
               trends derived from the data stored in the warehouse, facilitating
