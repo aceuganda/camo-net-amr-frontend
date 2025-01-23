@@ -63,6 +63,18 @@ export const useGetRequestUser =  (perms_id: string | null) => {
       errorMessage: "Failed to permissions user"
     }
   });
+}
+
+export const submitForgotPassword = async (email: string ) => {
+  const response = await api.post(`/users/forgot_password?email=${email}`);
+  return response.data;
+};
+
+export const resetPassword = async (data: any) => {
+  const token = data.token
+  const newPass = data.newPassword
+  const response = await api.post(`/users/reset_password?token=${token}`, { new_password: newPass} );
+  return response.data;
 };
 
 export const submitReference = async (data: any) => {
