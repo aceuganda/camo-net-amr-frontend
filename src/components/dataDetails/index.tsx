@@ -94,6 +94,8 @@ export default function DatasetDetails({ id }: any) {
     dataset?.data_set &&
       dataset?.data_set?.category.toLocaleLowerCase().includes("economic")
       ? "economic"
+      : dataset?.data_set?.amr_category.toLocaleLowerCase().includes("antimicrobial use")
+      ? "amu"
       : !dataset?.data_set
       ? ""
       : !dataset?.data_set.in_warehouse
