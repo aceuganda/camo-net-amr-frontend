@@ -3,8 +3,12 @@ import api from "./../axios";
 
 export const downloadData = async (source: string, selectedVariables: string[]) => {
   let endpoint = `/data/download?source=${source}`;
+
   if (source === "economic") {
     endpoint = `/data/download/economic`;
+  }
+  if (source === "amu") {
+    endpoint = `/data/download/amu`;
   }
 
   const response = await api.post(endpoint, {
