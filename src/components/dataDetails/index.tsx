@@ -1025,7 +1025,7 @@ export default function DatasetDetails({ id }: any) {
             if (agreed) setIsAgreedToConfidentiality(true);
           }}
         />
-
+        {downloadPending && <div className="text-white my-2 flex items-center justify-self-center justify-center bg-[#000] 0 w-[90%] h-[1.5rem] p-4 rounded-sm" > Processing download </div>}
         <button
           onClick={handleDwn}
           className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
