@@ -10,13 +10,14 @@ import {
   downloadData,
   ReRequestAccess,
   useDatasetVariables,
+  deletePermission
 } from "@/lib/hooks/useDataSets";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
-import { Modal } from "../modal";
+
 import ConfidentialityAgreement from "../confidentialityAgreement";
-import { Cross2Icon, DownloadIcon } from "@radix-ui/react-icons";
+import { Cross2Icon, DownloadIcon, TrashIcon } from "@radix-ui/react-icons";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -69,6 +70,7 @@ interface UserPermission {
   re_request_count: number;
   downloads_count: number;
   last_update: Date;
+  requested_variables: string[];  
 }
 
 interface Response {
@@ -153,9 +155,8 @@ export default function DatasetDetails({ id }: any) {
     error: downloadError,
     isPending: downloadPending,
     mutate: downloadFn,
-  } = useMutation<any, Error, { source: string; selectedVariables: string[] }>({
-    mutationFn: ({ source, selectedVariables }) =>
-      downloadData(source, selectedVariables),
+  } = useMutation({
+    mutationFn: downloadData
   });
   const {
     data: reRequestedData,
@@ -207,17 +208,36 @@ export default function DatasetDetails({ id }: any) {
     return difference < 0 ? 0 : difference;
   }
 
+  const {
+    mutate: deletePermissionFn,
+    isPending: deletePending,
+    isSuccess: deleteSuccess,
+    isError: deleteError,
+  } = useMutation<any, Error, { permissionId: string }>({
+    mutationFn: ({ permissionId }) => deletePermission(permissionId),
+    onSuccess: () => {
+      toast.success("Completed successfully.");
+      setIsAgreementModalOpen(false);
+      window.location.reload();
+    },
+    onError: () => {
+      toast.error("Failed to revoke request.");
+    },
+  });
+
   const handleReRequest = async () => {
     if (userPermission && !validRe_request(userPermission.last_update)) {
       await reRequestAccess(userPermission.id);
     }
   };
+
   const handleRequest = async (e: any) => {
     e.preventDefault();
     setIsModalOpen(true);
   };
 
-  const handleModalSubmit = () => {
+  const handleModalSubmit = async (e:any) => {
+    e.preventDefault()
     const {
       project_description,
       institution,
@@ -230,7 +250,10 @@ export default function DatasetDetails({ id }: any) {
       referee_email,
       irb_number,
     } = formValues;
-    if (
+    if(!selectedVariables || selectedVariables.length < 1){
+      toast.error("Please select at least one variable before submitting");
+      return;
+    }else if (
       project_description &&
       project_title &&
       institution &&
@@ -251,23 +274,28 @@ export default function DatasetDetails({ id }: any) {
         referee_name,
         referee_email,
         irb_number,
+        requested_variables: selectedVariables
       };
+      console.log(data)
       requestFn({ ...data, data_set_id: dataset.data_set.id });
       setIsModalOpen(false);
     } else {
       toast.error("Please fill in all fields before submitting.");
+      return;
     }
   };
 
   useEffect(() => {
     if (downloadedData && isDownloadSuccess) {
+      
       if (downloadedData instanceof Blob) {
         FileSaver.saveAs(downloadedData, "data.csv");
         setIsAgreementModalOpen(false);
+        toast.success("Downloaded successfully, please check your downloads folder.");
       } else {
         toast.error("Downloaded data is not a valid file");
       }
-      toast.success("Downloaded successfully, please check your downloads folder.");
+     
     }
     if (downloadError) {
       toast.error(
@@ -318,7 +346,7 @@ export default function DatasetDetails({ id }: any) {
     }
     if (requestError) {
       toast.error(`Failed to request access to this data set`);
-      setIsModalOpen(false);
+      
     }
   }, [requestData, requestError, isRequestSuccess]);
 
@@ -347,12 +375,7 @@ export default function DatasetDetails({ id }: any) {
       }
     });
   };
-
-  useEffect(() => {
-    if (dictionaryData?.data?.data) {
-      setSelectedVariables(Object.keys(dictionaryData.data.data));
-    }
-  }, [dictionaryData]);
+  
 
   useEffect(() => {
     if (isSuccess && dataset) {
@@ -360,13 +383,24 @@ export default function DatasetDetails({ id }: any) {
     }
   }, [isSuccess]);
 
-  const handleDwn = async () => {
-    if (selectedVariables.length < 1) {
-      toast.error("You need to select at least 1 variable do download");
-      return;
+  const handleSelectAll = (e:any) => {
+    e.preventDefault()
+    if (dictionaryData?.data?.data && selectedVariables.length !== dictionaryData?.data?.data.length) { 
+      setSelectedVariables(Object.keys(dictionaryData.data.data));
     }
+  };
+  const handleDeselectAll = (e:any) => {
+    e.preventDefault()
+    setSelectedVariables([]);
+  };
+
+  const handleDwn = async () => {
+    // if (selectedVariables.length < 1) {
+    //   toast.error("You need to select at least 1 variable do download");
+    //   return;
+    // }
     if (isAgreedToConfidentiality) {
-      await downloadFn({ source: dataset.data_set.db_name, selectedVariables });
+      await downloadFn(dataset.data_set.db_name );
     } else {
       toast.error(
         "Please agree to the confidentiality agreement before downloading the data"
@@ -454,83 +488,83 @@ export default function DatasetDetails({ id }: any) {
                 <span className="text-gray-400">/</span>
                 <span className="text-gray-600">{dataset.data_set.name}</span>
               </div>
+              <div>
+                <div className="flex flex-wrap gap-3">
+                  {!showDownloadButton && (
+                    <div className="text-red-700 text-[14px]">
+                      {" "}
+                      This dataset is not available for download yet{" "}
+                    </div>
+                  )}
+                  {showDownloadButton && (
+                    <button
+                      onClick={() => setIsAgreementModalOpen(true)}
+                      disabled={!canDownload}
+                      className={`px-6 py-2 rounded-lg transition-all duration-200 flex items-center justify-center min-w-[10rem] ${
+                        canDownload
+                          ? "bg-[#00B9F1] text-white hover:bg-[#0090bd]"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
+                    >
+                      {downloadPending ? (
+                        <DotsLoader />
+                      ) : (
+                        <>
+                          <DownloadIcon width={20} height={20} />
+                          Download
+                        </>
+                      )}
+                    </button>
+                  )}
 
-              <div className="flex flex-wrap gap-3">
-                {!showDownloadButton && (
-                  <div className="text-red-700 text-[14px]">
-                    {" "}
-                    This dataset is not available for download yet{" "}
-                  </div>
-                )}
-                {showDownloadButton && (
+                  {canRequestAccess && dataset.data_set.in_warehouse && (
+                    <button
+                      onClick={handleRequest}
+                      className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center min-w-[10rem]"
+                    >
+                      {requestPending ? (
+                        <DotsLoader />
+                      ) : (
+                        <>
+                          <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                            />
+                          </svg>
+                          Request Access
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {!canRequestAccess && (
+                    <span className={getStatusBadge(permissionStatus)}>
+                      {permissionStatus === "requested"
+                        ? "Access Requested"
+                        : permissionStatus === "denied"
+                        ? "Access Denied"
+                        : "Approved"}
+                    </span>
+                  )}
+                </div>
+                {userPermission && permissionStatus === "requested" && (
                   <button
-                    onClick={() => setIsAgreementModalOpen(true)}
-                    disabled={!canDownload}
-                    className={`px-6 py-2 rounded-lg transition-all duration-200 flex items-center justify-center min-w-[10rem] ${
-                      canDownload
-                        ? "bg-[#00B9F1] text-white hover:bg-[#0090bd]"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                    onClick={(e:any) => { e.preventDefault();
+                      deletePermissionFn({ permissionId: userPermission.id });}}
+                    className="w-[10rem] mt-[5px] bg-red-500 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex self-end  items-center justify-self-end  justify-center"
+                    disabled={deletePending}
                   >
-                    {downloadPending ? (
-                      <DotsLoader />
-                    ) : (
-                      <>
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                          />
-                        </svg>
-                        Download
-                      </>
-                    )}
+                    <TrashIcon className="mr-2 h-4 w-4" />
+                    {deletePending ? <DotsLoader /> : "Delete Request"}
                   </button>
-                )}
-
-                {canRequestAccess && dataset.data_set.in_warehouse && (
-                  <button
-                    onClick={handleRequest}
-                    className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center min-w-[10rem]"
-                  >
-                    {requestPending ? (
-                      <DotsLoader />
-                    ) : (
-                      <>
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                          />
-                        </svg>
-                        Request Access
-                      </>
-                    )}
-                  </button>
-                )}
-
-                {!canRequestAccess && (
-                  <span className={getStatusBadge(permissionStatus)}>
-                    {permissionStatus === "requested"
-                      ? "Access Requested"
-                      : permissionStatus === "denied"
-                      ? "Access Denied"
-                      : "Approved"}
-                  </span>
                 )}
               </div>
             </div>
@@ -755,23 +789,30 @@ export default function DatasetDetails({ id }: any) {
             {dataset.data_set.in_warehouse && (
               <div className="p-4">
                 <div className="flex flex-row items-center justify-start gap-5 mb-4">
-                <h2 className="text-2xl font-semibold text-[#003366] ">
-                  Data Download Variables
-                </h2>
-                  <div title="Download dictionary"> <DownloadIcon width={20} height={20}  onClick={generateCSVFromDataset} className="cursor-pointer" /> </div>
+                  <h2 className="text-2xl font-semibold text-[#003366] ">
+                    Data Download Variables
+                  </h2>
+                  <div title="Download dictionary">
+                    {" "}
+                    <DownloadIcon
+                      width={20}
+                      height={20}
+                      onClick={generateCSVFromDataset}
+                      className="cursor-pointer"
+                    />{" "}
+                  </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {dictionaryDataLoading && <DotsLoader />}
+
                   {dictionaryDataError && (
                     <p className="text-red-600">
                       Failed to fetch data dictionary please refresh
                     </p>
                   )}
                   {!dictionaryData?.data?.data && isSuccess && (
-                    <p className="text-red-600">
-                      Variables not available
-                    </p>
+                    <p className="text-red-600">Variables not available</p>
                   )}
                   {dictionarySuccess &&
                     dictionaryData?.data?.data &&
@@ -783,7 +824,6 @@ export default function DatasetDetails({ id }: any) {
                         className="border rounded-lg p-4 bg-white shadow-md hover:shadow-lg transition-shadow"
                       >
                         <div className="flex items-center mb-2">
-                         
                           <label htmlFor={key} className="font-medium">
                             Name: {key}
                           </label>
@@ -802,19 +842,20 @@ export default function DatasetDetails({ id }: any) {
           </div>
         </div>
       )}
-
+      {/*  request */}
       <div
-        className={`fixed inset-y-0 right-0 w-[500px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
+        className={`fixed inset-y-0 right-0 w-[85%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
           ${isModalOpen ? "translate-x-0" : "translate-x-full"} 
           z-50 overflow-y-auto p-8`}
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Request Access</h2>
+
           <button
             onClick={() => setIsModalOpen(false)}
-            className="text-gray-600 hover:text-gray-900"
+            className=" p-2 bg-red-500 text-white rounded"
           >
-            <Cross2Icon />
+            Close
           </button>
         </div>
 
@@ -941,6 +982,66 @@ export default function DatasetDetails({ id }: any) {
                 </div>
               )}
             </div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Select requested variables to download
+            </h2>
+            {dictionarySuccess && dictionaryData?.data?.data && (
+              <div className="flex justify-between mb-4">
+                <button
+                  onClick={handleSelectAll}
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={handleDeselectAll}
+                  className="bg-red-500 text-white px-4 py-2 rounded"
+                >
+                  Deselect All
+                </button>
+              </div>
+            )}
+
+            {
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4  gap-4">
+                {dictionaryDataLoading && <DotsLoader />}
+                {dictionaryDataError && (
+                  <p className="text-red-600">
+                    Failed to fetch data dictionary please refresh
+                  </p>
+                )}
+
+                {dictionarySuccess &&
+                  dictionaryData?.data?.data &&
+                  Object.entries(dictionaryData?.data.data as VariableInfo).map(
+                    ([key, value]) => (
+                      <div
+                        key={key}
+                        className="border rounded-lg p-4 text-[12px] bg-white shadow-md hover:shadow-lg transition-shadow"
+                      >
+                        <div className="flex items-center mb-2">
+                          <input
+                            type="checkbox"
+                            id={key}
+                            checked={selectedVariables.includes(key)}
+                            onChange={() => handleCheckboxChange(key)}
+                            className="mr-2"
+                          />
+                          <label htmlFor={key} className="font-medium">
+                            {key}
+                          </label>
+                        </div>
+                        <p className="text-gray-600 text-sm">
+                          <strong>Type:</strong> {value?.type}
+                        </p>
+                        <p className="text-gray-600 text-sm">
+                          {String(value?.description)}
+                        </p>
+                      </div>
+                    )
+                  )}
+              </div>
+            }
 
             <ConfidentialityAgreement
               handleAgreedCallBack={(agreed: boolean) => {
@@ -961,7 +1062,7 @@ export default function DatasetDetails({ id }: any) {
           </div>
         </form>
       </div>
-
+      {/*  download */}
       <div
         className={`fixed inset-y-0 right-0 w-[50%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
           ${isAgreementModalOpen ? "translate-x-0" : "translate-x-full"} 
@@ -976,62 +1077,63 @@ export default function DatasetDetails({ id }: any) {
             <Cross2Icon />
           </button>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">
-          Select variables to download
-        </h2>
-
-        {
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {dictionaryDataLoading && <DotsLoader />}
-            {dictionaryDataError && (
-              <p className="text-red-600">
-                Failed to fetch data dictionary please refresh
-              </p>
-            )}
-            {dictionarySuccess &&
-              dictionaryData?.data?.data &&
-              Object.entries(dictionaryData?.data.data as VariableInfo).map(
-                ([key, value]) => (
-                  <div
-                    key={key}
-                    className="border rounded-lg p-4 text-[12px] bg-white shadow-md hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex items-center mb-2">
-                      <input
-                        type="checkbox"
-                        id={key}
-                        checked={selectedVariables.includes(key)}
-                        onChange={() => handleCheckboxChange(key)}
-                        className="mr-2"
-                      />
-                      <label htmlFor={key} className="font-medium">
-                        {key}
-                      </label>
+        <div>
+          <p className="font-semibold">Requested Variables:</p>
+          {userPermission &&
+            userPermission.requested_variables &&
+            userPermission.requested_variables.length > 0 && (
+              <div className="mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {userPermission.requested_variables.map((variable, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-100 text-[10px] text-gray-800 p-2 rounded-lg shadow-sm"
+                    >
+                      {variable}
                     </div>
-                    <p className="text-gray-600 text-sm">
-                      <strong>Type:</strong> {value?.type}
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      {String(value?.description)}
-                    </p>
-                  </div>
-                )
-              )}
-          </div>
-        }
+                  ))}
+                </div>
+              </div>
+            )}
+          {userPermission && !userPermission.requested_variables &&  (
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-[5px]">
+                {
+                  "No variables selected. This must be an old request. As per the new data sharing policy. Kindly revoke this request so you to make a new request with the updated policy."
+                }
+              </p>
+              <button
+                onClick={(e: any) => {
+                  e.preventDefault();
+                  deletePermissionFn({ permissionId: userPermission.id });
+                }}
+                className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
+              >
+                {deletePending ? <DotsLoader /> : "Revoke Request"}
+              </button>
+            </div>
+          )}
+        </div>
 
         <ConfidentialityAgreement
           handleAgreedCallBack={(agreed: boolean) => {
             if (agreed) setIsAgreedToConfidentiality(true);
           }}
         />
-        {downloadPending && <div className="text-white my-2 flex items-center justify-self-center justify-center bg-[#000] 0 w-[90%] h-[1.5rem] p-4 rounded-sm" > Processing data </div>}
-        <button
-          onClick={handleDwn}
-          className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
-        >
-          {downloadPending ? <DotsLoader /> : "Download"}
-        </button>
+        {downloadPending && (
+          <div className="text-white my-2 flex items-center justify-self-center justify-center bg-[#000] 0 w-[90%] h-[1.5rem] p-4 rounded-sm">
+            {" "}
+            Processing data{" "}
+          </div>
+        )}
+        {userPermission && userPermission.requested_variables && (
+          <button
+            onClick={handleDwn}
+            className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
+          >
+            {downloadPending ? <DotsLoader /> : "Download"}
+          </button>
+        )}
       </div>
     </main>
   );

@@ -40,7 +40,7 @@ function LoginForm() {
       toast.success("Signed in successfully");
       setTimeout(() => {
         router.push("/datasets/access");
-      }, 2000);
+      }, 700);
     }
     if (error) {
       const axiosError = (error as AxiosError).response;
