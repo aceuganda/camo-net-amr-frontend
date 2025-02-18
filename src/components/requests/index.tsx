@@ -46,6 +46,7 @@ interface Permission {
   feedback:string;
   approval_status: string;
   referee_email:string;
+  requested_variables: string[];
 }
 
 const AdminRequests = () => {
@@ -322,7 +323,6 @@ const AdminRequests = () => {
                   <p className="font-semibold mt-4">Status:</p>
                   <p>{selectedRequest.status}</p>
 
-                  
                   <p className="font-semibold mt-4">Referee Approval Status:</p>
                   <p>
                     {selectedRequest.approval_status ||
@@ -331,15 +331,23 @@ const AdminRequests = () => {
                 </div>
               </div>
 
-                  <div className="space-y-2">
+              <div className="space-y-2">
                 <p className="font-semibold">Referee Feedback:</p>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600">
-                  {selectedRequest.feedback || "No response from referee"}
+                    {selectedRequest.feedback || "No response from referee"}
                   </p>
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <p className="font-semibold">Project Title:</p>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    {selectedRequest.project_title || "No title provided."}
+                  </p>
+                </div>
+              </div>
 
               <div className="space-y-2">
                 <p className="font-semibold">Project Description:</p>
@@ -349,6 +357,35 @@ const AdminRequests = () => {
                       "No description provided."}
                   </p>
                 </div>
+              </div>
+
+              <div>
+              <p className="font-semibold">Requested Variables:</p>
+              {selectedRequest.requested_variables &&
+                selectedRequest.requested_variables.length > 0 && (
+                  <div className="mb-4">
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      {selectedRequest.requested_variables.map(
+                        (variable, index) => (
+                          <div
+                            key={index}
+                            className="bg-gray-100 text-[10px] text-gray-800 p-2 rounded-lg shadow-sm"
+                          >
+                            {variable}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!selectedRequest.requested_variables && (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    { "No variables selected (old request)"}
+                  </p>
+                </div>
+                )}
               </div>
 
               <div className="space-y-2">

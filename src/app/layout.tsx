@@ -5,6 +5,7 @@ import { Providers } from "@/lib/providers";
 import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { SearchProvider } from "@/context/searchContext";
+// import  PageWrapper from "@/lib/animationWrapper";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,7 +24,6 @@ export default function RootLayout({
   
   return (
     <html lang="en">
-
       <Providers>
         <SearchProvider>
           <body className={inter.className}>
