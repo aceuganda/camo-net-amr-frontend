@@ -10,13 +10,14 @@ import {
   downloadData,
   ReRequestAccess,
   useDatasetVariables,
-  deletePermission
+  deletePermission,
 } from "@/lib/hooks/useDataSets";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
 
 import ConfidentialityAgreement from "../confidentialityAgreement";
+import DataSharingAgreement from "../dataSharingPolicy";
 import { Cross2Icon, DownloadIcon, TrashIcon } from "@radix-ui/react-icons";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
@@ -70,7 +71,7 @@ interface UserPermission {
   re_request_count: number;
   downloads_count: number;
   last_update: Date;
-  requested_variables: string[];  
+  requested_variables: string[];
 }
 
 interface Response {
@@ -106,6 +107,8 @@ export default function DatasetDetails({ id }: any) {
   );
   const [isAgreedToConfidentiality, setIsAgreedToConfidentiality] =
     useState(false);
+
+  const [isAgreedToDataSharing, setIsAgreedToDataSharing] = useState(false);
   const [formValues, setFormValues] = useState({
     project_description: "",
     institution: "",
@@ -156,7 +159,7 @@ export default function DatasetDetails({ id }: any) {
     isPending: downloadPending,
     mutate: downloadFn,
   } = useMutation({
-    mutationFn: downloadData
+    mutationFn: downloadData,
   });
   const {
     data: reRequestedData,
@@ -236,8 +239,8 @@ export default function DatasetDetails({ id }: any) {
     setIsModalOpen(true);
   };
 
-  const handleModalSubmit = async (e:any) => {
-    e.preventDefault()
+  const handleModalSubmit = async (e: any) => {
+    e.preventDefault();
     const {
       project_description,
       institution,
@@ -250,10 +253,10 @@ export default function DatasetDetails({ id }: any) {
       referee_email,
       irb_number,
     } = formValues;
-    if(!selectedVariables || selectedVariables.length < 1){
+    if (!selectedVariables || selectedVariables.length < 1) {
       toast.error("Please select at least one variable before submitting");
       return;
-    }else if (
+    } else if (
       project_description &&
       project_title &&
       institution &&
@@ -274,9 +277,9 @@ export default function DatasetDetails({ id }: any) {
         referee_name,
         referee_email,
         irb_number,
-        requested_variables: selectedVariables
+        requested_variables: selectedVariables,
       };
-      console.log(data)
+      console.log(data);
       requestFn({ ...data, data_set_id: dataset.data_set.id });
       setIsModalOpen(false);
     } else {
@@ -287,15 +290,15 @@ export default function DatasetDetails({ id }: any) {
 
   useEffect(() => {
     if (downloadedData && isDownloadSuccess) {
-      
       if (downloadedData instanceof Blob) {
         FileSaver.saveAs(downloadedData, "data.csv");
         setIsAgreementModalOpen(false);
-        toast.success("Downloaded successfully, please check your downloads folder.");
+        toast.success(
+          "Downloaded successfully, please check your downloads folder."
+        );
       } else {
         toast.error("Downloaded data is not a valid file");
       }
-     
     }
     if (downloadError) {
       toast.error(
@@ -304,39 +307,37 @@ export default function DatasetDetails({ id }: any) {
     }
   }, [downloadedData, isDownloadSuccess, downloadError]);
   function generateCSVFromDataset() {
-  const csvRows: string[] = [];
- 
-  if(dictionaryData?.data?.data){
-   const dictionary = dictionaryData.data.data as VariableInfo
-  csvRows.push("variable,type,description");
+    const csvRows: string[] = [];
 
-  // Iterate through the dataset and construct rows
-  for (const [key, value] of Object.entries(dictionary)) {
-    const row = `${key},${value.type},${value.description}`;
-    csvRows.push(row);
+    if (dictionaryData?.data?.data) {
+      const dictionary = dictionaryData.data.data as VariableInfo;
+      csvRows.push("variable,type,description");
+
+      // Iterate through the dataset and construct rows
+      for (const [key, value] of Object.entries(dictionary)) {
+        const row = `${key},${value.type},${value.description}`;
+        csvRows.push(row);
+      }
+
+      // Join rows with newlines to form the final CSV string
+      const csvContent = csvRows.join("\n");
+      // Create a Blob object from the CSV content
+      const blob = new Blob([csvContent], { type: "text/csv" });
+
+      const url = URL.createObjectURL(blob);
+
+      // Create a temporary anchor element for downloading
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "dictionary.csv";
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
   }
-
-  // Join rows with newlines to form the final CSV string
-  const csvContent = csvRows.join("\n");
-  // Create a Blob object from the CSV content
-  const blob = new Blob([csvContent], { type: "text/csv" });
-
-
-  const url = URL.createObjectURL(blob);
-
-  // Create a temporary anchor element for downloading
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "dictionary.csv"; 
-  document.body.appendChild(a);
-  a.click();
-
-  // Clean up 
-  URL.revokeObjectURL(url);
-  document.body.removeChild(a);
-
-}
-}
 
   useEffect(() => {
     if (requestData && isRequestSuccess) {
@@ -346,7 +347,6 @@ export default function DatasetDetails({ id }: any) {
     }
     if (requestError) {
       toast.error(`Failed to request access to this data set`);
-      
     }
   }, [requestData, requestError, isRequestSuccess]);
 
@@ -375,7 +375,6 @@ export default function DatasetDetails({ id }: any) {
       }
     });
   };
-  
 
   useEffect(() => {
     if (isSuccess && dataset) {
@@ -383,14 +382,17 @@ export default function DatasetDetails({ id }: any) {
     }
   }, [isSuccess]);
 
-  const handleSelectAll = (e:any) => {
-    e.preventDefault()
-    if (dictionaryData?.data?.data && selectedVariables.length !== dictionaryData?.data?.data.length) { 
+  const handleSelectAll = (e: any) => {
+    e.preventDefault();
+    if (
+      dictionaryData?.data?.data &&
+      selectedVariables.length !== dictionaryData?.data?.data.length
+    ) {
       setSelectedVariables(Object.keys(dictionaryData.data.data));
     }
   };
-  const handleDeselectAll = (e:any) => {
-    e.preventDefault()
+  const handleDeselectAll = (e: any) => {
+    e.preventDefault();
     setSelectedVariables([]);
   };
 
@@ -399,8 +401,8 @@ export default function DatasetDetails({ id }: any) {
     //   toast.error("You need to select at least 1 variable do download");
     //   return;
     // }
-    if (isAgreedToConfidentiality) {
-      await downloadFn(dataset.data_set.db_name );
+    if (isAgreedToConfidentiality && isAgreedToDataSharing) {
+      await downloadFn(dataset.data_set.db_name);
     } else {
       toast.error(
         "Please agree to the confidentiality agreement before downloading the data"
@@ -496,12 +498,12 @@ export default function DatasetDetails({ id }: any) {
                       This dataset is not available for download yet{" "}
                     </div>
                   )}
-                  {showDownloadButton && (
+                  {showDownloadButton && userPermission && userPermission.downloads_count < 3 && (
                     <button
                       onClick={() => setIsAgreementModalOpen(true)}
                       disabled={!canDownload}
                       className={`px-6 py-2 rounded-lg transition-all duration-200 flex items-center justify-center min-w-[10rem] ${
-                        canDownload
+                        canDownload 
                           ? "bg-[#00B9F1] text-white hover:bg-[#0090bd]"
                           : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       }`}
@@ -509,13 +511,16 @@ export default function DatasetDetails({ id }: any) {
                       {downloadPending ? (
                         <DotsLoader />
                       ) : (
-                        <>
+                         <>
                           <DownloadIcon width={20} height={20} />
                           Download
                         </>
                       )}
                     </button>
                   )}
+                  { userPermission && userPermission.downloads_count > 2  && 
+                    <div className="text-[11px] text-red-400  flex justify-center items-center">Reached maximum download count</div> 
+                  }
 
                   {canRequestAccess && dataset.data_set.in_warehouse && (
                     <button
@@ -557,8 +562,10 @@ export default function DatasetDetails({ id }: any) {
                 </div>
                 {userPermission && permissionStatus === "requested" && (
                   <button
-                    onClick={(e:any) => { e.preventDefault();
-                      deletePermissionFn({ permissionId: userPermission.id });}}
+                    onClick={(e: any) => {
+                      e.preventDefault();
+                      deletePermissionFn({ permissionId: userPermission.id });
+                    }}
                     className="w-[10rem] mt-[5px] bg-red-500 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex self-end  items-center justify-self-end  justify-center"
                     disabled={deletePending}
                   >
@@ -770,7 +777,7 @@ export default function DatasetDetails({ id }: any) {
                       <p className="text-sm font-medium text-gray-500">
                         Number downloads
                       </p>
-                      <p className="mt-1 text-gray-900">
+                      <p className={`mt-1 ${userPermission && userPermission?.downloads_count>2? "text-red-600": "text-gray-900"} `}>
                         {userPermission?.downloads_count}
                       </p>
                     </div>
@@ -1095,7 +1102,7 @@ export default function DatasetDetails({ id }: any) {
                 </div>
               </div>
             )}
-          {userPermission && !userPermission.requested_variables &&  (
+          {userPermission && !userPermission.requested_variables && (
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-600 mb-[5px]">
                 {
@@ -1118,6 +1125,12 @@ export default function DatasetDetails({ id }: any) {
         <ConfidentialityAgreement
           handleAgreedCallBack={(agreed: boolean) => {
             if (agreed) setIsAgreedToConfidentiality(true);
+          }}
+        />
+
+        <DataSharingAgreement
+          handleAgreedCallBack={(agreed: boolean) => {
+            if (agreed) setIsAgreedToDataSharing(true);
           }}
         />
         {downloadPending && (

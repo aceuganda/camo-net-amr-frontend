@@ -1,6 +1,7 @@
 import { Step } from "react-joyride";
 
 export const appMenuSteps: Step[] = [
+  
   {
     target: ".home_button", 
     content: "Home page, the landing page",
@@ -33,10 +34,10 @@ export const catalogueSteps: Step[] = [
     target: ".export_button", 
     content: "Button to download this catalogue",
   },
-  {
-    target: ".external_dataset_button", 
-    content: "This is in case you have a dataset you would like to be added to the data warehouse",
-  },
+  // {
+  //   target: ".external_dataset_button", 
+  //   content: "This is in case you have a dataset you would like to be added to the data warehouse",
+  // },
   {
     target: ".menu_view", 
     content: "Helps you filter through the datasets",
