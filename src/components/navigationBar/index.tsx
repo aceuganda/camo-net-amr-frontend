@@ -69,10 +69,10 @@ const NavigationBar = () => {
           </button>
           {dropdownOpen && (
             <div className="absolute w-[10rem] top-full left-0 bg-[#24408E] p-2 z-40 rounded shadow-lg flex flex-col gap-2">
-              <Link href="/" className={`home_button ${isActive("/") ? "text-[#00B9F1]" : "text-white"}`}>Home</Link>
-              <Link href="/datasets" className={`catalogue_button ${isActive("/datasets") ? "text-[#00B9F1]" : "text-white"}`}>Catalogue</Link>
-              <Link className={`data_access_button ${isActive("/datasets/access") ? "text-[#00B9F1]" : "text-white"}`} href={isLoggedIn ? "/datasets/access" : "/authenticate" }>Data Access</Link>
-              <Link href="/datasets/publication" className={`publications_button ${isActive("/datasets/publication") ? "text-[#00B9F1]" : "text-white"}`}>Publications</Link>
+              <Link href="/" className={` ${isActive("/") ? "text-[#00B9F1]" : "text-white"}`}>Home</Link>
+              <Link href="/datasets" className={` ${isActive("/datasets") ? "text-[#00B9F1]" : "text-white"}`}>Catalogue</Link>
+              <Link className={` ${isActive("/datasets/access") ? "text-[#00B9F1]" : "text-white"}`} href={isLoggedIn ? "/datasets/access" : "/authenticate" }>Data Access</Link>
+              <Link href="/datasets/publication" className={` ${isActive("/datasets/publication") ? "text-[#00B9F1]" : "text-white"}`}>Publications</Link>
               <Link href="/datasets/external" className={`${isActive("/datasets/external") ? "text-[#00B9F1]" : "text-white"}`}>Contribute</Link>
               {admin && <Link href="/datasets/admin" className={`${isActive("/datasets/admin") ? "text-[#00B9F1]" : "text-white"}`}>Admin</Link>}
             </div>
