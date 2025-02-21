@@ -104,7 +104,7 @@ const ConfidentialityAgreement = ({handleAgreedCallBack}:any) => {
           onChange={handleChange}
         />
         <label htmlFor="agree" className={`text-lg ${!isScrolled ? 'text-gray-400' : 'text-gray-800'}`}>
-          I agree to the terms and conditions
+          I agree to the non-disclosure agreement
         </label>
       </div>
     </div>

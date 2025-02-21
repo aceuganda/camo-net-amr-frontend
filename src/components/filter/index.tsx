@@ -96,7 +96,7 @@ export default function SidebarMenu({
             )}
           </div>
 
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <h3
               className="font-[600] text-[15px] mb-[1.5rem] flex items-center text-[#24408E] cursor-pointer"
               onClick={() => setIsStatusOpen(!isStatusOpen)}
@@ -123,7 +123,7 @@ export default function SidebarMenu({
                 ))}
               </ul>
             )}
-          </div>
+          </div> */}
         </>
       )}
 

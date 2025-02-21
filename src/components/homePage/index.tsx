@@ -77,7 +77,7 @@ export default function HomePage() {
               alt="Laboratory research"
               width={300}
               height={200}
-              className="rounded-lg mb-4"
+              className="rounded-lg mb-4 max-sm:w-full"
             />
             <Link href="/datasets">
               <button className="w-full py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-lightblue-600 transition duration-200">
@@ -134,7 +134,7 @@ export default function HomePage() {
             </h3>
             <p className="text-gray-700 text-[12px] mb-4">
               We would like to extend our heartfelt gratitude to{" "}
-              <span className="font-[600]">CAMONET</span> for their significant
+              <span className="font-[600]">CAMONET (Award Number: 226692/Z/22/Z)</span> for their significant
               assistance and involvement in this project. We also wish to
               express our sincere appreciation to the{" "}
               <span className="font-[600]">Fleming Fund</span> for their
@@ -149,7 +149,7 @@ export default function HomePage() {
               alt="Capacity building"
               width={300}
               height={200}
-              className="rounded-lg mb-4"
+              className="rounded-lg mb-4 max-sm:w-full"
             />
 
             <Link href="/datasets/access">

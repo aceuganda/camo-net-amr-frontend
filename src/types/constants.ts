@@ -26,6 +26,7 @@ export type DatasetType = {
     project_type: string;
     main_project_name: string;
     data_capture_method: string;
+    collection_period:string;
   
     amr_category: string;
     acronym: string;

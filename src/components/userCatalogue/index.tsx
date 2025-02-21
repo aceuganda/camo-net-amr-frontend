@@ -25,11 +25,12 @@ const OrganismResistanceByTime = dynamic(
 type FetchedDataset = {
   id: string;
   name: string;
+  
   category: string;
   type: string;
   study_design: string;
   project_status: string;
-  participant_count: string;
+  entries_count: string;
   data_use_permissions: string;
   in_warehouse: boolean;
   amr_category: string;
@@ -84,7 +85,7 @@ export default function UserCatalogue() {
   return (
     <>
     <main className="flex min-h-screen flex-col items-center ">
-      <div className=" w-full flex flex-row overflow-x-hidden">
+      <div className="max-sm:h-[120vh] w-full flex sm:flex-row flex-col overflow-x-hidden">
         <SidebarMenu
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
@@ -97,7 +98,7 @@ export default function UserCatalogue() {
 
         <div className="m-[2rem] w-full ">
           <div className="text-[1.5rem] font-bold text-[#24408E] mb-[1rem]">
-            Datasets
+            Available datasets
           </div>
           {isLoading && (
             <div className="text-center w-full flex items-start h-[4rem] justify-center text-gray-500">
@@ -125,21 +126,20 @@ export default function UserCatalogue() {
             )}
 
           {filteredDatasets.length > 0 && !error && !isLoading && (
-            <div className="data_access_table w-[100%] overflow-x-auto">
+            <div className="data_access_table w-[90%] overflow-x-auto">
               <table className=" text-[12px] sm:text-sm border-collapse rounded-t-lg overflow-hidden ">
                 <thead className="bg-[#00B9F1] text-white">
                   <tr>
                     <th className="p-5 text-left">Name</th>
-                    <th className="p-5 text-left">Study</th>
-                    <th className="p-5 text-left">AMR Category</th>
-                    <th className="p-5 text-left">Category</th>
-                    <th className="p-5 text-left">Status</th>
+                    <th className="p-5 text-left">Study Design</th>
+                    <th className="p-5 text-left">Data collected</th>
+                    {/* <th className="p-5 text-left">Data collected</th> */}
+                    {/* <th className="p-5 text-left">Status</th> */}
                     <th className="p-5 text-left">Entries</th>
-                    <th className="p-5 text-left">Available For download</th>
+                    {/* <th className="p-5 text-left">Available For download</th> */}
                     <th className="p-5 text-left">Access</th>
                   </tr>
                 </thead>
-
                 {/* Table Body */}
                 <tbody>
                   {filteredDatasets.map((dataset, index) => (
@@ -152,11 +152,11 @@ export default function UserCatalogue() {
                     >
                       <td className="p-5">{dataset.name}</td>
                       <td className="p-5">{dataset.study_design}</td>
-                      <td className="p-5">{dataset.amr_category}</td>
+                      {/* <td className="p-5">{dataset.amr_category}</td> */}
                       <td className="p-5">{dataset.category}</td>
-                      <td className="p-5">{dataset.project_status}</td>
-                      <td className="p-5">{dataset.participant_count}</td>
-                      <td className="p-5">{dataset.in_warehouse.toString()}</td>
+                      {/* <td className="p-5">{dataset.project_status}</td> */}
+                      <td className="p-5">{dataset.entries_count}</td>
+                      {/* <td className="p-5">{dataset.in_warehouse.toString()}</td> */}
                       <td className="p-5">
                         {dataset.access === "approved" && (
                           <span className="text-[#24408E] font-bold">
@@ -168,10 +168,14 @@ export default function UserCatalogue() {
                             Requested
                           </span>
                         )}
-                        {(dataset.access === "not granted" ||
-                          dataset.access === "denied") && (
+                        {(dataset.access === "not granted" ) && (
                           <span className="text-gray-500 font-bold">
                             Not Granted
+                          </span>
+                        )}
+                        {(dataset.access === "denied") && (
+                          <span className="text-red-500 font-bold">
+                            Denied
                           </span>
                         )}
                       </td>
@@ -182,7 +186,18 @@ export default function UserCatalogue() {
             </div>
           )}
         </div>
-        
+        {filteredDatasets.length > 0 && !error && !isLoading && <div className="w-3/4 flex flex-col max-sm:self-center sm:w-1/4 sm:mt-[6rem] mt-[1rem] mr-[1.5rem] p-4 border bg-gray-50">
+        <h2 className="text-sm font-bold mb-2">Your Accessible Datasets</h2>
+        <ul className="space-y-2">
+          {filteredDatasets
+           .filter((dataset) => dataset.access === "approved")
+          .map((dataset) => (
+            <li key={dataset.id} onClick={() => handleDatasetClick(dataset.id)} className="p-2 cursor-pointer hover:underline hover:text-blue-500  border rounded-lg shadow bg-white">
+              <span className="text-sm font-medium">{dataset.name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>}
       </div>
 
       {/* Button to toggle trends menu */}
