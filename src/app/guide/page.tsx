@@ -67,7 +67,7 @@ function UserGuide() {
         <ul className="list-disc list-inside mb-4 pl-4">
           <li>Navigate to the catalogue tab on the top left part of the navigation bar</li>
           <li>Using the filters on the left the user may choose to view only specific categories of data or filter by study status (active, closed or on hold). This will enable the user to view the dataset of their interest.</li>
-          <li>The user may export the catalogue by clicking on "EXPORT CATALOGUE" on the right-hand side of the catalogue page</li>
+          <li>The user may export the catalogue by clicking on --EXPORT CATALOGUE-- on the right-hand side of the catalogue page</li>
         </ul>
         <div className="my-6 flex justify-center">
           <div className="relative w-full max-w-2xl h-64 md:h-80">
