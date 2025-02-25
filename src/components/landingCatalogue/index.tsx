@@ -175,7 +175,10 @@ export default function HomeCatalogue() {
 
   return (
     <>
-      <main className="flex min-h-screen flex-col items-center ">
+      <main className="flex h-[90vh] flex-col items-center relative ">
+      <div className="absolute bottom-[4rem] right-4  text-blue-500  underline text-sm font-semibold shadow-md">
+        Version 1
+      </div>
         
         <div className=" w-full flex flex-row  justify-between overflow-x-hidden">
           <SidebarMenu
