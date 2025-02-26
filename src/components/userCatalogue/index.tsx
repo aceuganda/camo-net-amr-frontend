@@ -170,7 +170,7 @@ export default function UserCatalogue() {
                         )}
                         {(dataset.access === "not granted" ) && (
                           <span className="text-gray-500 font-bold">
-                            Not Granted
+                             Request data access
                           </span>
                         )}
                         {(dataset.access === "denied") && (

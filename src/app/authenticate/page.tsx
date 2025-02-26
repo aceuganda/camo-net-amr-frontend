@@ -185,155 +185,174 @@ function RegistrationForm() {
 
   return (
     <form
-  onSubmit={handleRegistrationSubmit}
-  className="h-[27rem] overflow-auto space-y-4 p-4"
->
-  {/* Email and Full Name row */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label className="block text-gray-700">
-        Email Address <span className="text-red-600 text-[11px]">(Required)</span>
-      </label>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
-        placeholder="Email Address"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-gray-700">
-        Full Name <span className="text-red-600 text-[11px]">(Required)</span>
-      </label>
-      <input
-        type="text"
-        value={fullName}
-        onChange={(e) => setFullName(e.target.value)}
-        className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
-        placeholder="Full Name"
-        required
-      />
-    </div>
-  </div>
-
-  {/* Institution and Age Range row */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label className="block text-gray-700">
-        Institution <span className="text-red-600 text-[11px]">(Required)</span>
-      </label>
-      <input
-        type="text"
-        value={institution}
-        onChange={(e) => setInstitution(e.target.value)}
-        className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
-        placeholder="Institution"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-gray-700">
-        Age Range <span className="text-red-600 text-[11px]">(Required)</span>
-      </label>
-      <select
-        value={ageRange}
-        onChange={(e) => setAgeRange(e.target.value)}
-        className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
-        required
-      >
-        <option className="text-gray-700" value="" disabled>
-          Select Age Range
-        </option>
-        <option value="18 to 24">18 to 24</option>
-        <option value="25 to 34">25 to 34</option>
-        <option value="35 to 44">35 to 44</option>
-        <option value="45 and above">45 and above</option>
-      </select>
-    </div>
-  </div>
-
-  {/* Password fields row */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label className="block text-gray-700">
-        Password <span className="text-red-600 text-[11px]">(Required)</span>
-      </label>
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => {
-          setPassword(e.target.value)
-          setPasswordStrength(checkPasswordStrength(e.target.value));
-        }}
-        className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
-        placeholder="Password"
-        required
-      />
-      <p className={`text-sm mt-1 ${passwordStrength.toLocaleLowerCase() === 'strong' ? 'text-green-600':'text-red-600'} `}>
-        {passwordStrength && `Password strength: ${passwordStrength}`}
-      </p>
-    </div>
-    <div>
-      <label className="block text-gray-700">
-        Confirm Password <span className="text-red-600 text-[11px]">(Required)</span>
-      </label>
-      <input
-        type="password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
-        placeholder="Confirm Password"
-        required
-      />
-    </div>
-  </div>
-
-  {/* Checkboxes */}
-  <div className="mt-4">
-    <div className="flex items-center mb-2">
-      <input
-        type="checkbox"
-        id="privacyPolicy"
-        className="mr-2"
-        checked={isPrivacyAccepted}
-        onChange={(e) => setIsPrivacyAccepted(e.target.checked)}
-      />
-      <label htmlFor="privacyPolicy" className="text-sm">
-        I accept the Privacy Policy.
-      </label>
-    </div>
-    <div className="flex items-center mb-2">
-      <input
-        type="checkbox"
-        id="informationAccuracy"
-        className="mr-2"
-        checked={isInformationAccurate}
-        onChange={(e) => setIsInformationAccurate(e.target.checked)}
-      />
-      <label htmlFor="informationAccuracy" className="text-sm">
-        I confirm that the information provided is accurate to the best of my knowledge.
-      </label>
-    </div>
-  </div>
-
-  {/* Button and Privacy Policy Link */}
-  <div className="flex flex-wrap justify-between items-center gap-4 mt-4">
-    <button
-      disabled={isPending}
-      className="p-2 bg-[#00b9f1] sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] text-white rounded hover:bg-[#7ad4ef]"
+      onSubmit={handleRegistrationSubmit}
+      className="h-[27rem] overflow-auto space-y-4 p-4"
     >
-      {isPending && !isSuccess && !error ? <DotsLoader /> : "REGISTER"}
-    </button>
-    <Link
+      {/* Email and Full Name row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-gray-700">
+            Email Address{" "}
+            <span className="text-red-600 text-[11px]">(Required)</span>
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            placeholder="Email Address"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700">
+            Full Name{" "}
+            <span className="text-red-600 text-[11px]">(Required)</span>
+          </label>
+          <input
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            placeholder="Full Name"
+            required
+          />
+        </div>
+      </div>
+
+      {/* Institution and Age Range row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-gray-700">
+            Institution{" "}
+            <span className="text-red-600 text-[11px]">(Required)</span>
+          </label>
+          <input
+            type="text"
+            value={institution}
+            onChange={(e) => setInstitution(e.target.value)}
+            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            placeholder="Institution"
+            required
+          />
+        </div>
+        <div>
+          <label title={"For analysis purposes"}  className="block text-gray-700">
+              Age Range{" "}
+              <span className="text-red-600 text-[11px]">(Required)</span>
+          </label>
+          <select
+            value={ageRange}
+            onChange={(e) => setAgeRange(e.target.value)}
+            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            required
+          >
+            <option className="text-gray-700" value="" disabled>
+              Select Age Range
+            </option>
+            <option value="18 to 24">18 to 24</option>
+            <option value="25 to 34">25 to 34</option>
+            <option value="35 to 44">35 to 44</option>
+            <option value="45 and above">45 and above</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Password fields row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-gray-700">
+            Password{" "}
+            <span className="text-red-600 text-[11px]">(Required)</span>
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setPasswordStrength(checkPasswordStrength(e.target.value));
+            }}
+            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            placeholder="Password"
+            required
+          />
+          <p
+            className={`text-sm mt-1 ${
+              passwordStrength.toLocaleLowerCase() === "strong"
+                ? "text-green-600"
+                : "text-red-600"
+            } `}
+          >
+            {passwordStrength && `Password strength: ${passwordStrength}`}
+          </p>
+        </div>
+        <div>
+          <label className="block text-gray-700">
+            Confirm Password{" "}
+            <span className="text-red-600 text-[11px]">(Required)</span>
+          </label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            placeholder="Confirm Password"
+            required
+          />
+        </div>
+      </div>
+
+      {/* Checkboxes */}
+      <div className="mt-4">
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            id="privacyPolicy"
+            className="mr-2"
+            checked={isPrivacyAccepted}
+            onChange={(e) => setIsPrivacyAccepted(e.target.checked)}
+          />
+          <label htmlFor="privacyPolicy" className="text-sm">
+            I accept the Privacy Policy.{" "}
+            <Link
+              href="authenticate/privacy-policy"
+              className="text-blue-500 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </label>
+        </div>
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            id="informationAccuracy"
+            className="mr-2"
+            checked={isInformationAccurate}
+            onChange={(e) => setIsInformationAccurate(e.target.checked)}
+          />
+          <label htmlFor="informationAccuracy" className="text-sm">
+            I confirm that the information provided is accurate to the best of
+            my knowledge.
+          </label>
+        </div>
+      </div>
+
+      {/* Button and Privacy Policy Link */}
+      <div className="flex flex-wrap justify-between items-center gap-4 mt-4">
+        <button
+          disabled={isPending}
+          className="p-2 bg-[#00b9f1] sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] text-white rounded hover:bg-[#7ad4ef]"
+        >
+          {isPending && !isSuccess && !error ? <DotsLoader /> : "REGISTER"}
+        </button>
+        {/* <Link
       href="authenticate/privacy-policy"
       className="text-blue-500 hover:underline"
     >
       Privacy Policy
-    </Link>
-  </div>
-</form>
+    </Link> */}
+      </div>
+    </form>
   );
 }
 

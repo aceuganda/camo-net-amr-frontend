@@ -409,7 +409,7 @@ export default function HomeCatalogue() {
                           <td className="py-2 px-4 border-b">
                             <Link className="cursor-pointer " href={`/datasets/access/${dataset.id}`}>
                               <div className="text-blue-500 hover:underline">
-                                Request Access
+                                Request data access
                               </div>
                             </Link>
                           </td>
