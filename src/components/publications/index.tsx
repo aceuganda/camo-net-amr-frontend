@@ -38,20 +38,20 @@ export default function Publication() {
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 mx-[1.5rem]">
         {currentPublications.map((publication) => (
           <div key={publication.id} className="border p-4 rounded-lg shadow-md bg-white hover:shadow-xl transition-shadow duration-300">
-            <h3 className="text-[13px] sm:text-xl font-semibold text-blue-700 hover:text-blue-900 transition-colors duration-200">
+            <h3 className="text-[13px] sm:text-[16px] font-semibold text-blue-700 hover:text-blue-900 transition-colors duration-200">
               <div  className="hover:underline">
                 {publication.title}
               </div>
             </h3>
-            <p className="text-gray-600 sm:text-lg text-[11px] mt-2">Authors: {publication.authors.join(', ')}</p>
+            <p className="text-gray-600 sm:text-[15px] text-[11px] mt-2">Authors: {publication.authors.join(', ')}</p>
             <div className="mt-4 flex items-center space-x-3">
               {/* Paper Link with Icon */}
               <a href={publication.paperLink} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:text-blue-700 transition-colors">
                 <ExternalLinkIcon className="h-5 w-5 mr-2" />
-                <span className='sm:text-lg text-[10px]'>Read Paper</span>
+                <span className='sm:text-[14px] text-[10px]'>Read Paper</span>
               </a>
               
             </div>
