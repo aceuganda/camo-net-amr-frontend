@@ -13,9 +13,9 @@ type SidebarMenuProps = {
 
 const categories = [
   { name: "Economic burden" },
-  { name: "Use" },
-  { name: "Consumption" },
-  { name: "Resistance" },
+  { name: "Antibiotic Use" },
+  { name: "Antibiotic Consumption" },
+  { name: "Antibiotic Resistance" },
 ];
 
 const status = [

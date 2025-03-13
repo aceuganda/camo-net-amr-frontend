@@ -1,9 +1,156 @@
 {
-    "publications": [
-        { "id": 1, "title": "Combating Antimicrobial Resistance Through a Data-Driven Approach to Optimize Antibiotic Use and Improve Patient Outcomes: Protocol for a Mixed Methods Study",
-         "authors": ["Jonathan Mayito", "Conrad Tumwine", "Ronald Galiwango",  "Elly Nuwamanya",   "Suzan Nakasendwa",  "Mackline Hope","Reuben Kiggundu","Dathan M Byonanebye", "Flavia Dhikusooka",  "Vivian Twemanye",  "Andrew Kambugu", "Francis Kakooza"],
-          "paperLink": "https://www.researchprotocols.org/2024/1/e58116/authors" }
-          
-          
-    ]
+  "publications": [
+    {
+      "id": 1,
+      "title": "Combating Antimicrobial Resistance Through a Data-Driven Approach to Optimize Antibiotic Use and Improve Patient Outcomes: Protocol for a Mixed Methods Study",
+      "authors": [
+        "Jonathan Mayito",
+        "Conrad Tumwine",
+        "Ronald Galiwango",
+        "Elly Nuwamanya",
+        "Suzan Nakasendwa",
+        "Mackline Hope",
+        "Reuben Kiggundu",
+        "Dathan M Byonanebye",
+        "Flavia Dhikusooka",
+        "Vivian Twemanye",
+        "Andrew Kambugu",
+        "Francis Kakooza"
+      ],
+      "paperLink": "https://www.researchprotocols.org/2024/1/e58116/authors"
+    },
+    {
+      "id": 2,
+      "title": "Evaluating the appropriateness of prescribing antibiotics among persons with HIV (PWH) enrolled in routine cohorts at the Infectious Diseases Institute Clinic, Kampala, Uganda:  A study protocol",
+      "authors": [
+        "Brian Otaalo",
+        "Joseph Musaazi",
+        "Herman Mwanja",
+        "Derek Ngabirano",
+        "Reuben Kiggundu",
+        "Eva Agnes Laker Odongpiny",
+        "Francis Kakooza",
+        "Andrew Kambugu",
+        "Noela C. Owarwo",
+        "Barbara Castelnuovo"
+      ],
+      "paperLink": "https://wellcomeopenresearch.org/articles/10-46/v1"
+    },
+
+    {
+      "id": 3,
+      "title": "Therapeutic drug monitoring for antimicrobial agents for people living with HIV (TAP)",
+      "authors": [
+        "Christine Sekaggya-Wiltshire",
+        "Eva Agnes Laker Odongpiny",
+        "Francis Williams Ojara",
+        "Isabella Kyohairwe",
+        "Reuben Kiggundu",
+        "Hope Mackline",
+        "Catriona Waitt",
+        "Aida N Kawuma",
+        "Allan Buzibye",
+        "Noela Owarwo",
+        "Francis Kakooza",
+        "Andrew Kambugu"
+      ],
+      "paperLink": "https://wellcomeopenresearch.org/articles/9-694/v1"
+    },
+    {
+      "id": 4,
+      "title": "Progress on implementing the WHO-GLASS recommendations on priority pathogen-antibiotic sensitivity testing in Africa: A scoping review",
+      "authors": [
+        "Mackline Hope",
+        "Reuben Kiggundu",
+        "Dickson Tabajjwa",
+        "Conrad Tumwine",
+        "Fahad Lwigale",
+        "Herman Mwanja",
+        "J. P. Waswa",
+        "Jonathan Mayito",
+        "Daniel Bulwadda",
+        "Dathan M. Byonanebye",
+        "Francis Kakooza",
+        "Andrew Kambugu"
+      ],
+      "paperLink": "https://wellcomeopenresearch.org/articles/9-692/v1"
+    },
+    {
+      "id": 5,
+      "title": "Characterization of Antibiotic Resistance in Select Tertiary Hospitals in Uganda: An Evaluation of 2020 to 2023 Routine Surveillance Data",
+      "authors": [
+        "Jonathan Mayito",
+        "Daniel Kibombo",
+        "Charles Olaro",
+        "Susan Nabadda",
+        "Consolata Guma",
+        "Immaculate Nabukenya",
+        "Andrew Busuge",
+        "Flavia Dhikusooka",
+        "Alex Andema",
+        "Peter Mukobi",
+        "Nathan Onyachi",
+        "Ben Watmon",
+        "Stephen Obbo",
+        "Alfred Yayi",
+        "James Elima",
+        "Celestine Barigye",
+        "Filbert J Nyeko",
+        "Ibrahim Mugerwa",
+        "Musa Sekamatte",
+        "Joel Bazira",
+        "Richard Walwema",
+        "Mohammed Lamorde",
+        "Francis Kakooza",
+        "Henry Kajumbula"
+      ],
+      "paperLink": "https://pubmed.ncbi.nlm.nih.gov/38668538/"
+    },
+    {
+      "id": 6,
+      "title": "Antibiotic Resistance related Mortality, Length of Hospital Stay, and Disability-Adjusted Life Years at select Tertiary Hospitals in Uganda: A retrospective study",
+      "authors": [
+        "Jonathan Mayito",
+        "Flavia Dhikusooka",
+        "Daniel Kibombo",
+        "Andrew Busuge",
+        "Alex Andema",
+        "Alfred Yayi",
+        "Stephen Obbo",
+        "Richard Walwema",
+        "Francis Kakooza"
+      ],
+      "paperLink": "https://www.medrxiv.org/content/10.1101/2024.05.28.24308068v1.full"
+    },
+    {
+        "id": 7,
+        "title": "Machine learning-based prediction of antibiotic resistance in Mycobacterium tuberculosis clinical isolates from Uganda",
+        "authors": [
+            "Sandra Ruth Babirye",
+            "Mike Nsubuga",
+            "Gerald Mboowa",
+            "Charles Batte",
+            "Ronald Galiwango",
+            "David Patrick Kateete"
+          ],
+        "paperLink": "https://bmcinfectdis.biomedcentral.com/articles/10.1186/s12879-024-10282-7"
+    },
+    {
+        "id": 8,
+      "title": "Progress of Implementation of World Health Organization Global Antimicrobial Resistance Surveillance System Recommendations on Priority Pathogen-Antibiotic Sensitivity Testing in Africa: Protocol for a Scoping Review",
+      "authors": [
+        "Mackline Hope",
+        "Reuben Kiggundu",
+        "Dathan M Byonanebye",
+        "Jonathan Mayito",
+        "Dickson Tabajjwa",
+        "Fahad Lwigale",
+        "Conrad Tumwine",
+        "Herman Mwanja",
+        "Andrew Kambugu",
+        "Francis Kakooza"
+      ],
+      "paperLink": "https://www.researchprotocols.org/2024/1/e58140"
+    }
+  ]
 }
