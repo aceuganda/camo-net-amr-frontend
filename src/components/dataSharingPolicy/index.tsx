@@ -82,7 +82,7 @@ const DataSharingAgreement = ({ handleAgreedCallBack }: any) => {
         <p className="mb-4">
           A condition of access to IDI data is that if any errors or degradation
           of data are found, these must be notified to the IDI data support team
-          (amrportaluganda@gmail.com). This will primarily be for purposes of
+          (amrdb@idi.co.ug). This will primarily be for purposes of
           improving IDI data quality
         </p>
 

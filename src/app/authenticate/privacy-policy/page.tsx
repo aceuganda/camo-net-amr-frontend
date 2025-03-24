@@ -120,10 +120,11 @@ function PrivacyPolicy() {
           If you have any questions or suggestions about this Privacy Policy,
           contact us at{" "}
           <a
-            href="mailto:amrportaluganda@gmail.com"
+            href="mailto:amrdb@idi.co.ug"
             className="text-blue-500 hover:underline"
           >
-            amrportaluganda@gmail.com
+            {/* amrportaluganda@gmail.com */}
+            amrdb@idi.co.ug
           </a>
         </p>
       </div>
