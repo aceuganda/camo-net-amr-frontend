@@ -749,8 +749,7 @@ export default function DatasetDetails({ id }: any) {
                             >
                               <div className="flex justify-between items-center">
                                 <p className="text-sm max-w-[7rem] font-medium text-gray-900 truncate">
-                                  {/* {perm.project_title || "Untitled Project"} */}
-                                  bvadhlbfjgaidfhriuehaouwehusdifiefiuwehuf
+                                  {perm.project_title || "Untitled Project"}
                                 </p>
                                 <span className={getStatusBadge(perm.status)}>
                                   {perm.status}
