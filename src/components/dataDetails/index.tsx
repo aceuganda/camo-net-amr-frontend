@@ -26,64 +26,91 @@ interface VariableInfo {
   type: string;
   description: string;
 }
-
 interface DataSet {
-  id: string;
   name: string;
-  title: string;
-  db_name: string;
-  size: string;
-  version: string;
-  data_format: string;
-  data_capture_method: string;
-  description: string | null;
-  countries: string;
+  project_status: string;
+  citation_info: string;
+  data_storage_medium: string;
+  grant_code: string;
   category: string;
-
-  start_date: string;
-  end_date: string;
-  source: string;
+  on_hold_reason: string;
+  principal_investigator: string;
+  data_types_collected: string;
+  study_data_link: string;
+  size: string;
+  acronym: string | null;
+  countries: string;
+  pi_email: string;
+  main_data_type: string;
+  data_types_details: string;
+  db_name: string;
+  description: string | null;
+  data_collection_methods: string;
+  pi_contact: string;
   study_design: string;
   project_type: string;
-  project_status: string;
-  protocol_id: string;
-  country_protocol_id: string;
-  thematic_area: string;
-  main_project_name: string;
   type: string;
-  citation_info: string;
+  id: string;
+  start_date: string;
+  source: string;
+  project_manager: string;
   additional_notes: string;
-
-  in_warehouse: boolean;
-  created_at: Date;
-  entries_count: string;
-  acronym: string;
+  main_project_name: string;
+  version: string;
+  title: string;
+  end_date: string;
+  thematic_area: string;
+  pm_email: string;
+  coordinator_name: string;
+  data_capture_method: string;
   amr_category: string;
+  protocol_id: string;
+  data_format: string;
+  pm_contact: string;
+  coordinator_email: string;
+  collection_period: string | null;
+  created_at: string;
+  country_protocol_id: string;
+  entries_count: string;
+  data_access_method: string;
+  coordinator_contact: string;
+  in_warehouse: boolean;
 }
 
 interface UserPermission {
   user_id: string;
-  id: string;
-  data_set_id: string;
+  last_update: string;
+  title: string;
   resource: string;
-  status: string;
-  created_at: Date;
-  re_request_count: number;
   downloads_count: number;
-  last_update: Date;
+  agreed_to_privacy: boolean;
+  re_request_count: number;
+  category: string;
+  status: string;
+  project_description: string;
+  irb_number: string;
+  id: string;
+  denial_reason: string | null;
+  referee_email: string;
+  data_set_id: string;
+  created_at: string;
+  project_title: string;
+  referee_name: string;
+  institution: string;
   requested_variables: string[];
+  approver_id: string | null;
 }
 
-interface Response {
+interface ApiResponse {
   data_set: DataSet;
   is_super_admin: boolean;
-  user_permission: UserPermission | null; // Can be null if the user has no permissions
+  user_permissions: UserPermission[];
 }
 
 export default function DatasetDetails({ id }: any) {
   const { data, isLoading, isSuccess, error, refetch } = useGetDataSet(id);
-  const dataset: Response = data?.data || {};
-  const userPermission = dataset.user_permission;
+  const dataset: ApiResponse = data?.data || {};
+  const userPermissions = dataset.user_permissions;
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
@@ -95,7 +122,7 @@ export default function DatasetDetails({ id }: any) {
     refetch: getDictionary,
   } = useDatasetVariables(
     dataset?.data_set &&
-      dataset?.data_set?.category.toLocaleLowerCase().includes("economic")
+      dataset?.data_set.category.toLocaleLowerCase().includes("economic")
       ? "economic"
       : dataset?.data_set?.db_name.toLocaleLowerCase().includes("amu")
       ? "amu"
@@ -123,12 +150,32 @@ export default function DatasetDetails({ id }: any) {
   });
 
   const canDownload =
-    (userPermission?.status === "approved" && dataset.data_set.in_warehouse) ||
+    (userPermissions?.some((perm) => perm.status === "approved") &&
+      dataset.data_set.in_warehouse) ||
     dataset.is_super_admin;
-  const canRequestAccess = !userPermission;
+
+  const canRequestAccess = !userPermissions || userPermissions?.length < 1;
+
   const showDownloadButton = dataset?.data_set?.in_warehouse;
 
-  const permissionStatus = userPermission?.status || "none";
+  const hasOnlyDeniedRequests =
+    userPermissions?.every((perm) => perm.status === "denied") &&
+    !userPermissions.some(
+      (perm) => perm.status === "requested" || perm.status === "approved"
+    );
+
+  const approvedDownloadsCount = userPermissions
+    ?.filter((perm) => perm.status === "approved")
+    .reduce((acc, perm) => acc + perm.downloads_count, 0);
+
+  const permissionStatus = canDownload
+    ? "approved"
+    : userPermissions?.some((perm) => perm.status === "requested")
+    ? "requested"
+    : hasOnlyDeniedRequests
+    ? "denied"
+    : "none";
+
   const getStatusBadge = (status: string) => {
     const baseClasses = "py-2 px-4 rounded-full text-sm font-medium";
     switch (status) {
@@ -180,6 +227,11 @@ export default function DatasetDetails({ id }: any) {
     mutationFn: requestAccess,
   });
 
+  const handleReapplyRequest = (e:any) => {
+    e.preventDefault();
+    setIsModalOpen(true);
+  };
+
   function validRe_request(lastUpdate: Date | null) {
     if (!lastUpdate) {
       return false;
@@ -195,21 +247,7 @@ export default function DatasetDetails({ id }: any) {
 
     return differenceInDays < 14;
   }
-  function daysCalculator(lastUpdate: Date | null) {
-    if (!lastUpdate) {
-      return "Not defined";
-    }
-    const today = new Date();
-    const lastUpdateDate = new Date(lastUpdate);
-    const differenceInMilliseconds = today.getTime() - lastUpdateDate.getTime();
-    // Convert the difference to days
-    const differenceInDays = Math.floor(
-      differenceInMilliseconds / (1000 * 60 * 60 * 24)
-    );
-    // Return true if the difference is less than 14 days
-    const difference = 14 - differenceInDays;
-    return difference < 0 ? 0 : difference;
-  }
+
 
   const {
     mutate: deletePermissionFn,
@@ -228,9 +266,24 @@ export default function DatasetDetails({ id }: any) {
     },
   });
 
-  const handleReRequest = async () => {
-    if (userPermission && !validRe_request(userPermission.last_update)) {
-      await reRequestAccess(userPermission.id);
+  const handleReRequest = async (permId: string) => {
+    const permission = userPermissions?.find((perm) => perm.id === permId);
+
+    if (
+      permission &&
+      permission.status === "requested" &&
+      !validRe_request(
+        new Date(permission.last_update || permission.created_at)
+      )
+    ) {
+      try {
+        await reRequestAccess(permission.id);
+        toast.success("Re-request sent successfully.");
+      } catch (error) {
+        toast.error("Failed to send re-request. Please try again later.");
+      }
+    } else {
+      toast.error("This request is not eligible for re-requesting access.");
     }
   };
 
@@ -397,10 +450,6 @@ export default function DatasetDetails({ id }: any) {
   };
 
   const handleDwn = async () => {
-    // if (selectedVariables.length < 1) {
-    //   toast.error("You need to select at least 1 variable do download");
-    //   return;
-    // }
     if (isAgreedToConfidentiality && isAgreedToDataSharing) {
       await downloadFn(dataset.data_set.db_name);
     } else {
@@ -413,7 +462,7 @@ export default function DatasetDetails({ id }: any) {
   return (
     <main className="min-h-screen flex-col w-full flex items-start bg-gray-50">
       {isLoading && (
-        <div className="text-center  mt-[1rem] w-full flex items-start h-[4rem] justify-center text-gray-500">
+        <div className="text-center mt-[1rem] w-full flex items-start h-[4rem] justify-center text-gray-500">
           <DotsLoader />
         </div>
       )}
@@ -425,60 +474,8 @@ export default function DatasetDetails({ id }: any) {
       )}
 
       {data && !error && !isLoading && (
-        <div className="min-h-screen w-[100%] ">
-          <div className=" mx-auto px-4 w-[95%] sm:px-6 lg:px-8 py-8">
-            {permissionStatus === "requested" && (
-              <div className="flex flex-col ">
-                <div className="bg-yellow-100  p-[5px] text-gray-900 mb-[2rem]">
-                  Your request should be responded to with in the next 14 days.
-                  If not you will be eligible to re-request.
-                  {userPermission &&
-                    `You have ${
-                      userPermission.last_update
-                        ? daysCalculator(userPermission.last_update)
-                        : daysCalculator(userPermission.created_at)
-                    } days left to re-request if not responded to`}
-                </div>
-                {userPermission &&
-                  !validRe_request(
-                    userPermission.last_update
-                      ? userPermission.last_update
-                      : userPermission.created_at
-                  ) && (
-                    <button
-                      onClick={handleReRequest}
-                      className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center w-[20rem]"
-                    >
-                      <>
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                          />
-                        </svg>
-                        {reRequestPending ? (
-                          <DotsLoader />
-                        ) : (
-                          "Re-request Access"
-                        )}
-                      </>
-                    </button>
-                  )}
-                {reRequestError && (
-                  <div className="text-red-600 text-[11px]">
-                    Failed to send a new request, please be sure you are in a
-                    valid date range before you try again.
-                  </div>
-                )}
-              </div>
-            )}
+        <div className="min-h-screen w-full">
+          <div className="mx-auto px-4 w-full sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
               <div className="flex items-center space-x-2 text-sm mb-4 sm:mb-0">
                 <Link
@@ -492,35 +489,47 @@ export default function DatasetDetails({ id }: any) {
               </div>
               <div>
                 <div className="flex flex-wrap gap-3">
-                  {!showDownloadButton && (
-                    <div className="text-red-700 text-[14px]">
-                      {" "}
-                      This dataset is not available for download yet{" "}
-                    </div>
-                  )}
-                  {showDownloadButton && userPermission && userPermission.downloads_count < 3 && (
+                  {userPermissions?.length > 0 && hasOnlyDeniedRequests && (
                     <button
-                      onClick={() => setIsAgreementModalOpen(true)}
-                      disabled={!canDownload}
-                      className={`px-6 py-2 rounded-lg transition-all duration-200 flex items-center justify-center min-w-[10rem] ${
-                        canDownload 
-                          ? "bg-[#00B9F1] text-white hover:bg-[#0090bd]"
-                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      }`}
+                      onClick={handleReapplyRequest}
+                      className="px-6 py-2 rounded-lg bg-[#00B9F1] text-white hover:bg-[#0090bd] transition-all duration-200 flex items-center justify-center"
                     >
-                      {downloadPending ? (
-                        <DotsLoader />
-                      ) : (
-                         <>
-                          <DownloadIcon width={20} height={20} />
-                          Download
-                        </>
-                      )}
+                      Reapply
                     </button>
                   )}
-                  { userPermission && userPermission.downloads_count > 2  && 
-                    <div className="text-[11px] text-red-400  flex justify-center items-center">Reached maximum download count</div> 
-                  }
+                  {!showDownloadButton && (
+                    <div className="text-red-700 text-[14px]">
+                      This dataset is not available for download yet
+                    </div>
+                  )}
+                  {showDownloadButton &&
+                    userPermissions &&
+                    approvedDownloadsCount < 3 && (
+                      <button
+                        onClick={() => setIsAgreementModalOpen(true)}
+                        disabled={!canDownload}
+                        className={`px-6 py-2 rounded-lg transition-all duration-200 flex items-center justify-center min-w-[10rem] ${
+                          canDownload
+                            ? "bg-[#00B9F1] text-white hover:bg-[#0090bd]"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        }`}
+                      >
+                        {downloadPending ? (
+                          <DotsLoader />
+                        ) : (
+                          <>
+                            <DownloadIcon width={20} height={20} />
+                            Download
+                          </>
+                        )}
+                      </button>
+                    )}
+                  {userPermissions && approvedDownloadsCount >= 3 && (
+                    <div className="text-[11px] text-red-400 flex justify-center items-center">
+                      Reached maximum download count 
+                      Please contact amrdb@idi.co.ug for assistance
+                    </div>
+                  )}
 
                   {canRequestAccess && dataset.data_set.in_warehouse && (
                     <button
@@ -560,19 +569,6 @@ export default function DatasetDetails({ id }: any) {
                     </span>
                   )}
                 </div>
-                {userPermission && permissionStatus === "requested" && (
-                  <button
-                    onClick={(e: any) => {
-                      e.preventDefault();
-                      deletePermissionFn({ permissionId: userPermission.id });
-                    }}
-                    className="w-[10rem] mt-[5px] bg-red-500 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex self-end  items-center justify-self-end  justify-center"
-                    disabled={deletePending}
-                  >
-                    <TrashIcon className="mr-2 h-4 w-4" />
-                    {deletePending ? <DotsLoader /> : "Delete Request"}
-                  </button>
-                )}
               </div>
             </div>
 
@@ -580,7 +576,7 @@ export default function DatasetDetails({ id }: any) {
               {dataset.data_set.name}
             </h1>
 
-            <div className="flex flex-col  lg:flex-row gap-8">
+            <div className="flex flex-col lg:flex-row gap-8">
               <div className="flex-grow min-w-[80%]">
                 <div className="bg-white rounded-xl shadow-sm mb-8">
                   <div className="p-6">
@@ -598,146 +594,85 @@ export default function DatasetDetails({ id }: any) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Category
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.category}
-                            </p>
+                        {[
+                          {
+                            label: "Category",
+                            value: dataset.data_set.category,
+                          },
+                          {
+                            label: "Thematic area",
+                            value: dataset.data_set.thematic_area,
+                          },
+                          {
+                            label: "AMR Category",
+                            value: dataset.data_set.amr_category,
+                          },
+                          {
+                            label: "Status",
+                            value: dataset.data_set.project_status,
+                          },
+                          { label: "Size", value: dataset.data_set.size },
+                          {
+                            label: "Entries",
+                            value: dataset.data_set.entries_count || "UNK",
+                          },
+                          {
+                            label: "Study Design",
+                            value: dataset.data_set.study_design,
+                          },
+                        ].map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start space-x-3"
+                          >
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">
+                                {item.label}
+                              </p>
+                              <p className="mt-1 text-gray-900">{item.value}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Thematic area
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.thematic_area}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              AMR Category
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.amr_category}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Status
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.project_status}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Size
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.size}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Entries
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.entries_count
-                                ? dataset.data_set.entries_count
-                                : "UNK"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Study Design
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.study_design}
-                            </p>
-                          </div>
-                        </div>
+                        ))}
                       </div>
 
                       <div className="space-y-4">
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Countries
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.countries}
-                            </p>
+                        {[
+                          {
+                            label: "Countries",
+                            value: dataset.data_set.countries,
+                          },
+                          {
+                            label: "Timeline",
+                            value: `${formatDate(
+                              dataset.data_set.start_date
+                            )} - ${formatDate(dataset.data_set.end_date)}`,
+                          },
+                          {
+                            label: "Export Data Format",
+                            value: dataset.data_set.data_format,
+                          },
+                          { label: "Source", value: dataset.data_set.source },
+                          {
+                            label: "Data capture method",
+                            value: dataset.data_set.data_capture_method,
+                          },
+                          {
+                            label: "Main Project Name (if any)",
+                            value: dataset.data_set.main_project_name || "N/A",
+                          },
+                        ].map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start space-x-3"
+                          >
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">
+                                {item.label}
+                              </p>
+                              <p className="mt-1 text-gray-900">{item.value}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Timeline
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {formatDate(dataset.data_set.start_date)} -{" "}
-                              {formatDate(dataset.data_set.end_date)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Export Data Format
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.data_format}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Source
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.source}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Data capture method
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.data_capture_method}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start space-x-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">
-                              Main Project Name (if any)
-                            </p>
-                            <p className="mt-1 text-gray-900">
-                              {dataset.data_set.main_project_name
-                                ? dataset.data_set.main_project_name
-                                : "N/A"}
-                            </p>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -749,46 +684,136 @@ export default function DatasetDetails({ id }: any) {
                     Credibility
                   </h2>
                   <div className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Protocol ID
+                    {[
+                      {
+                        label: "Protocol ID",
+                        value: dataset.data_set.protocol_id,
+                      },
+                      {
+                        label: "Citations",
+                        value: dataset.data_set.citation_info,
+                      },
+                      {
+                        label: "Country Protocol ID",
+                        value: dataset.data_set.country_protocol_id,
+                      },
+                      {
+                        label: "Number Downloads",
+                        value: approvedDownloadsCount,
+                      },
+                      {
+                        label: "Number Re-requests Sent",
+                        value: userPermissions?.reduce(
+                          (acc, perm) => acc + perm.re_request_count,
+                          0
+                        ),
+                      },
+                    ].map((item, index) => (
+                      <div key={index}>
+                        <p className="text-sm font-medium text-gray-500">
+                          {item.label}
+                        </p>
+                        <p
+                          className={`mt-1 ${
+                            item.label === "Number Downloads" &&
+                            userPermissions
+                              ?.filter((perm) => perm.status === "approved")
+                              .some((perm) => perm.downloads_count > 2)
+                              ? "text-red-600"
+                              : "text-gray-900"
+                          }`}
+                        >
+                          {item.value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Permission Requests Section */}
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Permission Requests
+                    </h3>
+                    {userPermissions?.length > 0 ? (
+                      <div className="space-y-4">
+                        {userPermissions.map((perm, index) => {
+                          const isEligibleForReRequest =
+                            perm.status === "requested" &&
+                            !validRe_request(
+                              new Date(perm.last_update || perm.created_at)
+                            );
+
+                          return (
+                            <div
+                              key={index}
+                              className="border rounded-lg p-4 bg-gray-50 shadow-sm hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex justify-between items-center">
+                                <p className="text-sm font-medium text-gray-900 truncate">
+                                  {perm.project_title || "Untitled Project"}
+                                </p>
+                                <span className={getStatusBadge(perm.status)}>
+                                  {perm.status}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-gray-600 mt-2">
+                                Updated:
+                                {formatDate(
+                                  perm.last_update || perm.created_at
+                                )}
+                              </p>
+
+                              {isEligibleForReRequest && (
+                                <div className="mt-4">
+                                  <p className="text-sm text-yellow-600 mb-2">
+                                    This request is eligible for re-request.
+                                    Please re-request access if no response has
+                                    been received after 14 days.
+                                  </p>
+                                  <button
+                                    onClick={(e:any) => {
+                                       e.preventDefault();
+                                       handleReRequest(perm.id)
+                                      }}
+                                    className="px-4 py-2 bg-[#00B9F1] w-[100%] text-white rounded-lg hover:bg-[#0090bd] transition-all duration-200"
+                                  >
+                                    {reRequestPending ? (
+                                      <DotsLoader />
+                                    ) : (
+                                      "Re-request Access"
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Add Delete Request Button */}
+                              {perm.status === "requested" && (
+                                <button
+                                  onClick={(e: any) => {
+                                    e.preventDefault();
+                                    deletePermissionFn({
+                                      permissionId: perm.id,
+                                    });
+                                  }}
+                                  className="w-full mt-4 bg-red-500 text-white py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+                                  disabled={deletePending}
+                                >
+                                  <TrashIcon className="mr-2 h-4 w-4" />
+                                  {deletePending ? (
+                                    <DotsLoader />
+                                  ) : (
+                                    "Delete Request"
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        No permission requests found.
                       </p>
-                      <p className="mt-1 text-gray-900">
-                        {dataset.data_set.protocol_id}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Citations
-                      </p>
-                      <p className="mt-1 text-gray-900">
-                        {dataset.data_set.citation_info}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Country Protocol ID
-                      </p>
-                      <p className="mt-1 text-gray-900">
-                        {dataset.data_set.country_protocol_id}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Number downloads
-                      </p>
-                      <p className={`mt-1 ${userPermission && userPermission?.downloads_count>2? "text-red-600": "text-gray-900"} `}>
-                        {userPermission?.downloads_count}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Number Re-requests sent
-                      </p>
-                      <p className="mt-1 text-gray-900">
-                        {userPermission?.re_request_count}
-                      </p>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -800,13 +825,12 @@ export default function DatasetDetails({ id }: any) {
                     Data Download Variables
                   </h2>
                   <div title="Download dictionary">
-                    {" "}
                     <DownloadIcon
                       width={20}
                       height={20}
                       onClick={generateCSVFromDataset}
                       className="cursor-pointer"
-                    />{" "}
+                    />
                   </div>
                 </div>
 
@@ -849,8 +873,8 @@ export default function DatasetDetails({ id }: any) {
           </div>
         </div>
       )}
-      {/*  request */}
-      <div
+            {/*  request */}
+            <div
         className={`fixed inset-y-0 right-0 w-[85%] bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
           ${isModalOpen ? "translate-x-0" : "translate-x-full"} 
           z-50 overflow-y-auto p-8`}
@@ -1078,76 +1102,96 @@ export default function DatasetDetails({ id }: any) {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Download Data</h2>
           <button
-            onClick={() => setIsAgreementModalOpen(false)}
-            className="text-gray-600 hover:text-gray-900"
+        onClick={() => setIsAgreementModalOpen(false)}
+        className="text-gray-600 hover:text-gray-900"
           >
-            <Cross2Icon />
+        <Cross2Icon />
           </button>
         </div>
         <div>
-          <p className="font-semibold">Requested Variables:</p>
-          {userPermission &&
-            userPermission.requested_variables &&
-            userPermission.requested_variables.length > 0 && (
+            <p className="font-semibold">Requested Variables:</p>
+            {userPermissions && (
               <div className="mb-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {userPermission.requested_variables.map((variable, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-100 text-[10px] text-gray-800 p-2 rounded-lg shadow-sm"
-                    >
-                      {variable}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          {userPermission && !userPermission.requested_variables && (
-            <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {userPermissions.flatMap((perm, index) => {
+              if (
+                perm.status === "approved" &&
+                perm.requested_variables &&
+                perm.requested_variables.length > 0
+              ) {
+                return perm.requested_variables.map((variable) => (
+            <div
+              key={`${index}-${variable}`}
+              className="bg-gray-100 text-[10px] text-gray-800 p-2 rounded-lg shadow-sm"
+            >
+              {variable}
+            </div>
+                ));
+              } else if (
+                perm.status === "approved" &&
+                (!perm.requested_variables ||
+            perm?.requested_variables.length === 0)
+              ) {
+                return [
+            <div
+              key={`${index}-no-variables`}
+              className="p-4 bg-gray-50 rounded-lg"
+            >
               <p className="text-sm text-gray-600 mb-[5px]">
                 {
-                  "No variables selected. This must be an old request. As per the new data sharing policy. Kindly revoke this request so you to make a new request with the updated policy."
+                  "No variables selected. This must be an old request. As per the new data sharing policy, kindly revoke this request so you can make a new request with the updated policy."
                 }
               </p>
               <button
                 onClick={(e: any) => {
                   e.preventDefault();
-                  deletePermissionFn({ permissionId: userPermission.id });
+                  deletePermissionFn({
+              permissionId: perm.id,
+                  });
                 }}
                 className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
               >
                 {deletePending ? <DotsLoader /> : "Revoke Request"}
               </button>
-            </div>
-          )}
+            </div>,
+                ];
+              }
+              return [];
+            })}
+          </div>
+              </div>
+            )}
         </div>
+       
 
         <ConfidentialityAgreement
           handleAgreedCallBack={(agreed: boolean) => {
-            if (agreed) setIsAgreedToConfidentiality(true);
+        if (agreed) setIsAgreedToConfidentiality(true);
           }}
         />
 
         <DataSharingAgreement
           handleAgreedCallBack={(agreed: boolean) => {
-            if (agreed) setIsAgreedToDataSharing(true);
+        if (agreed) setIsAgreedToDataSharing(true);
           }}
         />
         {downloadPending && (
           <div className="text-white my-2 flex items-center justify-self-center justify-center bg-[#000] 0 w-[90%] h-[1.5rem] p-4 rounded-sm">
-            {" "}
-            Processing data{" "}
+        {" "}
+        Processing data{" "}
           </div>
         )}
-        {userPermission && userPermission.requested_variables && (
-          <button
-            onClick={handleDwn}
-            className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
-          >
-            {downloadPending ? <DotsLoader /> : "Download"}
-          </button>
-        )}
+        {userPermissions &&
+          userPermissions.some((perm) => perm.status === "approved") && (
+        <button
+          onClick={handleDwn}
+          className="w-full bg-[#00B9F1] text-white py-3 rounded-lg hover:bg-[#0090bd] transition-colors"
+        >
+          {downloadPending ? <DotsLoader /> : "Download"}
+        </button>
+          )}
       </div>
+
     </main>
   );
 }
