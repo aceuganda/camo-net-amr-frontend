@@ -11,7 +11,7 @@ import { SearchProvider } from "@/context/searchContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AMR, CAMO-NET UG",
+  title: "AMR-DB, CAMO-NET UG",
   description:
     "This portal gives a snippet of the data being handled in the amr projects in uganda",
 };
