@@ -17,10 +17,9 @@ const ConfidentialityAgreement = ({handleAgreedCallBack}:any) => {
   };
 
   const handleChange = () => {
-    if (isScrolled){ 
         handleAgreedCallBack(true)
         setIsChecked(!isChecked)
-    };
+    
   };
 
   return (
@@ -99,7 +98,6 @@ const ConfidentialityAgreement = ({handleAgreedCallBack}:any) => {
           type="checkbox"
           id="agree"
           className="mr-2"
-          disabled={!isScrolled}
           checked={isChecked}
           onChange={handleChange}
         />
