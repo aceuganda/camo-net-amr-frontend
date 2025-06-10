@@ -361,7 +361,7 @@ function AuthComponent() {
   const [showCookieConsent, setShowCookieConsent] = useState(false);
   const myRouter = useRouter();
   const handleAcceptCookies = () => {
-    Cookies.set("cookieConsent", "true", { expires: 60 / 1440 });
+    Cookies.set("cookieConsent", "true");
     setShowCookieConsent(false);
   };
   useEffect(() => {
