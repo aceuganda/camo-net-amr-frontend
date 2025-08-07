@@ -43,7 +43,6 @@ export default function Publication() {
           </div>
         </div>
 
-        {/* Description */}
         <div className="mb-8 bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl p-4 sm:p-6 shadow-lg">
           <p className="text-gray-700 text-sm sm:text-lg leading-relaxed">
             Discover groundbreaking research and key findings in Antimicrobial Resistance (AMR) from our comprehensive dataset collections. 
@@ -123,7 +122,6 @@ export default function Publication() {
           ))}
         </div>
 
-        {/* Pagination */}
         {data.publications.length > 10 && (
           <div className="flex justify-center items-center gap-2 mt-8">
             <button
