@@ -50,7 +50,7 @@ export default function DatasetAbout({ dataset, formatDate }: DatasetAboutProps)
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-          {/* Left Column */}
+
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-[#24408E] mb-4 pb-2 border-b border-gray-200">
               Dataset Information
@@ -69,7 +69,7 @@ export default function DatasetAbout({ dataset, formatDate }: DatasetAboutProps)
             ))}
           </div>
 
-          {/* Right Column */}
+
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-[#24408E] mb-4 pb-2 border-b border-gray-200">
               Project Details

@@ -26,98 +26,14 @@ import VariablesGrid from "./VariablesGrid";
 import RequestAccessModal from "./RequestAccessModal";
 import DownloadModal from "./DownloadModal";
 import PermissionsSection from "./PermissionsSection";
+import { DatasetApiResponse, VariableInfo } from "@/types/constants";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
-interface VariableInfo {
-  type: string;
-  description: string;
-}
-
-interface DataSet {
-  name: string;
-  project_status: string;
-  citation_info: string;
-  data_storage_medium: string;
-  grant_code: string;
-  category: string;
-  on_hold_reason: string;
-  principal_investigator: string;
-  data_types_collected: string;
-  study_data_link: string;
-  size: string;
-  acronym: string | null;
-  countries: string;
-  pi_email: string;
-  main_data_type: string;
-  data_types_details: string;
-  db_name: string;
-  description: string | null;
-  data_collection_methods: string;
-  pi_contact: string;
-  study_design: string;
-  project_type: string;
-  type: string;
-  id: string;
-  start_date: string;
-  source: string;
-  project_manager: string;
-  additional_notes: string;
-  main_project_name: string;
-  version: string;
-  title: string;
-  end_date: string;
-  thematic_area: string;
-  pm_email: string;
-  coordinator_name: string;
-  data_capture_method: string;
-  amr_category: string;
-  protocol_id: string;
-  data_format: string;
-  pm_contact: string;
-  coordinator_email: string;
-  collection_period: string | null;
-  created_at: string;
-  country_protocol_id: string;
-  entries_count: string;
-  data_access_method: string;
-  coordinator_contact: string;
-  in_warehouse: boolean;
-}
-
-interface UserPermission {
-  user_id: string;
-  last_update: string;
-  title: string;
-  resource: string;
-  downloads_count: number;
-  agreed_to_privacy: boolean;
-  re_request_count: number;
-  category: string;
-  status: string;
-  project_description: string;
-  irb_number: string;
-  id: string;
-  denial_reason: string | null;
-  referee_email: string;
-  data_set_id: string;
-  created_at: string;
-  project_title: string;
-  referee_name: string;
-  institution: string;
-  requested_variables: string[];
-  approver_id: string | null;
-}
-
-interface ApiResponse {
-  data_set: DataSet;
-  is_super_admin: boolean;
-  user_permissions: UserPermission[];
-}
 
 export default function DatasetDetails({ id }: any) {
   const { data, isLoading, isSuccess, error, refetch } = useGetDataSet(id);
-  const dataset: ApiResponse = data?.data || {};
+  const dataset: DatasetApiResponse = data?.data || {};
   const userPermissions = dataset.user_permissions;
   const router = useRouter();
   
@@ -471,7 +387,6 @@ export default function DatasetDetails({ id }: any) {
       {data && !error && !isLoading && (
         <div className="min-h-screen w-full">
           <div className="mx-auto px-4 w-full sm:px-6 lg:px-8 py-6 sm:py-8">
-            {/* Enhanced Breadcrumb */}
             <div className="bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg p-4 mb-6">
               <div className="flex items-center space-x-2 text-sm">
                 <button
@@ -493,7 +408,6 @@ export default function DatasetDetails({ id }: any) {
               </div>
             </div>
 
-            {/* Dataset Header */}
             <DatasetHeader
               dataset={dataset}
               userPermissions={userPermissions}
@@ -512,11 +426,11 @@ export default function DatasetDetails({ id }: any) {
             />
 
             <div className="flex flex-col lg:flex-row gap-8">
-              {/* Main Content */}
+
               <div className="flex-grow min-w-0">
                 <DatasetAbout dataset={dataset.data_set} formatDate={formatDate} />
 
-                {/* Permissions Section - Horizontal Scroll */}
+
                 <PermissionsSection
                   userPermissions={userPermissions}
                   onReRequest={handleReRequest}
@@ -527,7 +441,6 @@ export default function DatasetDetails({ id }: any) {
                   formatDate={formatDate}
                 />
 
-                {/* Variables Section */}
                 {dataset.data_set.in_warehouse && (
                   <VariablesGrid
                     dictionaryData={dictionaryData}
@@ -540,7 +453,7 @@ export default function DatasetDetails({ id }: any) {
                 )}
               </div>
 
-              {/* Sidebar */}
+
               <CredibilityPanel
                 dataset={dataset.data_set}
                 userPermissions={userPermissions}
@@ -551,7 +464,7 @@ export default function DatasetDetails({ id }: any) {
         </div>
       )}
 
-      {/* Modals */}
+
       <RequestAccessModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

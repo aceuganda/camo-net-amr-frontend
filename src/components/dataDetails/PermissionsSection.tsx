@@ -65,7 +65,6 @@ export default function PermissionsSection({
                   key={index}
                   className="min-w-[320px] max-w-[360px] border border-gray-200 rounded-xl p-5 bg-gradient-to-br from-white to-blue-50 shadow-sm hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                 >
-                  {/* Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-bold text-[#24408E] truncate" title={perm.project_title || "Untitled Project"}>
@@ -80,7 +79,6 @@ export default function PermissionsSection({
                     </span>
                   </div>
 
-                  {/* Project Details */}
                   <div className="space-y-2 mb-4">
                     <div className="text-xs text-gray-600">
                       <span className="font-medium">Institution:</span> {perm.institution || "N/A"}
@@ -95,7 +93,6 @@ export default function PermissionsSection({
                     )}
                   </div>
 
-                  {/* Actions */}
                   <div className="space-y-3">
                     {isEligibleForReRequest && (
                       <>

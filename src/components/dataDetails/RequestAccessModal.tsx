@@ -47,7 +47,6 @@ export default function RequestAccessModal({
 }: RequestAccessModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filter variables based on search term
   const filteredVariables = dictionaryData?.data?.data
     ? Object.entries(dictionaryData.data.data as Record<string, VariableInfo>).filter(
         ([key, value]) =>
@@ -61,10 +60,9 @@ export default function RequestAccessModal({
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
+
       <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
       
-      {/* Modal */}
       <div className="absolute inset-y-0 right-0 w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto">
         <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-6 z-10">
           <div className="flex justify-between items-center">
@@ -83,7 +81,7 @@ export default function RequestAccessModal({
         <div className="p-6">
           <form onSubmit={onSubmit}>
             <div className="space-y-6">
-              {/* Form Fields */}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -209,7 +207,6 @@ export default function RequestAccessModal({
                 />
               </div>
 
-              {/* Variables Selection */}
               <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6">
                 <h3 className="text-xl font-bold text-[#24408E] mb-4 flex items-center gap-2">
                   <span className="p-2 bg-gradient-to-r from-[#00B9F1] to-[#24408E] rounded-lg">
@@ -218,7 +215,6 @@ export default function RequestAccessModal({
                   Select Variables to Download
                 </h3>
 
-                {/* Selection Controls */}
                 {dictionarySuccess && dictionaryData?.data?.data && (
                   <div className="flex flex-wrap gap-3 mb-4">
                     <button
@@ -243,7 +239,6 @@ export default function RequestAccessModal({
                   </div>
                 )}
 
-                {/* Search Bar */}
                 <div className="relative mb-4">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
@@ -266,7 +261,6 @@ export default function RequestAccessModal({
                   )}
                 </div>
 
-                {/* Search Results Summary */}
                 {searchTerm && (
                   <div className="mb-4 p-3 bg-blue-100 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-700">
@@ -275,7 +269,6 @@ export default function RequestAccessModal({
                   </div>
                 )}
 
-                {/* Variables Grid */}
                 <div className="max-h-96 overflow-y-auto">
                   {dictionaryDataLoading && (
                     <div className="flex justify-center items-center py-12">
@@ -338,7 +331,6 @@ export default function RequestAccessModal({
                 </div>
               </div>
 
-              {/* Confidentiality Agreement */}
               <ConfidentialityAgreement
                 handleAgreedCallBack={(agreed: boolean) => {
                   if (agreed) {
@@ -353,7 +345,6 @@ export default function RequestAccessModal({
                 }}
               />
 
-              {/* Submit Button */}
               <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 pt-6 mt-6">
                 <button
                   type="submit"

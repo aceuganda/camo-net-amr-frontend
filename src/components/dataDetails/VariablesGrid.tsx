@@ -69,7 +69,6 @@ export default function VariablesGrid({
 
   return (
     <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg p-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <span className="p-2 bg-gradient-to-r from-[#00B9F1] to-[#24408E] rounded-lg">
@@ -95,10 +94,9 @@ export default function VariablesGrid({
         </button>
       </div>
 
-      {/* Enhanced Search Section */}
       <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4 mb-6">
         <div className="space-y-4">
-          {/* Search Input */}
+
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
@@ -120,7 +118,6 @@ export default function VariablesGrid({
             )}
           </div>
 
-          {/* Search Filters */}
           <div className="flex flex-wrap gap-2">
             <span className="text-sm font-medium text-gray-700 self-center">Search in:</span>
             {[
@@ -143,7 +140,6 @@ export default function VariablesGrid({
             ))}
           </div>
 
-          {/* Quick Type Filters */}
           {uniqueTypes.length > 0 && (
             <div className="border-t border-blue-200 pt-4">
               <span className="text-sm font-medium text-gray-700 mb-2 block">Quick type filters:</span>
@@ -164,7 +160,6 @@ export default function VariablesGrid({
             </div>
           )}
 
-          {/* Clear All Button */}
           {(searchTerm || searchFilter !== "all") && (
             <div className="flex justify-end">
               <button
@@ -178,7 +173,6 @@ export default function VariablesGrid({
         </div>
       </div>
 
-      {/* Results Summary */}
       {(searchTerm || searchFilter !== "all") && (
         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center justify-between">
@@ -201,14 +195,11 @@ export default function VariablesGrid({
         </div>
       )}
 
-      {/* Loading State */}
       {dictionaryDataLoading && (
         <div className="flex justify-center items-center py-12">
           <DotsLoader />
         </div>
       )}
-
-      {/* Error State */}
       {dictionaryDataError && (
         <div className="text-center py-12">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -222,7 +213,7 @@ export default function VariablesGrid({
         </div>
       )}
 
-      {/* No Data State */}
+
       {!dictionaryData?.data?.data && isSuccess && (
         <div className="text-center py-12">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
@@ -234,7 +225,6 @@ export default function VariablesGrid({
         </div>
       )}
 
-      {/* No Search Results */}
       {(searchTerm || searchFilter !== "all") && filteredVariables.length === 0 && dictionarySuccess && totalVariables > 0 && (
         <div className="text-center py-12">
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
@@ -253,7 +243,6 @@ export default function VariablesGrid({
         </div>
       )}
 
-      {/* Variables Grid */}
       {dictionarySuccess && filteredVariables.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredVariables.map(([key, value]) => (
@@ -263,7 +252,7 @@ export default function VariablesGrid({
             >
               <div className="mb-3">
                 <h3 className="font-semibold text-[#24408E] text-sm truncate group-hover:text-[#00B9F1] transition-colors" title={key}>
-                  {/* Highlight search term in name */}
+
                   {searchTerm && searchFilter === "name" ? (
                     <span dangerouslySetInnerHTML={{
                       __html: key.replace(
@@ -289,7 +278,6 @@ export default function VariablesGrid({
                 </div>
                 
                 <p className="text-gray-600 leading-relaxed line-clamp-3" title={String(value?.description)}>
-                  {/* Highlight search term in description */}
                   {searchTerm && searchFilter === "description" ? (
                     <span dangerouslySetInnerHTML={{
                       __html: String(value?.description).replace(
@@ -307,7 +295,6 @@ export default function VariablesGrid({
         </div>
       )}
 
-      {/* Show all variables count when no filters */}
       {dictionarySuccess && !searchTerm && searchFilter === "all" && totalVariables > 0 && (
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">

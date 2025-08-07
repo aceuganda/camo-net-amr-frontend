@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
-import { Bar } from 'react-chartjs-2'; // Import Bar instead of Line
+import { Bar } from 'react-chartjs-2'; 
 
 import { useOverAllResistanceByGender } from "@/lib/hooks/useAMRTrends";
 import dynamic from "next/dynamic";

@@ -54,7 +54,6 @@ export default function DatasetHeader({
 }: DatasetHeaderProps) {
   return (
     <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-xl p-6 mb-8">
-      {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div className="flex items-center gap-3 mb-4 sm:mb-0">
           <StackIcon className="w-8 h-8 text-[#24408E]" />
@@ -68,7 +67,6 @@ export default function DatasetHeader({
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-wrap gap-3">
           {userPermissions?.length > 0 && hasOnlyDeniedRequests && (
             <button
@@ -79,7 +77,6 @@ export default function DatasetHeader({
             </button>
           )}
 
-          {/* Models Button */}
           <button
             onClick={onModelsClick}
             className="px-4 sm:px-6 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:shadow-lg transition-all duration-200 flex items-center gap-2 text-sm font-medium"
