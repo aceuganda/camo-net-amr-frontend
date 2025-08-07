@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
-
 
 const cspHeader = `
     default-src 'self';
@@ -15,25 +14,32 @@ const cspHeader = `
     frame-ancestors 'none';
     upgrade-insecure-requests;
     connect-src 'self' https://amrdb.idi.co.ug http://localhost:8000;
-` 
+`;
 
 const nextConfig = {
-    async headers() {
-        return [
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
           {
-            source: '/(.*)',
-            headers: [
-              {
-                key: 'Content-Security-Policy',
-                value: cspHeader.replace(/\n/g, ''),
-              },
-            ],
+            key: "Content-Security-Policy",
+            value: cspHeader.replace(/\n/g, ""),
           },
-        ]
+        ],
       },
-      env: {
-        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-      }
+    ];
+  },
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ["@svgr/webpack"],
+    });
+    return config;
+  },
+  env: {
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  },
 };
 
 export default nextConfig;

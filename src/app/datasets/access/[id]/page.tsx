@@ -1,5 +1,5 @@
 "use client"
-import DatasetDetails from "@/components/dataDetails";
+import DatasetDetails from "@/components/dataDetails/index";
 import React, {useEffect} from "react";
 
 
