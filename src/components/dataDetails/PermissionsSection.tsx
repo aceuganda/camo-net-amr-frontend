@@ -1,5 +1,6 @@
 import { TrashIcon } from "@radix-ui/react-icons";
 import dynamic from "next/dynamic";
+import CheckIcon from "../../../public/svgs/checkmark.svg";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -40,9 +41,7 @@ export default function PermissionsSection({
     <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg p-6 mb-8">
       <h3 className="text-xl font-semibold text-[#24408E] mb-6 flex items-center gap-2">
         <span className="p-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg">
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-          </svg>
+          <CheckIcon className="w-5 h-5 text-white" />
         </span>
         Permission Requests
         {userPermissions?.length > 0 && (
