@@ -27,25 +27,25 @@ import { ChevronLeftIcon, StackIcon } from "@radix-ui/react-icons";
 // import DownloadModal from "./downloadModal";
 // import PermissionsSection from "./permissionsSection";
 
-const DatasetHeader = dynamic(() => import("./datasetHeader"), {
+const DatasetHeader = dynamic(() => import("./DatasetHeader"), {
   ssr: false,
 });
-const DatasetAbout = dynamic(() => import("./datasetAbout"), {
+const DatasetAbout = dynamic(() => import("./DatasetAbout"), {
   ssr: false,
 });
-const CredibilityPanel = dynamic(() => import("./credibilityPanel"), {
+const CredibilityPanel = dynamic(() => import("./CredibilityPanel"), {
   ssr: false,
 });
 const VariablesGrid = dynamic(() => import("./variablesGrid"), {
   ssr: false,
 });
-const RequestAccessModal = dynamic(() => import("./requestAccessModal"), {
+const RequestAccessModal = dynamic(() => import("./RequestAccessModal"), {
   ssr: false,
 });
-const DownloadModal = dynamic(() => import("./downloadModal"), {
+const DownloadModal = dynamic(() => import("./DownloadModal"), {
   ssr: false,
 });
-const PermissionsSection = dynamic(() => import("./permissionsSection"), {
+const PermissionsSection = dynamic(() => import("./PermissionsSection"), {
   ssr: false,
 });
 
