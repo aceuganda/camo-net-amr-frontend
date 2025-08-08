@@ -36,7 +36,7 @@ const DatasetAbout = dynamic(() => import("./DatasetAbout"), {
 const CredibilityPanel = dynamic(() => import("./CredibilityPanel"), {
   ssr: false,
 });
-const VariablesGrid = dynamic(() => import("./variablesGrid"), {
+const VariablesGrid = dynamic(() => import("./VariablesGrid"), {
   ssr: false,
 });
 const RequestAccessModal = dynamic(() => import("./RequestAccessModal"), {
