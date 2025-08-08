@@ -19,13 +19,38 @@ import FileSaver from "file-saver";
 import { ChevronLeftIcon, StackIcon } from "@radix-ui/react-icons";
 
 // Import our new components
-import DatasetHeader from "./datasetHeader";
-import DatasetAbout from "./datasetAbout";
-import CredibilityPanel from "./credibilityPanel";
-import VariablesGrid from "./variablesGrid";
-import RequestAccessModal from "./requestAccessModal";
-import DownloadModal from "./downloadModal";
-import PermissionsSection from "./permissionsSection";
+// import DatasetHeader from "./datasetHeader";
+// import DatasetAbout from "./datasetAbout";
+// import CredibilityPanel from "./credibilityPanel";
+// import VariablesGrid from "./variablesGrid";
+// import RequestAccessModal from "./requestAccessModal";
+// import DownloadModal from "./downloadModal";
+// import PermissionsSection from "./permissionsSection";
+
+const DatasetHeader = dynamic(() => import("./datasetHeader"), {
+  ssr: false,
+});
+const DatasetAbout = dynamic(() => import("./datasetAbout"), {
+  ssr: false,
+});
+const CredibilityPanel = dynamic(() => import("./credibilityPanel"), {
+  ssr: false,
+});
+const VariablesGrid = dynamic(() => import("./variablesGrid"), {
+  ssr: false,
+});
+const RequestAccessModal = dynamic(() => import("./requestAccessModal"), {
+  ssr: false,
+});
+const DownloadModal = dynamic(() => import("./downloadModal"), {
+  ssr: false,
+});
+const PermissionsSection = dynamic(() => import("./permissionsSection"), {
+  ssr: false,
+});
+
+
+
 import { DatasetApiResponse, VariableInfo } from "@/types/constants";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
