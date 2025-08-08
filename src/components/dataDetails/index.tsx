@@ -19,13 +19,13 @@ import FileSaver from "file-saver";
 import { ChevronLeftIcon, StackIcon } from "@radix-ui/react-icons";
 
 // Import our new components
-import DatasetHeader from "./DatasetHeader";
-import DatasetAbout from "./DatasetAbout";
-import CredibilityPanel from "./CredibilityPanel";
-import VariablesGrid from "./VariablesGrid";
-import RequestAccessModal from "./RequestAccessModal";
-import DownloadModal from "./DownloadModal";
-import PermissionsSection from "./PermissionsSection";
+import DatasetHeader from "./datasetHeader";
+import DatasetAbout from "./datasetAbout";
+import CredibilityPanel from "./credibilityPanel";
+import VariablesGrid from "./variablesGrid";
+import RequestAccessModal from "./requestAccessModal";
+import DownloadModal from "./downloadModal";
+import PermissionsSection from "./permissionsSection";
 import { DatasetApiResponse, VariableInfo } from "@/types/constants";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });

@@ -117,7 +117,7 @@ const convertToCSV = (datasets: FetchedDataset[]) => {
 
 export default function HomeCatalogue() {
   const { searchTerm } = useSearch();
-  const [isMenuOpen, setIsMenuOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);

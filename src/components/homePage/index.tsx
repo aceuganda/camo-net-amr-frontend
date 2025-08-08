@@ -22,8 +22,7 @@ export default function HomePage() {
   // }, [data, error]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-white text-gray-800">
-      {/* Introduction */}
+    <main className="flex min-h-screen flex-col items-center bg-white text-gray-800 max-md:-z-10">
       <motion.div
         className="w-full h-[35vh] relative"
         initial={{ opacity: 0 }}
@@ -86,7 +85,6 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          {/* Center content - Map and Trends */}
           <motion.div
             className="sm:w-[70%]"
             initial={{ opacity: 0, y: 20 }}
