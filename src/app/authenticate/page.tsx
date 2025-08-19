@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { login, Register } from "@/lib/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { AxiosError } from "axios";
@@ -25,6 +25,7 @@ function LoginForm() {
     setShowPassword(!showPassword);
   };
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     data,
     isSuccess: loginSuccess,
@@ -38,9 +39,10 @@ function LoginForm() {
   useEffect(() => {
     if (loginSuccess) {
       toast.success("Signed in successfully");
+      const redirectTo = searchParams.get('redirect') || '/datasets/access';
       setTimeout(() => {
-        router.push("/datasets/access");
-      }, 700);
+        router.push(redirectTo);
+      }, 400);
     }
     if (error) {
       const axiosError = (error as AxiosError).response;

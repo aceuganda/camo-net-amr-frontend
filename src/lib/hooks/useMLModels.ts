@@ -2,7 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import api from '../axios';
 import { useMutation } from "@tanstack/react-query";
 
-
+export const useGetAllModels = (skip = 0, limit = 100) => {
+  return useQuery<any, Error, {data: any}>({
+    queryFn: () => api.get(`/ml_models?skip=${skip}&limit=${limit}`),
+    queryKey: ["all_ml_models", skip, limit],
+    meta: {
+      errorMessage: "Failed to fetch models"
+    }
+  });
+}
 
 export const useGetModels = (datasetId: string) => {
   return useQuery<any, Error, {data: any}>({
@@ -16,8 +24,9 @@ export const useGetModels = (datasetId: string) => {
 
 export const useGetModelVariables = (modelPath: string, p0: { enabled: boolean; }) => {
   return useQuery<any, Error, {data: any}>({
-    queryFn: () => api.get(`/ml_models/${modelPath}/input_variables`),
+    queryFn: () => api.get(`ml_models/${modelPath}/input_variables`),
     queryKey: ["dataset_model_variables", modelPath],
+    enabled: !!modelPath && p0.enabled,
     meta: {
       errorMessage: "Failed to fetch dataset variables"
     }

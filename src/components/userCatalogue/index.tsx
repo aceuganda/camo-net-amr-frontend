@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, Fragment } from "react";
 import { useSearch } from "@/context/searchContext";
+import { Search } from "lucide-react";
 import { useGetUserCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import SidebarMenu from "../filter";
@@ -114,7 +115,7 @@ export interface FetchedDataset {
 }
 
 export default function UserCatalogue() {
-  const { searchTerm } = useSearch();
+  const { searchTerm, setSearchTerm } = useSearch();
   const [selectedDataset, setSelectedDataset] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
@@ -237,6 +238,22 @@ export default function UserCatalogue() {
           />
 
           <div className="flex-1 p-4 sm:p-6 min-w-0">
+            {/* Search Bar */}
+            <div className="bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg p-4 mb-6">
+              <div className="relative max-w-md">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search datasets..."
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00B9F1] focus:border-[#00B9F1] text-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
             {/* Your Accessible Datasets Section - Top */}
             {filteredDatasets.length > 0 && !error && !isLoading && (
               <div className="mb-8">
