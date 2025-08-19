@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import dynamic from "next/dynamic";
 import { login, Register } from "@/lib/hooks/useAuth";
@@ -16,7 +16,12 @@ const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), {
   ssr: false,
 });
 
-function LoginForm() {
+function LoginFormWithParams() {
+  const searchParams = useSearchParams();
+  return <LoginForm searchParams={searchParams} />;
+}
+
+function LoginForm({ searchParams }: { searchParams: any }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +30,6 @@ function LoginForm() {
     setShowPassword(!showPassword);
   };
   const router = useRouter();
-  const searchParams = useSearchParams();
   const {
     data,
     isSuccess: loginSuccess,
@@ -413,7 +417,11 @@ function AuthComponent() {
               REGISTRATION
             </button>
           </div>
-          {activeTab === "registration" ? <RegistrationForm /> : <LoginForm />}
+          {activeTab === "registration" ? <RegistrationForm /> : (
+            <Suspense fallback={<div>Loading...</div>}>
+              <LoginFormWithParams />
+            </Suspense>
+          )}
         </div>
       </div>
       {showCookieConsent && (

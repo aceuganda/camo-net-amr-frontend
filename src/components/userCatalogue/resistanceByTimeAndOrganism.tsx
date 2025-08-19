@@ -29,6 +29,18 @@ const ResistanceByAgeLineChart: React.FC = () => {
 
     const { data, isLoading, error, isSuccess, refetch } = useOrganismResistance(selectedOrganism, startDate, endDate);
 
+    const createDatasets = React.useCallback((dataArray: any) => {
+        return dataArray?.map((antibiotic: any, index: number) => ({
+            label: antibiotic.antibiotic,
+            data: generateDataPoints(antibiotic.data),
+            borderColor: COLORS[index % COLORS.length], // Cycle through colors
+            backgroundColor: `${COLORS[index % COLORS.length].replace('1)', '0.2)')}`, // Lighter fill
+            fill: false,
+            
+            tension: 0.3,  
+        }));
+    }, []);
+
     useEffect(() => {
         if (isSuccess && data) {
             const labels = generateDateLabels(data.data.data);  // Generate dates on X-axis
@@ -36,7 +48,7 @@ const ResistanceByAgeLineChart: React.FC = () => {
 
             setChartData({ labels, datasets });
         }
-    }, [isSuccess, data]);
+    }, [isSuccess, data, createDatasets]);
 
     const handleOrganismChange = (e:any) => {
         setSelectedOrganism(e.target.value);
@@ -58,17 +70,7 @@ const ResistanceByAgeLineChart: React.FC = () => {
         return Array.from(uniqueDates).sort();
     };
 
-    const createDatasets = (dataArray: any) => {
-        return dataArray?.map((antibiotic: any, index: number) => ({
-            label: antibiotic.antibiotic,
-            data: generateDataPoints(antibiotic.data),
-            borderColor: COLORS[index % COLORS.length], // Cycle through colors
-            backgroundColor: `${COLORS[index % COLORS.length].replace('1)', '0.2)')}`, // Lighter fill
-            fill: false,
-            
-            tension: 0.3,  
-        }));
-    };
+    
 
     const generateDataPoints = (entries: any) => {
         return entries.map((entry: { date: string, percentage_resistance: number }) => ({
