@@ -31,6 +31,14 @@ export default function VariablesGrid({
   const [searchTerm, setSearchTerm] = useState("");
   const [searchFilter, setSearchFilter] = useState("all"); // all, name, type, description
 
+  // Helper to present variable names without underscores and in Title Case
+  const formatVariableName = (name: string) =>
+    name
+      .split(/[_\s]+/)
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
   // Get unique types for filter
   const uniqueTypes = dictionaryData?.data?.data
     ? Array.from(new Set(Object.values(dictionaryData.data.data as Record<string, VariableInfo>).map(v => v.type)))
@@ -245,23 +253,26 @@ export default function VariablesGrid({
 
       {dictionarySuccess && filteredVariables.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredVariables.map(([key, value]) => (
+          {filteredVariables.map(([key, value]) => {
+            const displayName = formatVariableName(key);
+            return (
             <div
               key={key}
               className="border border-gray-200 rounded-lg p-4 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200 group"
             >
               <div className="mb-3">
-                <h3 className="font-semibold text-[#24408E] text-sm truncate group-hover:text-[#00B9F1] transition-colors" title={key}>
-
+                <h3 className="font-semibold text-[#24408E] text-sm truncate group-hover:text-[#00B9F1] transition-colors" title={displayName}>
                   {searchTerm && searchFilter === "name" ? (
-                    <span dangerouslySetInnerHTML={{
-                      __html: key.replace(
-                        new RegExp(`(${searchTerm})`, 'gi'),
-                        '<mark class="bg-yellow-200 px-1 rounded">$1</mark>'
-                      )
-                    }} />
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: displayName.replace(
+                          new RegExp(`(${searchTerm})`, "gi"),
+                          '<mark class="bg-yellow-200 px-1 rounded">$1</mark>'
+                        ),
+                      }}
+                    />
                   ) : (
-                    key
+                    displayName
                   )}
                 </h3>
               </div>
@@ -291,7 +302,8 @@ export default function VariablesGrid({
                 </p>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

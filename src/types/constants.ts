@@ -184,3 +184,34 @@ export interface ModelsAPIResponse {
 export interface ModelInferenceResponse {
   data: ModelPredictionResult;
 }
+
+export interface DataCardContact {
+  role: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+export interface DataCard {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  acronym: string;
+  thematic_area: string;
+  countries: string;
+  data_collection_methods: string;
+  study_design: string;
+  citation_info: string;
+  doi: string | null;
+  license: string | null;
+  study_data_link: string;
+  data_access_method: string;
+  version?: string | null;
+  data_format?: string | null;
+  protocol_id: string | null;
+  country_protocol_id: string | null;
+  contacts: DataCardContact[];
+  created_at: string;
+  permalink: string;
+}
