@@ -21,6 +21,10 @@ export default function DatasetCardPage() {
     toast.success("Copied to clipboard!");
   };
 
+  const shareableLink = typeof window !== 'undefined' 
+    ? `${window.location.origin}/datasets/card/${datasetId}`
+    : '';
+
   if (isLoading) {
     return (
       <div className="min-h-[90vh] bg-gray-50 flex items-center justify-center">
@@ -246,7 +250,7 @@ export default function DatasetCardPage() {
                   Access Dataset
                 </Link>
                 <button
-                  onClick={() => copyToClipboard(dataset.permalink)}
+                  onClick={() => copyToClipboard(shareableLink)}
                   className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   Share Link
