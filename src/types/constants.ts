@@ -207,6 +207,8 @@ export interface DataCard {
   license: string | null;
   study_data_link: string;
   data_access_method: string;
+  version?: string | null;
+  data_format?: string | null;
   protocol_id: string | null;
   country_protocol_id: string | null;
   contacts: DataCardContact[];

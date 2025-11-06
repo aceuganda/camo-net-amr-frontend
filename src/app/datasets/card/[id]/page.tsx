@@ -148,6 +148,20 @@ export default function DatasetCardPage() {
                 <p className="text-gray-700">{dataset.thematic_area}</p>
               </div>
 
+              {dataset.version && (
+                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                  <h3 className="font-semibold text-gray-900 mb-2">Version</h3>
+                  <p className="text-gray-700">{dataset.version}</p>
+                </div>
+              )}
+
+              {dataset.data_format && (
+                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                  <h3 className="font-semibold text-gray-900 mb-2">Data Format</h3>
+                  <p className="text-gray-700">{dataset.data_format}</p>
+                </div>
+              )}
+
               {dataset.protocol_id && (
                 <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-2">Protocol ID</h3>
