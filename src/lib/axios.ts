@@ -16,16 +16,30 @@ api.interceptors.response.use(
   error => {
     const currentUrl = window.location.pathname;
     if (error.response && error.response.status === 403) {   
-       
-      if((/^\/datasets\/.+/.test(currentUrl))){
+      const protectedDatasetSections = ["access", "admin", "upload"];
+      const otherProtectedRoutes = ["/profile", "/models"];
+
+      const requiresDatasetAuth =
+        currentUrl.startsWith("/datasets/") &&
+        protectedDatasetSections.some((section) =>
+          currentUrl.startsWith(`/datasets/${section}`)
+        );
+
+      const requiresAuth =
+        requiresDatasetAuth ||
+        otherProtectedRoutes.some(
+          (route) =>
+            currentUrl === route || currentUrl.startsWith(`${route}/`)
+        );
+
+      if (requiresAuth) {
         toast.error("Your session has expired, you need to login again for data access");
 
-      //Remove cookies by setting them to expire
-      document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-      document.cookie = "amr_user_roles=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-        window.location.href = '/authenticate'; 
+        //Remove cookies by setting them to expire
+        document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+        document.cookie = "amr_user_roles=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+          window.location.href = '/authenticate'; 
       }
-       
     }
 
     return Promise.reject(error);

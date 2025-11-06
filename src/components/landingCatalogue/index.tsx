@@ -4,16 +4,19 @@ import { useState } from "react";
 import {
   DownloadIcon,
   CopyIcon,
-  StackIcon,
   InfoCircledIcon,
+  ViewGridIcon,
+  RowsIcon,
 } from "@radix-ui/react-icons";
 import { useSearch } from "@/context/searchContext";
 import { Search } from "lucide-react";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
+import { useUserInfor } from "@/lib/hooks/useAuth";
 import dynamic from "next/dynamic";
 import SidebarMenu from "../filter";
 import Link from "next/link";
 import { catalogueSteps } from "../GuideTour/steps";
+import DatasetCard from "./DatasetCard";
 const GuideTour = dynamic(() => import("@/components/GuideTour"), {
   ssr: false,
 });
@@ -53,6 +56,8 @@ type FetchedDataset = {
   acronym: string;
   description: string;
   collection_period: string;
+  doi?: string | null;
+  license?: string | null;
 };
 
 const formatDate = (date: any) => {
@@ -122,8 +127,13 @@ export default function HomeCatalogue() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('card');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
   const { data, isLoading, error } = useGetCatalogue();
+  const { data: userData } = useUserInfor();
   const datasets: FetchedDataset[] = data?.data || [];
+  const isLoggedIn = !!userData?.data;
 
   const filteredDatasets = datasets.filter((dataset) => {
     const matchesSearchTerm = dataset.name
@@ -179,16 +189,15 @@ export default function HomeCatalogue() {
 
   return (
     <>
-      <main className="flex min-h-[90vh] flex-col items-center relative bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/90 via-cyan-50/90 to-blue-100/90"></div>
+      <main className="min-h-[90vh] bg-white">
 
-        <div className="absolute bottom-[4rem] right-4 z-20">
-          <div className="px-3 py-1 bg-white/80 backdrop-blur-sm border border-white/30 text-[#24408E] rounded-full text-sm font-semibold shadow-lg">
+        <div className="fixed bottom-[4rem] right-4 z-20">
+          <div className="px-3 py-1 bg-white border border-gray-200 text-[#24408E] rounded-full text-sm font-semibold shadow-lg">
             Version 1
           </div>
         </div>
 
-        <div className="relative z-10 w-full flex flex-row justify-between overflow-x-hidden">
+        <div className="flex flex-row">
           <SidebarMenu
             isMenuOpen={isMenuOpen}
             setIsMenuOpen={setIsMenuOpen}
@@ -199,13 +208,10 @@ export default function HomeCatalogue() {
             className="menu_view"
           />
 
-          <div
-            className={`ml-[2rem] w-[90%] ${!isMenuOpen ? "" : "sm:w-[80%]"}`}
-          >
-            <div className="bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg p-4 sm:p-6 my-6 sm:my-8">
+          <div className="flex-1 px-4 sm:px-6 pt-4 min-w-0">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4 sm:p-6 my-6 sm:my-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <StackIcon className="w-8 h-8 text-[#24408E]" />
                   <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-[#24408E] bg-gradient-to-r from-[#24408E] to-[#00B9F1] bg-clip-text text-transparent">
                       Dataset Catalogue
@@ -228,23 +234,52 @@ export default function HomeCatalogue() {
               </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg p-4 mb-6">
-              <div className="relative max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
+            {/* Search Bar with View Toggle */}
+            <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4 mb-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-md">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search datasets..."
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00B9F1] focus:border-[#00B9F1] text-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Search datasets..."
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00B9F1] focus:border-[#00B9F1] text-sm"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                
+                <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
+                  <button
+                    onClick={() => setViewMode('card')}
+                    className={`flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 ${
+                      viewMode === 'card'
+                        ? 'bg-white text-[#24408E] shadow-md'
+                        : 'text-gray-600 hover:bg-white/50'
+                    }`}
+                    title="Card View"
+                  >
+                    <ViewGridIcon className="w-4 h-4" />
+                    <span className="text-sm font-medium">Grid</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('table')}
+                    className={`flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 ${
+                      viewMode === 'table'
+                        ? 'bg-white text-[#24408E] shadow-md'
+                        : 'text-gray-600 hover:bg-white/50'
+                    }`}
+                    title="Table View"
+                  >
+                    <RowsIcon className="w-4 h-4" />
+                    <span className="text-sm font-medium">Table</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
               {isLoading && (
                 <div className="text-center w-full flex items-start h-[4rem] justify-center text-gray-500 p-8">
                   <DotsLoader />
@@ -274,8 +309,8 @@ export default function HomeCatalogue() {
                   </div>
                 )}
 
-              {filteredDatasets.length > 0 && !error && !isLoading && (
-                <div className="w-full overflow-x-auto">
+              {filteredDatasets.length > 0 && !error && !isLoading && viewMode === 'table' && (
+                <div className="w-full overflow-x-auto max-w-full">
                   <table className="w-full  text-[9px] sm:text-[10px]  border-collapse min-w-[1200px]">
                     <thead className="bg-gradient-to-r from-[#24408E] via-[#00B9F1] to-[#24408E] text-white">
                       <tr>
@@ -478,29 +513,103 @@ export default function HomeCatalogue() {
                   </table>
                 </div>
               )}
+              
+              {filteredDatasets.length > 0 && !error && !isLoading && viewMode === 'card' && (
+                <div className="p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredDatasets
+                      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                      .map((dataset) => (
+                        <DatasetCard
+                          key={dataset.id}
+                          dataset={dataset}
+                          isLoggedIn={isLoggedIn}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {filteredDatasets.length > 0 && (
-              <div className="mt-6 text-center">
-                <div className="inline-flex items-center gap-4 px-6 py-3 bg-white/60 backdrop-blur-sm border border-white/30 rounded-xl">
-                  <div className="text-sm text-gray-600">
-                    Showing{" "}
-                    <span className="font-semibold text-[#24408E]">
-                      {filteredDatasets.length}
-                    </span>{" "}
-                    datasets
-                    {selectedRows.length > 0 && (
-                      <span className="ml-2">
-                        •{" "}
-                        <span className="font-semibold text-[#00B9F1]">
-                          {selectedRows.length}
-                        </span>{" "}
-                        selected
-                      </span>
-                    )}
+              <>
+                {viewMode === 'card' && Math.ceil(filteredDatasets.length / itemsPerPage) > 1 && (
+                  <div className="flex justify-center items-center gap-2 mt-6">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-white/30 text-[#24408E] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/90 hover:shadow-lg transition-all duration-200 font-medium text-sm"
+                    >
+                      Previous
+                    </button>
+                    
+                    <div className="flex gap-1">
+                      {Array.from({ length: Math.ceil(filteredDatasets.length / itemsPerPage) }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm ${
+                            page === currentPage
+                              ? 'bg-gradient-to-r from-[#00B9F1] to-[#24408E] text-white shadow-lg'
+                              : 'bg-white/60 backdrop-blur-sm border border-white/30 text-[#24408E] hover:bg-white/80 hover:shadow-md'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredDatasets.length / itemsPerPage), prev + 1))}
+                      disabled={currentPage === Math.ceil(filteredDatasets.length / itemsPerPage)}
+                      className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-white/30 text-[#24408E] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/90 hover:shadow-lg transition-all duration-200 font-medium text-sm"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+                
+                <div className="mt-6 text-center">
+                  <div className="inline-flex items-center gap-4 px-6 py-3 bg-gray-50 border border-gray-200 rounded-xl">
+                    <div className="text-sm text-gray-600">
+                      {viewMode === 'card' ? (
+                        <>
+                          Showing{" "}
+                          <span className="font-semibold text-[#24408E]">
+                            {Math.min((currentPage - 1) * itemsPerPage + 1, filteredDatasets.length)}
+                          </span>{" "}
+                          to{" "}
+                          <span className="font-semibold text-[#24408E]">
+                            {Math.min(currentPage * itemsPerPage, filteredDatasets.length)}
+                          </span>{" "}
+                          of{" "}
+                          <span className="font-semibold text-[#24408E]">
+                            {filteredDatasets.length}
+                          </span>{" "}
+                          datasets
+                        </>
+                      ) : (
+                        <>
+                          Showing{" "}
+                          <span className="font-semibold text-[#24408E]">
+                            {filteredDatasets.length}
+                          </span>{" "}
+                          datasets
+                          {selectedRows.length > 0 && (
+                            <span className="ml-2">
+                              •{" "}
+                              <span className="font-semibold text-[#00B9F1]">
+                                {selectedRows.length}
+                              </span>{" "}
+                              selected
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>
