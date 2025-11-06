@@ -44,20 +44,16 @@ export default function DatasetCardPage() {
 
   return (
     <div className="min-h-[90vh] bg-gray-50">
-      <div className="bg-white border-b border-gray-200 mb-6">
-        <div className="max-w-7xl mx-auto p-4 sm:p-6">
-          <div className="flex items-center gap-4">
-            <Link 
-              href="/datasets"
-              className="inline-flex items-center gap-2 text-[#24408E] hover:text-[#00B9F1] transition-colors font-medium"
-            >
-              <ArrowLeftIcon className="w-5 h-5" />
-              <span>Back to Catalog</span>
-            </Link>
-          </div>
-        </div>
-      </div>
       <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
+        <div className="mb-6">
+          <Link 
+            href="/datasets"
+            className="inline-flex items-center gap-2 text-[#24408E] hover:text-[#00B9F1] transition-colors font-medium"
+          >
+            <ArrowLeftIcon className="w-5 h-5" />
+            <span>Back to Catalog</span>
+          </Link>
+        </div>
 
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-8">
           <div className="p-6 sm:p-8">

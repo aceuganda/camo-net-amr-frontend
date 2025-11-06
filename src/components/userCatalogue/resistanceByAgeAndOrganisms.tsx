@@ -28,14 +28,7 @@ const ResistanceBarChart: React.FC = () => {
     const [selectedOrganism, setSelectedOrganism] = useState('ecoli'); 
     const { data, isLoading, error, isSuccess, refetch } = useOrganismResistanceByAge(selectedOrganism, startDate, endDate);
 
-    useEffect(() => {
-        if (isSuccess && data) {
-            const labels = generateDateLabels(data.data.data);  // Generate age groups for X-axis
-            const datasets = createDatasets(data.data.data);   // Create datasets for each antibiotic
-
-            setChartData({ labels, datasets });
-        }
-    }, [isSuccess, data]);
+    
 
     const handleOrganismChange = (e: any) => {
         setSelectedOrganism(e.target.value);
@@ -45,43 +38,52 @@ const ResistanceBarChart: React.FC = () => {
         refetch();
     };
 
-    const generateDateLabels = (dataArray: any) => {
-        const ageGroupMapping: { [key: string]: number } = {
-            "0-0": 0,
-            "1-4": 1,
-            "5-14": 5,
-            "15-24": 15,
-            "25-34": 25,
-            "35-44": 35,
-            "45-54": 45,
-            "55-64": 55,
-            "65-80": 65,
-            ">=80": 80 
-        };
+    useEffect(() => {
+        if (isSuccess && data) {
+            const generateDateLabels = (dataArray: any) => {
+                const ageGroupMapping: { [key: string]: number } = {
+                    "0-0": 0,
+                    "1-4": 1,
+                    "5-14": 5,
+                    "15-24": 15,
+                    "25-34": 25,
+                    "35-44": 35,
+                    "45-54": 45,
+                    "55-64": 55,
+                    "65-80": 65,
+                    ">=80": 80 
+                };
 
-        const uniqueDates = new Set<string>();   
-        dataArray.forEach((antibiotic: any) =>
-            antibiotic.data.forEach((entry: any) => {
-                const dateLabel = entry.age_group;
-                uniqueDates.add(dateLabel);
-            })
-        );
-        return Array.from(uniqueDates).sort((a, b) => {
-            return ageGroupMapping[a] - ageGroupMapping[b];
-        });
-    };
+                const uniqueDates = new Set<string>();   
+                dataArray.forEach((antibiotic: any) =>
+                    antibiotic.data.forEach((entry: any) => {
+                        const dateLabel = entry.age_group;
+                        uniqueDates.add(dateLabel);
+                    })
+                );
+                return Array.from(uniqueDates).sort((a, b) => {
+                    return ageGroupMapping[a] - ageGroupMapping[b];
+                });
+            };
 
-    const createDatasets = (dataArray: any) => {
-        return dataArray?.map((antibiotic: any, index: number) => ({
-            label: antibiotic.antibiotic,
-            data: generateDataPoints(antibiotic.data),
-            backgroundColor: COLORS[index % COLORS.length], // Bar color
-        }));
-    };
+            const generateDataPoints = (entries: any) => {
+                return entries.map((entry: { age_group: string, percentage_resistance: number }) => entry.percentage_resistance);
+            };
 
-    const generateDataPoints = (entries: any) => {
-        return entries.map((entry: { age_group: string, percentage_resistance: number }) => entry.percentage_resistance);
-    };
+            const createDatasets = (dataArray: any) => {
+                return dataArray?.map((antibiotic: any, index: number) => ({
+                    label: antibiotic.antibiotic,
+                    data: generateDataPoints(antibiotic.data),
+                    backgroundColor: COLORS[index % COLORS.length],
+                }));
+            };
+
+            const labels = generateDateLabels(data.data.data);
+            const datasets = createDatasets(data.data.data);
+
+            setChartData({ labels, datasets });
+        }
+    }, [isSuccess, data]);
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'start' | 'end') => {
         if (type === 'start') {

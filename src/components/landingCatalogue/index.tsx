@@ -29,7 +29,7 @@ type FetchedDataset = {
   category: string;
   type: string;
   size: number;
-  countries: string[];
+  countries: string;
   project_status: string;
 
   title: string;
@@ -211,15 +211,13 @@ export default function HomeCatalogue() {
           <div className="flex-1 px-4 sm:px-6 pt-4 min-w-0">
             <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4 sm:p-6 my-6 sm:my-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-[#24408E] bg-gradient-to-r from-[#24408E] to-[#00B9F1] bg-clip-text text-transparent">
-                      Dataset Catalogue
-                    </h1>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Explore and export comprehensive AMR datasets
-                    </p>
-                  </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold text-[#24408E]">
+                    Dataset Catalogue
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Explore and export comprehensive AMR datasets
+                  </p>
                 </div>
 
                 <div
