@@ -47,8 +47,12 @@ export default function DatasetCard({ dataset, isLoggedIn }: DatasetCardProps) {
         </div>
 
         <h3 className="text-base font-bold text-[#24408E] group-hover:text-[#00B9F1] transition-colors duration-200 mb-2 line-clamp-2 min-h-[3rem]">
-          {dataset.title}
+          {dataset.name}
         </h3>
+
+        <p className="text-xs text-gray-500 mb-2 italic line-clamp-1">
+          {dataset.title}
+        </p>
 
         <p className="text-sm text-gray-600 mb-3 line-clamp-2 min-h-[2.5rem]">
           {dataset.description}

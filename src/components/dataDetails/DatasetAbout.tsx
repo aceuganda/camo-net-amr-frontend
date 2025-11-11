@@ -43,7 +43,10 @@ export default function DatasetAbout({ dataset, formatDate }: DatasetAboutProps)
             <p className="text-gray-700 mb-3 text-sm sm:text-base leading-relaxed">
               {dataset.description}
             </p>
-            <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
+            <p className="text-gray-800 mb-2 text-sm sm:text-base leading-relaxed font-semibold">
+              {dataset.name}
+            </p>
+            <p className="text-gray-600 text-sm leading-relaxed">
               {dataset.title}
             </p>
           </div>

@@ -66,9 +66,10 @@ export default function DatasetCardPage() {
                 <div className="inline-block px-3 py-1 bg-blue-50 text-[#24408E] rounded-full text-sm font-medium mb-3">
                   {dataset.thematic_area}
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  {dataset.title}
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                  {dataset.name}
                 </h1>
+                <p className="text-lg text-gray-600 mb-2">{dataset.title}</p>
                 <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600">
                   {hasAcronym && (
                     <span className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-gray-200 rounded-full">
@@ -148,12 +149,10 @@ export default function DatasetCardPage() {
                 <p className="text-gray-700">{dataset.thematic_area}</p>
               </div>
 
-              {dataset.version && (
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <h3 className="font-semibold text-gray-900 mb-2">Version</h3>
-                  <p className="text-gray-700">{dataset.version}</p>
-                </div>
-              )}
+              <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                <h3 className="font-semibold text-gray-900 mb-2">Version</h3>
+                <p className="text-gray-700">{dataset.version || "1"}</p>
+              </div>
 
               {dataset.data_format && (
                 <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
@@ -276,7 +275,7 @@ export default function DatasetCardPage() {
                     </div>
                     
                     <h3 className="text-base font-semibold text-gray-900 group-hover:text-[#00B9F1] transition-colors mb-2 line-clamp-2">
-                      {otherDataset.title}
+                      {otherDataset.name}
                     </h3>
                     <p className="text-xs text-gray-600 line-clamp-2 mb-3">
                       {otherDataset.description}
