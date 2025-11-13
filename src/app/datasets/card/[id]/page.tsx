@@ -195,9 +195,6 @@ export default function DatasetCardPage() {
                           {contact.email}
                         </a>
                       )}
-                      {contact.phone && (
-                        <p className="text-sm text-gray-600 mt-1">{contact.phone}</p>
-                      )}
                     </div>
                   ))}
                 </div>
