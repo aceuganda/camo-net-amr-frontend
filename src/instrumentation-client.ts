@@ -9,7 +9,7 @@ Sentry.init({
 
   // Add optional integrations for additional features
   integrations: [
-    Sentry.replayIntegration(),
+    // Session Replay is configured in sentry.client.config.ts to avoid duplication
   ],
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
