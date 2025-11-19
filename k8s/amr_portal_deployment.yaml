@@ -24,6 +24,11 @@ spec:
                 secretKeyRef:
                   name: amr-portal-env-secrets
                   key: NEXT_PUBLIC_API_BASE_URL
+            - name: SENTRY_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: amr-portal-env-secrets
+                  key: SENTRY_AUTH_TOKEN
 ---
 apiVersion: v1
 kind: Service
