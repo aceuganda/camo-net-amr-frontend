@@ -214,4 +214,6 @@ export interface DataCard {
   contacts: DataCardContact[];
   created_at: string;
   permalink: string;
+  page_views: number;
+  total_downloads: number;
 }

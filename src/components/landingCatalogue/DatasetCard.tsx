@@ -1,7 +1,17 @@
 "use client";
 
-import { ExternalLinkIcon, ChevronRightIcon } from "@radix-ui/react-icons";
+import { ExternalLinkIcon, ChevronRightIcon, EyeOpenIcon, DownloadIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+
+const formatNumber = (num: number) => {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  }
+  return num.toString();
+};
 
 type DatasetCardProps = {
   dataset: {
@@ -19,6 +29,8 @@ type DatasetCardProps = {
     country_protocol_id?: string | null;
     doi?: string | null;
     license?: string | null;
+    page_views?: number;
+    total_downloads?: number;
   };
   isLoggedIn: boolean;
 };
@@ -78,6 +90,33 @@ export default function DatasetCard({ dataset, isLoggedIn }: DatasetCardProps) {
             </span>
           </div>
         </div>
+
+        {(dataset.page_views !== undefined || dataset.total_downloads !== undefined) && (
+          <div className="flex items-center gap-3 mb-3">
+            {dataset.page_views !== undefined && (
+              <div className="flex items-center gap-1.5 group relative">
+                <EyeOpenIcon className="w-3.5 h-3.5 text-[#24408E]" />
+                <span className="text-sm font-semibold text-[#24408E]">
+                  {formatNumber(dataset.page_views)}
+                </span>
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  {dataset.page_views.toLocaleString()} views
+                </div>
+              </div>
+            )}
+            {dataset.total_downloads !== undefined && (
+              <div className="flex items-center gap-1.5 group relative">
+                <DownloadIcon className="w-3.5 h-3.5 text-green-600" />
+                <span className="text-sm font-semibold text-green-700">
+                  {formatNumber(dataset.total_downloads)}
+                </span>
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  {dataset.total_downloads.toLocaleString()} downloads
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
           <Link

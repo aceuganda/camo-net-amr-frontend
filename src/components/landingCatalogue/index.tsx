@@ -58,6 +58,8 @@ type FetchedDataset = {
   collection_period: string;
   doi?: string | null;
   license?: string | null;
+  page_views?: number;
+  total_downloads?: number;
 };
 
 const formatDate = (date: any) => {

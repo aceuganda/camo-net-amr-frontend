@@ -1,8 +1,8 @@
 "use client"
 
 import { useParams } from "next/navigation";
-import { ArrowLeftIcon, CopyIcon } from "@radix-ui/react-icons";
-import { useDatasetCard, useAllDatasets, useDatasetCards } from "@/lib/hooks/useDatasetCard";
+import { ArrowLeftIcon, CopyIcon, EyeOpenIcon, DownloadIcon } from "@radix-ui/react-icons";
+import { useDatasetCard } from "@/lib/hooks/useDatasetCard";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -11,10 +11,6 @@ export default function DatasetCardPage() {
   const datasetId = params.id as string;
 
   const { data: dataset, isLoading, error } = useDatasetCard(datasetId);
-  const { data: allDatasetIds } = useAllDatasets();
-  
-  const otherDatasetIds = allDatasetIds?.filter(id => id !== datasetId).slice(0, 6) || [];
-  const { data: otherDatasets } = useDatasetCards(otherDatasetIds);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -62,7 +58,7 @@ export default function DatasetCardPage() {
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-8">
           <div className="p-6 sm:p-8">
             <div className="flex items-start justify-between mb-6 pb-6 border-b border-gray-200">
-              <div>
+              <div className="flex-1">
                 <div className="inline-block px-3 py-1 bg-blue-50 text-[#24408E] rounded-full text-sm font-medium mb-3">
                   {dataset.thematic_area}
                 </div>
@@ -118,7 +114,27 @@ export default function DatasetCardPage() {
                   )}
                 </div>
               </div>
-              {/* DOI copy action moved next to DOI badge above */}
+
+              <div className="flex items-center gap-4 ml-6">
+                <div className="flex items-center gap-2 group relative">
+                  <EyeOpenIcon className="w-4 h-4 text-[#24408E]" />
+                  <span className="text-lg font-bold text-[#24408E]">
+                    {dataset.page_views.toLocaleString()}
+                  </span>
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {dataset.page_views.toLocaleString()} views
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 group relative">
+                  <DownloadIcon className="w-4 h-4 text-green-600" />
+                  <span className="text-lg font-bold text-green-700">
+                    {dataset.total_downloads.toLocaleString()}
+                  </span>
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {dataset.total_downloads.toLocaleString()} downloads
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="mb-8">
@@ -255,52 +271,6 @@ export default function DatasetCardPage() {
             </div>
           </div>
         </div>
-
-        {otherDatasets && otherDatasets.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Datasets</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {otherDatasets.map((otherDataset) => (
-                <Link
-                  key={otherDataset.id}
-                  href={`/datasets/card/${otherDataset.id}`}
-                  className="group bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
-                >
-                  <div className="p-5">
-                    <div className="inline-block px-3 py-1 bg-blue-50 text-[#24408E] rounded-full text-xs font-medium mb-3">
-                      {otherDataset.thematic_area}
-                    </div>
-                    
-                    <h3 className="text-base font-semibold text-gray-900 group-hover:text-[#00B9F1] transition-colors mb-2 line-clamp-2">
-                      {otherDataset.name}
-                    </h3>
-                    <p className="text-xs text-gray-600 line-clamp-2 mb-3">
-                      {otherDataset.description}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-2 text-[11px] text-gray-500">
-                      {otherDataset.countries && (
-                        <span className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-full">
-                          {otherDataset.countries}
-                        </span>
-                      )}
-                      {otherDataset.license && (
-                        <span className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-full">
-                          {otherDataset.license}
-                        </span>
-                      )}
-                      {otherDataset.doi && (
-                        <span className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-full truncate max-w-[180px]">
-                          {otherDataset.doi}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="flex justify-center mb-8">
           <Link
