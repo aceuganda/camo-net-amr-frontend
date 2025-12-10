@@ -113,6 +113,11 @@ export default function DatasetCardPage() {
                     </span>
                   )}
                 </div>
+                <div className="mt-3">
+                  <p className="text-xs sm:text-sm text-amber-700">
+                    <span className="font-medium">Restricted Access:</span> This dataset is available under restricted access conditions.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center gap-4 ml-6">
@@ -250,8 +255,9 @@ export default function DatasetCardPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-200">
-              <div className="text-sm text-gray-500">
-                Created: {new Date(dataset.created_at).toLocaleDateString()}
+              <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
+                <p>Data handling complies with the Uganda Data Protection and Privacy Act, 2019</p>
+                <p className="mt-1">Created: {new Date(dataset.created_at).toLocaleDateString()}</p>
               </div>
               
               <div className="flex items-center gap-3">

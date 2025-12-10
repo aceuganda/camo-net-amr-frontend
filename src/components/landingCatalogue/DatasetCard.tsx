@@ -66,8 +66,12 @@ export default function DatasetCard({ dataset, isLoggedIn }: DatasetCardProps) {
           {dataset.title}
         </p>
 
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2 min-h-[2.5rem]">
+        <p className="text-sm text-gray-600 mb-2 line-clamp-2 min-h-[2.5rem]">
           {dataset.description}
+        </p>
+
+        <p className="text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded border border-amber-200 mb-3">
+          <span className="font-medium">Restricted Access:</span> This dataset is available under restricted access conditions.
         </p>
 
         <div className="space-y-2 mb-4">
@@ -136,6 +140,12 @@ export default function DatasetCard({ dataset, isLoggedIn }: DatasetCardProps) {
               <ChevronRightIcon className="w-3 h-3" />
             </Link>
           )}
+        </div>
+
+        <div className="pt-3 mt-3 border-t border-gray-100">
+          <p className="text-[10px] text-gray-500 text-center leading-relaxed">
+            Data handling complies with the Uganda Data Protection and Privacy Act, 2019
+          </p>
         </div>
       </div>
       
