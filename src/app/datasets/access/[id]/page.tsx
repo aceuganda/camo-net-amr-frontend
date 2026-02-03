@@ -1,11 +1,12 @@
 "use client"
 import DatasetDetails from "@/components/dataDetails/index";
-import React, {useEffect} from "react";
+import React from "react";
 
 
-export default function Catalog({ params }: { params: { id: string } }) {
+export default function Catalog({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
 
   return (
-      <DatasetDetails id={params.id} />
+      <DatasetDetails id={id} />
   );
 }

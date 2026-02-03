@@ -18,6 +18,14 @@ const cspHeader = `
 `;
 
 const nextConfig = {
+  turbopack: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
+      },
+    },
+  },
   async headers() {
     return [
       {
