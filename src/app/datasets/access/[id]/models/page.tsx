@@ -3,9 +3,15 @@
 import ModelsComponent from "@/components/models";
 import { useGetDataSet } from "@/lib/hooks/useCatalogue";
 import { Loader2 } from "lucide-react";
+import React from "react";
 
-export default function ModelsPage({ params }: { params: { id: string } }) {
-  const { data, isLoading, isSuccess, error, refetch } = useGetDataSet(params.id);
+export default function ModelsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = React.use(params);
+  const { data, isLoading, isSuccess, error, refetch } = useGetDataSet(id);
   const dataset = data?.data || {};
 
   if (isLoading) {
@@ -51,7 +57,5 @@ export default function ModelsPage({ params }: { params: { id: string } }) {
     );
   }
 
-  return (
-    <ModelsComponent datasetId={params.id} dataset={dataset} />
-  );
+  return <ModelsComponent datasetId={id} dataset={dataset} />;
 }
