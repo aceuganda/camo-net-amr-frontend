@@ -55,6 +55,6 @@
     "typescript": "^5"
   },
   "resolutions": {
-    "minimatch": "^9.0.5"
+    "svgo": "^4.0.1"
   }
 }
