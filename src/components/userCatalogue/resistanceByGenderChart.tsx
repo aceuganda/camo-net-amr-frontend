@@ -71,7 +71,8 @@ const ResistanceByGenderBarChart: React.FC = () => {
                 </div>
             </div>
             {data?.data?.data.length === 0 && <div className="text-red-500 text-center">No Data Available</div>}
-            <Bar data={chartData} /> 
+            <Bar data={chartData} />
+            <p className="text-xs text-gray-500 mt-2">CLSI. Performance Standards for Antimicrobial Susceptibility Testing. 34th ed. CLSI supplement M100. Clinical and Laboratory Standards Institute; 2024.</p>
         </div>
     );
 };

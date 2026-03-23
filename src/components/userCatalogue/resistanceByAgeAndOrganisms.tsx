@@ -145,6 +145,7 @@ const ResistanceBarChart: React.FC = () => {
             <div className="mt-4">
                 <Bar data={chartData} />
             </div>
+            <p className="text-xs text-gray-500 mt-2">CLSI. Performance Standards for Antimicrobial Susceptibility Testing. 34th ed. CLSI supplement M100. Clinical and Laboratory Standards Institute; 2024.</p>
         </div>
     );
 };

@@ -44,6 +44,7 @@ const ResistanceLineChart: React.FC = () => {
     return (
         <div className='w-full'>
             <Line data={chartData} />
+            <p className="text-xs text-gray-500 mt-2">CLSI. Performance Standards for Antimicrobial Susceptibility Testing. 34th ed. CLSI supplement M100. Clinical and Laboratory Standards Institute; 2024.</p>
         </div>
     );
 };

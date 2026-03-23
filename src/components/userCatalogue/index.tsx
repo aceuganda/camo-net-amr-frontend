@@ -656,7 +656,7 @@ export default function UserCatalogue() {
           >
             Close
           </button>
-          <div className="p-4 h-full flex flex-col justify-self-center w-[90%] sm:w-[80%] overflow-y-auto">
+          <div className="p-4 px-8 sm:px-16 h-full flex flex-col overflow-y-auto">
             <h1 className="font-[600] mt-[5rem] text-center text-2xl text-[#24408E] mb-8">
               Sample trends from the datasets
             </h1>
