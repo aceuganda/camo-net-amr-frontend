@@ -666,15 +666,15 @@ export default function UserCatalogue() {
               </h3>
               <ResistanceLinesByGender />
             </div>
-            <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-6 rounded-xl shadow-lg mb-6">
+            {/* <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-6 rounded-xl shadow-lg mb-6">
               <h3 className="text-[11px] sm:text-xl text-center font-semibold text-[#24408E] mb-4">
                 Percentage resistance of organisms as per antibiotics vs time
               </h3>
               <OrganismResistanceByTime />
-            </div>
+            </div> */}
             <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-6 rounded-xl shadow-lg">
               <h3 className="text-[11px] sm:text-xl text-center font-semibold text-[#24408E] mb-4">
-                Percentage resistance of organisms as per antibiotics vs age
+                Percentage resistance of organisms as per antibiotics vs age groups
               </h3>
               <OrganismResistanceByAge />
             </div>
