@@ -139,20 +139,16 @@ export default function DatasetDetails({ id }: any) {
   } = useMutation({
     mutationFn: downloadData,
     onSuccess: (data) => {
-      console.log("Download successful, data type:", typeof data, "is Blob:", data instanceof Blob);
       if (data instanceof Blob) {
         FileSaver.saveAs(data, "data.csv");
         handleCloseDownloadModal();
         toast.success("Downloaded successfully, please check your downloads folder.");
       } else {
-        console.error("Downloaded data is not a Blob:", data);
         toast.error("Downloaded data is not a valid file");
         handleCloseDownloadModal();
       }
     },
     onError: (error: any) => {
-      console.error("Download error:", error);
-      console.error("Error response:", error.response);
       toast.error(
         `Failed to download data set, make sure you have the permission to download this data set`
       );

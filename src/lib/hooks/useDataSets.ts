@@ -11,26 +11,14 @@ export const downloadData = async (source: string) => {
     endpoint = `/data/download/amu?source=amu`;
   }
 
-  console.log("Downloading from endpoint:", endpoint);
-  console.log("Source:", source);
+  const response = await api.post(endpoint, {}, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    responseType: "blob",
+  });
 
-  try {
-    const response = await api.post(endpoint, {}, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      responseType: "blob",
-    });
-
-    console.log("Download response:", response);
-    console.log("Response data type:", typeof response.data);
-    console.log("Response data is Blob:", response.data instanceof Blob);
-
-    return response.data;
-  } catch (error) {
-    console.error("Download error in useDataSets:", error);
-    throw error;
-  }
+  return response.data;
 };
 
 export const useDatasetVariables = (source: string) => {
