@@ -11,20 +11,33 @@ export const downloadData = async (source: string) => {
     endpoint = `/data/download/amu?source=amu`;
   }
 
-  const response = await api.post(endpoint, {}, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    responseType: "blob", 
-  });
+  console.log("Downloading from endpoint:", endpoint);
+  console.log("Source:", source);
 
-  return response.data;
+  try {
+    const response = await api.post(endpoint, {}, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      responseType: "blob",
+    });
+
+    console.log("Download response:", response);
+    console.log("Response data type:", typeof response.data);
+    console.log("Response data is Blob:", response.data instanceof Blob);
+
+    return response.data;
+  } catch (error) {
+    console.error("Download error in useDataSets:", error);
+    throw error;
+  }
 };
 
-export const useDatasetVariables = (source:string) => {
+export const useDatasetVariables = (source: string) => {
   return useQuery<any, Error, {data: any}>({
     queryFn: () => api.get(`/data/amr/dictionary?source=${source}`),
     queryKey: ["amr_dictionary", source],
+    enabled: !!source && source.trim() !== "", // Only run if source is provided and not empty
     meta: {
       errorMessage: "Failed to fetch dictionary"
     }

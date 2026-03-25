@@ -18,6 +18,7 @@ interface DownloadModalProps {
   onDeletePermission: (data: { permissionId: string }) => void;
   onAgreedToConfidentiality: (agreed: boolean) => void;
   onAgreedToDataSharing: (agreed: boolean) => void;
+  canDownload?: boolean;
 }
 
 export default function DownloadModal({
@@ -30,6 +31,7 @@ export default function DownloadModal({
   onDeletePermission: onDeletePerm,
   onAgreedToConfidentiality: onConfidentialityAgreed,
   onAgreedToDataSharing: onDataSharingAgreed,
+  canDownload = false,
 }: DownloadModalProps) {
   if (!isOpen) return null;
 
@@ -144,18 +146,18 @@ export default function DownloadModal({
           <div className="space-y-4">
             <ConfidentialityAgreement
               handleAgreedCallBack={(agreed: boolean) => {
-                if (agreed) onConfidentialityAgreed(true);
+                onConfidentialityAgreed(agreed);
               }}
             />
 
             <DataSharingAgreement
               handleAgreedCallBack={(agreed: boolean) => {
-                if (agreed) onDataSharingAgreed(true);
+                onDataSharingAgreed(agreed);
               }}
             />
           </div>
 
-          {perms && perms.some((p) => p.status === "approved") && (
+          {canDownload && (
             <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 pt-6">
               <button
                 onClick={onDownload}

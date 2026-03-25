@@ -12,6 +12,7 @@ export type DatasetType = {
   study_design: string;
   data_format: string;
   source: string;
+  db_name: string;
   in_warehouse: boolean;
   start_date: string;
   end_date: string;

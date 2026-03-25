@@ -19,8 +19,9 @@ const DataSharingAgreement = ({ handleAgreedCallBack }: any) => {
   };
 
   const handleChange = () => {
-      handleAgreedCallBack(true);
-      setIsChecked(!isChecked);
+    const newCheckedState = !isChecked;
+    setIsChecked(newCheckedState);
+    handleAgreedCallBack(newCheckedState);
   };
 
   return (

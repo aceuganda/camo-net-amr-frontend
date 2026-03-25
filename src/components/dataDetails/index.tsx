@@ -86,25 +86,14 @@ export default function DatasetDetails({ id }: any) {
 
   const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
 
-  // Get dictionary data
+  // Get dictionary data - use db_name as it matches the backend source values
   const {
     data: dictionaryData,
     isSuccess: dictionarySuccess,
     isLoading: dictionaryDataLoading,
     error: dictionaryDataError,
     refetch: getDictionary,
-  } = useDatasetVariables(
-    dataset?.data_set &&
-      dataset?.data_set.category.toLocaleLowerCase().includes("economic")
-      ? "economic"
-      : dataset?.data_set?.db_name.toLocaleLowerCase().includes("amu")
-      ? "amu"
-      : !dataset?.data_set
-      ? ""
-      : !dataset?.data_set.in_warehouse
-      ? ""
-      : dataset.data_set.thematic_area
-  );
+  } = useDatasetVariables(dataset?.data_set?.db_name || "");
 
   // Computed values
   const canDownload =
@@ -133,6 +122,13 @@ export default function DatasetDetails({ id }: any) {
     ? "denied"
     : "none";
 
+  const handleCloseDownloadModal = () => {
+    setIsAgreementModalOpen(false);
+    // Reset agreement states when closing modal
+    setIsAgreedToConfidentiality(false);
+    setIsAgreedToDataSharing(false);
+  };
+
   // Mutations
   const {
     data: downloadedData,
@@ -142,6 +138,26 @@ export default function DatasetDetails({ id }: any) {
     mutate: downloadFn,
   } = useMutation({
     mutationFn: downloadData,
+    onSuccess: (data) => {
+      console.log("Download successful, data type:", typeof data, "is Blob:", data instanceof Blob);
+      if (data instanceof Blob) {
+        FileSaver.saveAs(data, "data.csv");
+        handleCloseDownloadModal();
+        toast.success("Downloaded successfully, please check your downloads folder.");
+      } else {
+        console.error("Downloaded data is not a Blob:", data);
+        toast.error("Downloaded data is not a valid file");
+        handleCloseDownloadModal();
+      }
+    },
+    onError: (error: any) => {
+      console.error("Download error:", error);
+      console.error("Error response:", error.response);
+      toast.error(
+        `Failed to download data set, make sure you have the permission to download this data set`
+      );
+      handleCloseDownloadModal();
+    },
   });
 
   const {
@@ -339,9 +355,9 @@ export default function DatasetDetails({ id }: any) {
     setSelectedVariables([]);
   };
 
-  const handleDwn = async () => {
+  const handleDwn = () => {
     if (isAgreedToConfidentiality && isAgreedToDataSharing) {
-      await downloadFn(dataset.data_set.db_name);
+      downloadFn(dataset.data_set.db_name);
     } else {
       toast.error(
         "Please agree to the confidentiality agreement before downloading the data"
@@ -354,22 +370,6 @@ export default function DatasetDetails({ id }: any) {
   };
 
   // Effects
-  useEffect(() => {
-    if (downloadedData && isDownloadSuccess) {
-      if (downloadedData instanceof Blob) {
-        FileSaver.saveAs(downloadedData, "data.csv");
-        setIsAgreementModalOpen(false);
-        toast.success("Downloaded successfully, please check your downloads folder.");
-      } else {
-        toast.error("Downloaded data is not a valid file");
-      }
-    }
-    if (downloadError) {
-      toast.error(
-        `Failed to download data set, make sure you have the permission to download this data set`
-      );
-    }
-  }, [downloadedData, isDownloadSuccess, downloadError]);
 
   useEffect(() => {
     if (requestData && isRequestSuccess) {
@@ -509,7 +509,7 @@ export default function DatasetDetails({ id }: any) {
 
       <DownloadModal
         isOpen={isAgreementModalOpen}
-        onClose={() => setIsAgreementModalOpen(false)}
+        onClose={handleCloseDownloadModal}
         userPermissions={userPermissions}
         downloadPending={downloadPending}
         deletePending={deletePending}
@@ -517,6 +517,7 @@ export default function DatasetDetails({ id }: any) {
         onDeletePermission={deletePermissionFn}
         onAgreedToConfidentiality={setIsAgreedToConfidentiality}
         onAgreedToDataSharing={setIsAgreedToDataSharing}
+        canDownload={canDownload}
       />
     </main>
   );
