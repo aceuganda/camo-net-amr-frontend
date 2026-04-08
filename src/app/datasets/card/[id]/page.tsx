@@ -1,25 +1,38 @@
 "use client"
 
-import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { ArrowLeftIcon, CopyIcon, EyeOpenIcon, DownloadIcon } from "@radix-ui/react-icons";
 import { useDatasetCard } from "@/lib/hooks/useDatasetCard";
+import { getDatasetCardPath } from "@/lib/datasetCardLinks";
 import { toast } from "sonner";
 import Link from "next/link";
 
 export default function DatasetCardPage() {
   const params = useParams();
-  const datasetId = params.id as string;
+  const pathname = usePathname();
+  const router = useRouter();
+  const datasetIdentifier = params.id as string;
 
-  const { data: dataset, isLoading, error } = useDatasetCard(datasetId);
+  const { data: dataset, isLoading, error } = useDatasetCard(datasetIdentifier);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copied to clipboard!");
   };
 
+  const canonicalPath = dataset ? getDatasetCardPath(dataset) : "";
   const shareableLink = typeof window !== 'undefined' 
-    ? `${window.location.origin}/datasets/card/${datasetId}`
+    ? `${window.location.origin}${canonicalPath || pathname}`
     : '';
+
+  useEffect(() => {
+    if (!dataset || !canonicalPath || pathname === canonicalPath) {
+      return;
+    }
+
+    router.replace(canonicalPath);
+  }, [canonicalPath, dataset, pathname, router]);
 
   if (isLoading) {
     return (

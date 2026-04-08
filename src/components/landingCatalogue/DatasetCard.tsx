@@ -2,6 +2,7 @@
 
 import { ExternalLinkIcon, ChevronRightIcon, EyeOpenIcon, DownloadIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import { getDatasetCardPath } from "@/lib/datasetCardLinks";
 
 const formatNumber = (num: number) => {
   if (num >= 1000000) {
@@ -39,6 +40,7 @@ export default function DatasetCard({ dataset, isLoggedIn }: DatasetCardProps) {
   const doiHref =
     dataset.doi &&
     (dataset.doi.startsWith("http") ? dataset.doi : `https://doi.org/${dataset.doi}`);
+  const datasetCardPath = getDatasetCardPath(dataset);
 
   return (
     <div className="group bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] overflow-hidden">
@@ -124,7 +126,7 @@ export default function DatasetCard({ dataset, isLoggedIn }: DatasetCardProps) {
 
         <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
           <Link
-            href={`/datasets/card/${dataset.id}`}
+            href={datasetCardPath}
             className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 text-[#24408E] text-xs font-medium rounded-lg hover:bg-gray-50 hover:shadow-md transition-all duration-200"
           >
             <ExternalLinkIcon className="w-3 h-3" />

@@ -1,15 +1,36 @@
 import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import api from "./../axios";
 import { DataCard } from "@/types/constants";
+import { normalizeDatasetCardSlug } from "../datasetCardLinks";
 
-export const useDatasetCard = (datasetId: string) => {
+export const useDatasetCard = (datasetIdentifier: string) => {
   return useQuery<DataCard, Error>({
     queryFn: async () => {
-      const response = await api.get(`/data_cards/${datasetId}`);
-      return response.data;
+      try {
+        const response = await api.get(`/data_cards/${datasetIdentifier}`);
+        return response.data;
+      } catch (error) {
+        if (!axios.isAxiosError(error) || error.response?.status !== 404) {
+          throw error;
+        }
+
+        const datasetsResponse = await api.get("/data_sets");
+        const matchedDataset = datasetsResponse.data.find((dataset: { id: string; name: string }) =>
+          normalizeDatasetCardSlug(dataset.name) ===
+          normalizeDatasetCardSlug(datasetIdentifier)
+        );
+
+        if (!matchedDataset) {
+          throw error;
+        }
+
+        const response = await api.get(`/data_cards/${matchedDataset.id}`);
+        return response.data;
+      }
     },
-    queryKey: ["dataset-card", datasetId],
-    enabled: !!datasetId,
+    queryKey: ["dataset-card", datasetIdentifier],
+    enabled: !!datasetIdentifier,
     meta: {
       errorMessage: "Failed to fetch dataset card"
     }
