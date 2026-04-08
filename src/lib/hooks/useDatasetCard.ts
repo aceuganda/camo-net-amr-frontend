@@ -1,36 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import api from "./../axios";
-import { DataCard } from "@/types/constants";
+import { DataCard, DatasetType } from "@/types/constants";
 import { normalizeDatasetCardSlug } from "../datasetCardLinks";
+import { useGetCatalogue } from "./useCatalogue";
+
+type DatasetListItem = Pick<DatasetType, "id" | "name">;
 
 export const useDatasetCard = (datasetIdentifier: string) => {
+  const { data: catalogueData, error: catalogueError, isLoading: isCatalogueLoading } =
+    useGetCatalogue();
+  const datasets = (catalogueData?.data || []) as DatasetListItem[];
+  const normalizedIdentifier = normalizeDatasetCardSlug(datasetIdentifier);
+
+  const matchedDataset = datasets.find(
+    (dataset) =>
+      dataset.id === datasetIdentifier ||
+      normalizeDatasetCardSlug(dataset.name) === normalizedIdentifier
+  );
+
+  const resolvedDatasetId = matchedDataset?.id || datasetIdentifier;
+
   return useQuery<DataCard, Error>({
     queryFn: async () => {
-      try {
-        const response = await api.get(`/data_cards/${datasetIdentifier}`);
-        return response.data;
-      } catch (error) {
-        if (!axios.isAxiosError(error) || error.response?.status !== 404) {
-          throw error;
-        }
-
-        const datasetsResponse = await api.get("/data_sets");
-        const matchedDataset = datasetsResponse.data.find((dataset: { id: string; name: string }) =>
-          normalizeDatasetCardSlug(dataset.name) ===
-          normalizeDatasetCardSlug(datasetIdentifier)
-        );
-
-        if (!matchedDataset) {
-          throw error;
-        }
-
-        const response = await api.get(`/data_cards/${matchedDataset.id}`);
-        return response.data;
-      }
+      const response = await api.get(`/data_cards/${resolvedDatasetId}`);
+      return response.data;
     },
-    queryKey: ["dataset-card", datasetIdentifier],
-    enabled: !!datasetIdentifier,
+    queryKey: ["dataset-card", datasetIdentifier, resolvedDatasetId],
+    enabled: !!datasetIdentifier && (!isCatalogueLoading || !!catalogueError),
     meta: {
       errorMessage: "Failed to fetch dataset card"
     }

@@ -1,7 +1,6 @@
-type DatasetCardLinkable = {
-  id: string;
-  name: string;
-};
+import { DataCard } from "@/types/constants";
+
+type DatasetCardLinkable = Pick<DataCard, "id" | "name">;
 
 export const normalizeDatasetCardSlug = (value: string) =>
   decodeURIComponent(value)
@@ -14,4 +13,4 @@ export const getDatasetCardSlug = (dataset: DatasetCardLinkable) =>
   normalizeDatasetCardSlug(dataset.name);
 
 export const getDatasetCardPath = (dataset: DatasetCardLinkable) =>
-  `/datasets/card/${dataset.id}/${getDatasetCardSlug(dataset)}`;
+  `/datasets/card/${getDatasetCardSlug(dataset)}`;
