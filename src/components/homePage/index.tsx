@@ -52,6 +52,8 @@ export default function HomePage() {
               { src: "/logos/idmak.webp", alt: "IDI Makerere", href: "https://idi.mak.ac.ug" },
               { src: "/logos/ace.webp", alt: "ACE", href: "https://ace.ac.ug" },
               { src: "/logos/welc.webp", alt: "Wellcome Trust", href: "https://wellcome.org" },
+              { src: "/logos/lacuna.webp", alt: "Lacuna Fund", href: "https://lacunafund.org" },
+              { src: "/logos/moh.webp", alt: "Ministry of Health", href: "https://www.health.go.ug" },
             ].map((s) => (
               <a
                 key={s.src}
