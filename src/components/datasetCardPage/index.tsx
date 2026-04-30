@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ArrowLeftIcon, CopyIcon, EyeOpenIcon, DownloadIcon } from "@radix-ui/react-icons";
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useDatasetCard } from "@/lib/hooks/useDatasetCard";
 import { getDatasetCardPath } from "@/lib/datasetCardLinks";
 import { DataCard } from "@/types/constants";
+import { useDatasetDatasheet } from "@/lib/hooks/useDatasheets";
+import { DatasheetViewer } from "@/components/datasheet";
+import dynamic from "next/dynamic";
+
+const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
 export default function DatasetCardPageContent() {
   const params = useParams();
@@ -16,10 +22,51 @@ export default function DatasetCardPageContent() {
   const datasetIdentifier = params.id as string;
 
   const { data: dataset, isLoading, error } = useDatasetCard(datasetIdentifier);
+  const [activeTab, setActiveTab] = useState<"details" | "datasheet">("details");
+
+  // Get the dataset ID from the loaded data card
+  const datasetId = dataset?.id || "";
+
+  const {
+    data: datasheetData,
+    isLoading: datasheetLoading,
+    error: datasheetError,
+  } = useDatasetDatasheet(datasetId, !!datasetId);
+
+  const datasheet = datasheetData?.data || null;
+
+  const hasAnsweredQuestions = (): boolean => {
+    if (!datasheet?.content) return false;
+    const content = datasheet.content as any;
+    if (content.sections && Array.isArray(content.sections)) {
+      return content.sections.some((section: any) =>
+        section.questions?.some((q: any) => {
+          const a = (q.answer || "").trim();
+          return a && a !== "No answer provided";
+        })
+      );
+    }
+    if (content.answers) {
+      return Object.values(content.answers).some(
+        (a: any) => a && (a as string).trim() && (a as string).trim() !== "No answer provided"
+      );
+    }
+    return false;
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copied to clipboard!");
+  };
+
+  const handleTabChange = (tab: "details" | "datasheet") => {
+    if (tab === "datasheet") {
+      if (!datasheetLoading && !hasAnsweredQuestions()) {
+        toast.info("No datasheet provided yet");
+        return;
+      }
+    }
+    setActiveTab(tab);
   };
 
   const canonicalPath = dataset ? getDatasetCardPath(dataset) : "";
@@ -75,13 +122,13 @@ export default function DatasetCardPageContent() {
 
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-8">
           <div className="p-6 sm:p-8">
-            <div className="flex items-start justify-between mb-6 pb-6 border-b border-gray-200">
-              <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 pb-6 border-b border-gray-200 gap-4">
+              <div className="flex-1 min-w-0">
                 <div className="inline-block px-3 py-1 bg-blue-50 text-[#24408E] rounded-full text-sm font-medium mb-3">
                   {dataCard.thematic_area}
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">{dataCard.name}</h1>
-                <p className="text-lg text-gray-600 mb-2">{dataCard.title}</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{dataCard.name}</h1>
+                <p className="text-base sm:text-lg text-gray-600 mb-2">{dataCard.title}</p>
                 <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600">
                   {hasAcronym && (
                     <span className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-gray-200 rounded-full">
@@ -102,7 +149,7 @@ export default function DatasetCardPageContent() {
                         <span className="uppercase tracking-wide text-[11px] text-gray-500">
                           DOI
                         </span>
-                        <span className="font-semibold truncate max-w-[140px] sm:max-w-[220px]">
+                        <span className="font-semibold truncate max-w-[120px] sm:max-w-[220px]">
                           {dataCard.doi}
                         </span>
                       </a>
@@ -121,7 +168,7 @@ export default function DatasetCardPageContent() {
                       <span className="uppercase tracking-wide text-[11px] text-gray-500">
                         License
                       </span>
-                      <span className="font-semibold text-gray-700 truncate max-w-[140px] sm:max-w-[220px]">
+                      <span className="font-semibold text-gray-700 truncate max-w-[120px] sm:max-w-[220px]">
                         {dataCard.license}
                       </span>
                     </span>
@@ -135,10 +182,10 @@ export default function DatasetCardPageContent() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 ml-6">
+              <div className="flex items-center gap-4 sm:flex-shrink-0">
                 <div className="flex items-center gap-2 group relative">
                   <EyeOpenIcon className="w-4 h-4 text-[#24408E]" />
-                  <span className="text-lg font-bold text-[#24408E]">
+                  <span className="text-base sm:text-lg font-bold text-[#24408E]">
                     {dataCard.page_views.toLocaleString()}
                   </span>
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -147,7 +194,7 @@ export default function DatasetCardPageContent() {
                 </div>
                 <div className="flex items-center gap-2 group relative">
                   <DownloadIcon className="w-4 h-4 text-green-600" />
-                  <span className="text-lg font-bold text-green-700">
+                  <span className="text-base sm:text-lg font-bold text-green-700">
                     {dataCard.total_downloads.toLocaleString()}
                   </span>
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -157,10 +204,42 @@ export default function DatasetCardPageContent() {
               </div>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
-              <p className="text-gray-700 leading-relaxed">{dataCard.description}</p>
+            <div className="border-b border-gray-200 mb-6">
+              <div className="flex">
+                <button
+                  onClick={() => handleTabChange("details")}
+                  className={`flex-1 px-3 sm:px-6 py-3 text-left font-semibold transition-all duration-200 ${
+                    activeTab === "details"
+                      ? "text-[#24408E] border-b-2 border-[#00B9F1] bg-gradient-to-r from-blue-50/50 to-transparent"
+                      : "text-gray-600 hover:text-[#24408E] hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm sm:text-base">Dataset Details</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleTabChange("datasheet")}
+                  className={`flex-1 px-3 sm:px-6 py-3 text-left font-semibold transition-all duration-200 ${
+                    activeTab === "datasheet"
+                      ? "text-[#24408E] border-b-2 border-[#00B9F1] bg-gradient-to-r from-blue-50/50 to-transparent"
+                      : "text-gray-600 hover:text-[#24408E] hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span className="text-sm sm:text-base">Datasheet</span>
+                  </div>
+                </button>
+              </div>
             </div>
+
+            {activeTab === "details" && (
+              <>
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
+                  <p className="text-gray-700 leading-relaxed">{dataCard.description}</p>
+                </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
@@ -255,12 +334,36 @@ export default function DatasetCardPageContent() {
               )}
             </div>
 
-            <div className="mb-8">
-              <h3 className="font-semibold text-gray-900 mb-2">Citation</h3>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <p className="text-sm text-gray-700 italic">{dataCard.citation_info}</p>
+                <div className="mb-8">
+                  <h3 className="font-semibold text-gray-900 mb-2">Citation</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-700 italic">{dataCard.citation_info}</p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeTab === "datasheet" && (
+              <div>
+                {datasheetLoading && (
+                  <div className="flex justify-center items-center py-12">
+                    <DotsLoader />
+                  </div>
+                )}
+                {datasheetError && !datasheet && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+                    <FileText className="w-12 h-12 text-amber-600 mx-auto mb-3" />
+                    <p className="text-amber-800 font-medium mb-2">No Datasheet Available</p>
+                    <p className="text-amber-700 text-sm">
+                      This dataset does not have a datasheet yet.
+                    </p>
+                  </div>
+                )}
+                {datasheet && !datasheetLoading && (
+                  <DatasheetViewer datasheet={datasheet} />
+                )}
               </div>
-            </div>
+            )}
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-200">
               <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">

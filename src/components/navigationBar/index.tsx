@@ -1,17 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useQueryClient } from '@tanstack/react-query';
-import { HomeIcon, MagnifyingGlassIcon, PersonIcon, HamburgerMenuIcon, Cross1Icon} from "@radix-ui/react-icons";
+import { HomeIcon, HamburgerMenuIcon, Cross1Icon} from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { logout } from "@/lib/hooks/useAuth";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { useSearch } from "@/context/searchContext";
 import { useUserInfor } from "@/lib/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
-import { BookOpen, Shield, Database, FileText, Plus, Settings, Search, LogOut, User, Brain } from "lucide-react";
+import { BookOpen, Shield, Database, FileText, Plus, Settings, LogOut, User, Brain } from "lucide-react";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 const GuideTour = dynamic(() => import("@/components/GuideTour"), { ssr: false });
@@ -25,7 +25,6 @@ const NavigationBar = () => {
   const [admin, setAdmin] = useState(false);
   
   const router = useRouter();
-  const { searchTerm, setSearchTerm } = useSearch();
   const { data, error } = useUserInfor(); 
   const {isSuccess:logoutSuccess, isPending:logoutPending, mutate:logoutFn} = useMutation({
     mutationFn: logout,
@@ -60,7 +59,7 @@ const NavigationBar = () => {
   };
 
   const navItems = [
-    { href: "/", label: "Home", icon: HomeIcon, className: "home_button" },
+    { href: "/", label: "Home", icon: HomeIcon, className: "home_button", mobileOnly: true },
     { href: "/datasets", label: "Catalogue", icon: Database, className: "catalogue_button" },
     { 
       href: isLoggedIn ? "/datasets/access" : "/authenticate", 
@@ -93,8 +92,20 @@ const NavigationBar = () => {
   return (
     <>
       <nav className="bg-gradient-to-r from-[#24408E] via-[#1e3a82] to-[#24408E] backdrop-blur-sm border-b border-white/10 shadow-2xl">
-        <div className="w-full h-14 flex justify-between items-center px-4 text-white relative overflow-hidden">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="w-full min-h-[4.25rem] lg:min-h-[5.1rem] flex justify-between items-center px-4 sm:px-5 lg:px-8 text-white relative overflow-hidden">
+          <div className="flex items-center gap-2 lg:gap-5 flex-1 min-w-0">
+            {/* AMRDB Logo */}
+            <Link href="/" className="flex shrink-0 items-center mr-1 lg:mr-3">
+              <Image
+                src="/logos/amrdbwhite.png"
+                alt="AMRDB"
+                width={124}
+                height={44}
+                className="h-8 w-auto object-contain sm:h-9 lg:h-11"
+                priority
+              />
+            </Link>
+
             <div className="max-[860px]:block hidden relative">
               <button 
                 className="p-2 hover:bg-white/10 rounded-lg transition-all duration-200 hover:scale-105" 
@@ -134,15 +145,16 @@ const NavigationBar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="min-[861px]:flex hidden items-center gap-3 lg:gap-4 xl:gap-6">
+            <div className="min-[861px]:flex hidden items-center gap-2 lg:gap-3 xl:gap-4">
               {navItems.map((item, index) => {
+                if (item.mobileOnly) return null;
                 const Icon = item.icon;
                 const isItemActive = item.isActive !== undefined ? item.isActive : isActive(item.href);
                 return (
                   <Link
                     key={index}
                     href={item.href}
-                    className={`${item.className || ''} flex items-center gap-1 lg:gap-2 px-2 lg:px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 hover:bg-white/10 hover:scale-105 group ${
+                    className={`${item.className || ''} flex items-center gap-1 lg:gap-2 px-3 lg:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:scale-105 group ${
                       isItemActive ? "text-[#00B9F1] bg-white/10" : "text-white hover:text-[#00B9F1]"
                     }`}
                   >
@@ -165,7 +177,7 @@ const NavigationBar = () => {
               }`}
             >
               <BookOpen className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
-              <span className="hidden min-[900px]:inline">GUIDE</span>
+              <span className="hidden min-[980px]:inline">GUIDE</span>
             </Link>
 
             {/* User Actions */}
@@ -182,7 +194,7 @@ const NavigationBar = () => {
                   ) : (
                     <>
                       <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
-                      <span className="hidden min-[900px]:inline">LOGOUT</span>
+                      <span className="hidden min-[980px]:inline">LOGOUT</span>
                     </>
                   )}
                 </button>
@@ -202,7 +214,7 @@ const NavigationBar = () => {
                 className="auth_button flex items-center gap-1 px-2 sm:px-4 py-2 bg-gradient-to-r from-[#00B9F1] to-[#0ea5e9] hover:from-[#0ea5e9] hover:to-[#00B9F1] text-white rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg"
               >
                 <User className="w-4 h-4" />
-                <span className="hidden min-[900px]:inline">LOGIN</span>
+                <span className="hidden min-[980px]:inline">LOGIN</span>
               </Link>
             )}
           </div>

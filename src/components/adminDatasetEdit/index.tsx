@@ -4,8 +4,14 @@ import { DatasetType } from "@/types/constants";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import { updateCatalogueDataset } from "@/lib/hooks/useCatalogue";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import {
+  useDatasetDatasheet,
+  createDatasetDatasheet,
+  updateDatasetDatasheet,
+} from "@/lib/hooks/useDatasheets";
+import { DatasheetAdmin } from "@/components/datasheet";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -17,6 +23,7 @@ export default function DatasetsPage() {
   const [datasetDetails, setDatasetDetails] = useState<DatasetType | null>(
     null
   );
+  const [activeTab, setActiveTab] = useState<"catalog" | "datasheet">("catalog");
   const { data, isLoading, error, refetch } = useGetCatalogue();
   const datasets: DatasetType[] = data?.data || [];
 
@@ -31,9 +38,11 @@ export default function DatasetsPage() {
     mutationFn: updateCatalogueDataset,
   });
 
+
   useEffect(() => {
      refetch()
      setDatasetDetails(null)
+     setActiveTab("catalog")
   },[updateSuccess]);
 
   const filteredDatasets = datasets.filter((dataset) => {
@@ -110,11 +119,44 @@ export default function DatasetsPage() {
 
       <div className="">
         {datasetDetails && (
-          <DatasetDetails
-            details={datasetDetails}
-            updatePending={updatePending}
-            onSave={onUpdate}
-          />
+          <>
+            <div className="bg-white shadow-md rounded mb-4">
+              <div className="flex border-b">
+                <button
+                  onClick={() => setActiveTab("catalog")}
+                  className={`flex-1 px-6 py-3 font-semibold transition-all duration-200 ${
+                    activeTab === "catalog"
+                      ? "text-[#24408E] border-b-2 border-[#00B9F1] bg-gradient-to-r from-blue-50/50 to-transparent"
+                      : "text-gray-600 hover:text-[#24408E] hover:bg-gray-50"
+                  }`}
+                >
+                  Dataset Information
+                </button>
+                <button
+                  onClick={() => setActiveTab("datasheet")}
+                  className={`flex-1 px-6 py-3 font-semibold transition-all duration-200 ${
+                    activeTab === "datasheet"
+                      ? "text-[#24408E] border-b-2 border-[#00B9F1] bg-gradient-to-r from-blue-50/50 to-transparent"
+                      : "text-gray-600 hover:text-[#24408E] hover:bg-gray-50"
+                  }`}
+                >
+                  Datasheet
+                </button>
+              </div>
+            </div>
+
+            {activeTab === "catalog" && (
+              <DatasetDetails
+                details={datasetDetails}
+                updatePending={updatePending}
+                onSave={onUpdate}
+              />
+            )}
+
+            {activeTab === "datasheet" && (
+              <DatasheetAdminSection datasetId={datasetDetails.id} />
+            )}
+          </>
         )}
       </div>
     </div>
@@ -126,6 +168,48 @@ interface DatasetDetailsProps {
   updatePending: Boolean;
   onSave: (updatedDetails: any) => void;
 }
+function DatasheetAdminSection({ datasetId }: { datasetId: string }) {
+  const queryClient = useQueryClient();
+  const { data: datasheetQueryData, isLoading } = useDatasetDatasheet(datasetId, true);
+  const datasheet = datasheetQueryData?.data || null;
+
+  const { mutate: saveDatasheet, isPending: isSaving } = useMutation({
+    mutationFn: async (datasheetData: any) => {
+      if (datasheet) {
+        return updateDatasetDatasheet(datasetId, { content: datasheetData.content });
+      } else {
+        return createDatasetDatasheet({ dataset_id: datasetId, content: datasheetData.content });
+      }
+    },
+    onSuccess: () => {
+      toast.success("Datasheet saved successfully!");
+      queryClient.invalidateQueries({ queryKey: ["dataset_datasheet", datasetId] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.detail || "Failed to save datasheet");
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <DotsLoader />
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white shadow-md rounded p-6">
+      <DatasheetAdmin
+        datasetId={datasetId}
+        existingDatasheet={datasheet}
+        onSave={saveDatasheet}
+        isSaving={isSaving}
+      />
+    </div>
+  );
+}
+
 function DatasetDetails({
   details,
   updatePending,

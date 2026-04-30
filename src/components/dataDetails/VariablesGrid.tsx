@@ -41,7 +41,7 @@ export default function VariablesGrid({
 
   // Get unique types for filter
   const uniqueTypes = dictionaryData?.data?.data
-    ? Array.from(new Set(Object.values(dictionaryData.data.data as Record<string, VariableInfo>).map(v => v.type)))
+    ? Array.from(new Set(Object.values(dictionaryData.data.data as Record<string, VariableInfo>).map(v => v.type))).filter(Boolean) as string[]
     : [];
 
   // Filter variables based on search term and filter type

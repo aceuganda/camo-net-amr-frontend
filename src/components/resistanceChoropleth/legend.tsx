@@ -13,11 +13,11 @@ const colorScale = [
 
 const Legend: React.FC = () => {
     return (
-        <div className="md:ml-4 mt-4 md:mt-0 p-[10px] bg-white z-[10]"  >
-            <h4>Number of Resistance Cases Legend</h4>
+        <div className="z-[10] w-full rounded-lg border border-gray-200 bg-white p-[10px] text-sm shadow-sm md:mt-0 md:ml-4 md:w-auto"  >
+            <h4 className="mb-2 font-semibold">Number of Resistance Cases Legend</h4>
             <ul style={{ listStyleType: 'none', padding: 0 }}>
                 {colorScale.map((item, index) => (
-                    <li key={index} style={{ display: 'flex', alignItems: 'center' }}>
+                    <li key={index} style={{ display: 'flex', alignItems: 'center' }} className="py-1">
                         <div style={{
                             backgroundColor: item.color,
                             width: '20px',

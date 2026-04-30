@@ -7,6 +7,7 @@ import { submitForgotPassword } from "@/lib/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import AuthShell from "@/components/auth/AuthShell";
 
 
 const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), {
@@ -16,7 +17,7 @@ const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), {
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const myRouter = useRouter();
-  const { data, isSuccess, error, isPending, mutate } = useMutation({
+  const { isSuccess, error, isPending, mutate } = useMutation({
     mutationFn: submitForgotPassword,
   });
 
@@ -44,28 +45,18 @@ function ForgotPassword() {
   };
 
   return (
-    <div
-      style={{ backgroundImage: "url(/backgroundImageNet.webp)" }}
-      className="flex justify-center items-center min-h-screen bg-gray-100 bg-no-repeat bg-cover relative bg-fixed bg-center"
+    <AuthShell
+      title="Forgot your password?"
+      subtitle="Enter the email linked to your account and we will send you a reset link."
+      backHref="/authenticate"
+      backLabel="Back to sign in"
     >
-      <div className="bg-[#161047] absolute h-[100%] w-[30%] top-0 left-0"></div>
-
-      <button
-        onClick={() => myRouter.push("/")}
-        className="absolute top-4 left-4 px-4 py-2 text-white bg-[#00b9f1] rounded hover:bg-[#007acc]"
-      >
-        Home
-      </button>
-      <div className="w-[70%] h-[full] bg-white rounded-[10px] shadow-box z-10">
-        <div className="flex font-[700] text-[18px] items-center w-full justify-center p-4 rounded-t-lg border-b-gray-300 border-b-[2px]">
-          Enter your account email to reset your password
-        </div>
-        <div className="py-6 bg-[#f2f2f2] min-h-[33rem] px-4 sm:px-[6rem] rounded-[10px] transition-all relative">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <div className="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div>
               <label
                 htmlFor="email"
-                className="block text-gray-700 text-sm font-bold mb-2"
+                className="mb-2 block text-sm font-medium text-slate-700"
               >
                 Email Address
               </label>
@@ -75,22 +66,21 @@ function ForgotPassword() {
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-[40%] px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007acc] focus:border-transparent"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
                 placeholder="Enter your email"
                 required
               />
             </div>
             <button
               type="submit"
-              className=" w-[10rem] min-h-[1.5rem] bg-[#007acc] text-white px-4 py-2 rounded-lg hover:bg-[#005fa3] transition-all"
+              className="min-h-[3rem] w-full rounded-xl bg-[#007acc] px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[#005fa3] sm:w-[12rem]"
             >
               {isPending ? <DotsLoader /> : "Submit"}
             </button>
-            {isSuccess && <div className="text-green-700 text-[11px]"> Reset email sent. Please check your email to reset your password.</div>}
+            {isSuccess && <div className="text-sm text-green-700">Reset email sent. Please check your email to continue.</div>}
           </form>
-        </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }
 

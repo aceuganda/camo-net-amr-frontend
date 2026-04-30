@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { resetPassword } from "@/lib/hooks/useAuth";
 import { checkPasswordStrength } from "@/lib/utils";
+import AuthShell from "@/components/auth/AuthShell";
 
 const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), {
   ssr: false,
@@ -24,7 +25,7 @@ function ResetPassword() {
   const token = searchParams.get("token");
 
   
-  const { data, isSuccess, error, isPending, mutate } = useMutation({
+  const { isSuccess, error, isPending, mutate } = useMutation({
     mutationFn: resetPassword,
   });
 
@@ -63,28 +64,18 @@ function ResetPassword() {
   };
 
   return (
-    <div
-      style={{ backgroundImage: "url(/backgroundImageNet.webp)" }}
-      className="flex justify-center items-center min-h-screen bg-gray-100 bg-no-repeat bg-cover relative bg-fixed bg-center"
+    <AuthShell
+      title="Reset your password"
+      subtitle="Choose a new strong password for your account."
+      backHref="/authenticate"
+      backLabel="Back to sign in"
     >
-      <div className="bg-[#161047] absolute h-[100%] w-[30%] top-0 left-0"></div>
-
-      <button
-        onClick={() => myRouter.push("/")}
-        className="absolute top-4 left-4 px-4 py-2 text-white bg-[#00b9f1] rounded hover:bg-[#007acc]"
-      >
-        Home
-      </button>
-      <div className="w-[70%] h-[full] bg-white rounded-[10px] shadow-box z-10">
-        <div className="flex font-[700] text-[18px] items-center w-full justify-center p-4 rounded-t-lg border-b-gray-300 border-b-[2px]">
-          Reset your password
-        </div>
-        <div className="py-6 bg-[#f2f2f2] min-h-[33rem] px-4 sm:px-[6rem] rounded-[10px] transition-all relative">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <div className="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div>
               <label
                 htmlFor="password"
-                className="block text-gray-700 text-sm font-bold mb-2"
+                className="mb-2 block text-sm font-medium text-slate-700"
               >
                 New Password
               </label>
@@ -95,14 +86,14 @@ function ResetPassword() {
                   name="password"
                   value={password}
                   onChange={handlePasswordChange}
-                  className="w-full px-4 py-2 border bg-[#e6e6e6] border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007acc] focus:border-transparent"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
                   placeholder="Enter your new password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2 text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-500 hover:bg-slate-100"
                 >
                   {showPassword ? <EyeOpenIcon /> : <EyeClosedIcon />}
                 </button>
@@ -115,7 +106,7 @@ function ResetPassword() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-gray-700 text-sm font-bold mb-2"
+                className="mb-2 block text-sm font-medium text-slate-700"
               >
                 Confirm Password
               </label>
@@ -126,14 +117,14 @@ function ResetPassword() {
                   name="confirmPassword"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-[#e6e6e6] px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007acc] focus:border-transparent"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
                   placeholder="Confirm your new password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2 text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-500 hover:bg-slate-100"
                 >
                   {showPassword ? <EyeOpenIcon /> : <EyeClosedIcon />}
                 </button>
@@ -142,26 +133,19 @@ function ResetPassword() {
 
             <button
               type="submit"
-              className="w-[20rem]  min-h-[1.5rem] bg-[#007acc] text-white px-4 py-2 rounded-lg hover:bg-[#005fa3] transition-all"
+              className="min-h-[3rem] w-full rounded-xl bg-[#007acc] px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[#005fa3] sm:w-[16rem]"
             >
               {isPending ? <DotsLoader /> : "Reset Password"}
             </button>
             {isSuccess && (
-              <div className="text-green-700 text-[11px]">
-                {" "}
-                Password reset successfully.
-              </div>
+              <div className="text-sm text-green-700">Password reset successfully.</div>
             )}
             {error && (
-              <div className="text-red-700 text-[11px]">
-                {" "}
-                Something went wrong, please try again later.
-              </div>
+              <div className="text-sm text-red-700">Something went wrong, please try again later.</div>
             )}
           </form>
-        </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }
 

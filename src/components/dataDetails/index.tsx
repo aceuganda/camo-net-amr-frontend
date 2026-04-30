@@ -12,6 +12,7 @@ import {
   useDatasetVariables,
   deletePermission,
 } from "@/lib/hooks/useDataSets";
+import { useDatasetDatasheet } from "@/lib/hooks/useDatasheets";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
@@ -30,7 +31,7 @@ import { ChevronLeftIcon, StackIcon } from "@radix-ui/react-icons";
 const DatasetHeader = dynamic(() => import("./DatasetHeader"), {
   ssr: false,
 });
-const DatasetAbout = dynamic(() => import("./DatasetAbout"), {
+const DatasetInfoTabs = dynamic(() => import("./DatasetInfoTabs"), {
   ssr: false,
 });
 const CredibilityPanel = dynamic(() => import("./CredibilityPanel"), {
@@ -61,7 +62,16 @@ export default function DatasetDetails({ id }: any) {
   const dataset: DatasetApiResponse = data?.data || {};
   const userPermissions = dataset.user_permissions;
   const router = useRouter();
-  
+
+  // Fetch datasheet
+  const {
+    data: datasheetData,
+    isLoading: datasheetLoading,
+    error: datasheetError,
+  } = useDatasetDatasheet(dataset?.data_set?.id || "", !!dataset?.data_set?.id);
+
+  const datasheet = datasheetData?.data || null;
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
@@ -449,8 +459,11 @@ export default function DatasetDetails({ id }: any) {
             <div className="flex flex-col lg:flex-row gap-8">
 
               <div className="flex-grow min-w-0">
-                <DatasetAbout dataset={dataset.data_set} formatDate={formatDate} />
-
+                <DatasetInfoTabs
+                  dataset={dataset.data_set}
+                  datasheet={datasheet}
+                  formatDate={formatDate}
+                />
 
                 <PermissionsSection
                   userPermissions={userPermissions}

@@ -4,23 +4,13 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useUserInfor } from "@/lib/hooks/useAuth";
+import SiteFooter from "@/components/siteFooter";
 
 const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), {
   ssr: false,
 });
 
 export default function HomePage() {
-  const { data, error } = useUserInfor();
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // useEffect(() => {
-  //   if (data?.data) {
-  //     const roles = data.data.user.roles;
-  //     setIsLoggedIn(data.data.logged_in);
-  //   }
-  // }, [data, error]);
-
   return (
     <main className="flex min-h-screen flex-col items-center bg-white text-gray-800 max-md:-z-10">
       <motion.div
@@ -52,6 +42,36 @@ export default function HomePage() {
 
       {/* Main content */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-4 py-12">
+        <section className="mb-10 rounded-2xl border border-gray-100 bg-white px-4 py-6 shadow-sm">
+          <p className="mb-6 text-center text-xs font-semibold uppercase tracking-widest text-gray-400">
+            Supported &amp; Partnered By
+          </p>
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-8 sm:gap-12">
+            {[
+              { src: "/logos/cnetug.webp", alt: "CAMO-Net UG", href: "https://camonet.org" },
+              { src: "/logos/idmak.webp", alt: "IDI Makerere", href: "https://idi.mak.ac.ug" },
+              { src: "/logos/ace.webp", alt: "ACE", href: "https://ace.ac.ug" },
+              { src: "/logos/welc.webp", alt: "Wellcome Trust", href: "https://wellcome.org" },
+            ].map((s) => (
+              <a
+                key={s.src}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="opacity-70 transition-opacity duration-200 hover:opacity-100"
+              >
+                <Image
+                  src={s.src}
+                  alt={s.alt}
+                  width={110}
+                  height={50}
+                  className="h-10 w-auto object-contain"
+                />
+              </a>
+            ))}
+          </div>
+        </section>
+
         <div className="flex flex-col lg:flex-row">
           {/* Left sidebar */}
           <motion.div
@@ -159,18 +179,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <footer className="w-full py-6 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-gray-600">© 2024 CAMO-Net Uganda Hub</p>
-          <p className="text-sm text-gray-500 mt-2">
-            A Wellcome Trust supported initiative to combat Antimicrobial
-            Resistance
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Infectious Diseases Institute, P.O Box 22418, Kampala, Uganda
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
