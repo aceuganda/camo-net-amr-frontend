@@ -195,6 +195,21 @@ export default function RequestAccessModal({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  IRB / Ethics Approval Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="irb_number"
+                  value={formValues.irb_number}
+                  onChange={onInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B9F1] focus:border-transparent"
+                  placeholder="Enter IRB or ethics approval number"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Project Description/Abstract <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -293,38 +308,34 @@ export default function RequestAccessModal({
                   {dictionarySuccess && filteredVariables.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {filteredVariables.map(([key, value]) => (
-                        <div
+                        <label
                           key={key}
-                          className={`border-2 rounded-lg p-3 cursor-pointer transition-all duration-200 ${
+                          className={`border-2 rounded-lg p-3 cursor-pointer transition-all duration-200 flex items-start gap-3 ${
                             selectedVariables.includes(key)
                               ? "border-[#00B9F1] bg-blue-50"
                               : "border-gray-200 bg-white hover:border-gray-300"
                           }`}
-                          onClick={() => onCheckboxChange(key)}
                         >
-                          <div className="flex items-start gap-3">
-                            <input
-                              type="checkbox"
-                              id={key}
-                              checked={selectedVariables.includes(key)}
-                              onChange={() => onCheckboxChange(key)}
-                              className="mt-1 rounded border-gray-300 text-[#00B9F1] focus:ring-[#00B9F1]"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <label htmlFor={key} className="font-medium text-[#24408E] text-sm cursor-pointer truncate block" title={key}>
-                                {key}
-                              </label>
-                              <div className="mt-1">
-                                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                                  {value?.type}
-                                </span>
-                              </div>
-                              <p className="text-gray-600 text-xs mt-2 line-clamp-2" title={String(value?.description)}>
-                                {String(value?.description)}
-                              </p>
+                          <input
+                            type="checkbox"
+                            checked={selectedVariables.includes(key)}
+                            onChange={() => onCheckboxChange(key)}
+                            className="mt-1 rounded border-gray-300 text-[#00B9F1] focus:ring-[#00B9F1]"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <span className="font-medium text-[#24408E] text-sm truncate block" title={key}>
+                              {key}
+                            </span>
+                            <div className="mt-1">
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                {value?.type}
+                              </span>
                             </div>
+                            <p className="text-gray-600 text-xs mt-2 line-clamp-2" title={String(value?.description)}>
+                              {String(value?.description)}
+                            </p>
                           </div>
-                        </div>
+                        </label>
                       ))}
                     </div>
                   )}

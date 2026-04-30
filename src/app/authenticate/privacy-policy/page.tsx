@@ -1,28 +1,18 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import AuthShell from "@/components/auth/AuthShell";
 
 function PrivacyPolicy() {
-  const router = useRouter();
-
   return (
-    <div
-      style={{ backgroundImage: "url(/backgroundImageNet.webp)" }}
-      className="flex justify-center items-center min-h-screen bg-gray-100 bg-no-repeat bg-cover relative bg-fixed bg-center"
+    <AuthShell
+      title="Privacy Policy"
+      subtitle="How AMRDB collects, uses, and protects personal information across the platform."
+      backHref="/authenticate"
+      backLabel="Back to sign in"
     >
-      <div className="bg-[#161047] absolute h-[100%] w-[30%] top-0 left-0"></div>
-
-      <div className="w-[95%] sm:w-[70%] max-w-4xl h-auto mt-[3rem] bg-white rounded-[10px] shadow-box z-10 p-6 sm:p-12 relative">
-        <button
-          onClick={() => router.back()}
-          className="absolute top-4 left-4 px-4 py-2 text-white bg-[#00b9f1] rounded hover:bg-[#007acc]"
-        >
-          Back
-        </button>
-
-        <h1 className="text-2xl font-bold mt-[3rem] mb-4">Privacy Policy</h1>
+      <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="max-w-none text-slate-700">
 
         <p className="mb-4">
           This page is used to inform users of the platform of our policies
@@ -127,8 +117,9 @@ function PrivacyPolicy() {
             amrdb@idi.co.ug
           </a>
         </p>
+        </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }
 

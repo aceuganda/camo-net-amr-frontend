@@ -11,6 +11,7 @@ import Link from "next/link";
 import Cookies from "js-cookie";
 import { AxiosError } from "axios";
 import { checkPasswordStrength } from "@/lib/utils";
+import AuthShell from "@/components/auth/AuthShell";
 
 const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), {
   ssr: false,
@@ -31,7 +32,6 @@ function LoginForm({ searchParams }: { searchParams: any }) {
   };
   const router = useRouter();
   const {
-    data,
     isSuccess: loginSuccess,
     error,
     isPending,
@@ -71,58 +71,58 @@ function LoginForm({ searchParams }: { searchParams: any }) {
   };
 
   return (
-    <form onSubmit={handleLoginSubmit} className="space-y-4">
+    <form onSubmit={handleLoginSubmit} className="space-y-5">
       <div>
-        <label className="block text-gray-700">Email Address</label>
+        <label className="block text-sm font-medium text-slate-700">Email Address</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+          className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
           placeholder="Email Address"
         />
       </div>
-      <label className="block text-gray-700">Password</label>
-      <div className="relative">
-        <input
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-          }}
-          className={`w-full mt-1 p-2 bg-[#e6e6e6] rounded pr-10  text-[18px]`}
-          placeholder="****"
-        />
-        <div
-          onClick={handleTogglePasswordVisibility}
-          className="absolute top-[10px] right-0 flex items-center pr-3 h-[2rem]"
-        >
-          {showPassword ? (
-            <EyeOpenIcon className="w-6 h-6 text-gray-500 top-[10px] " />
-          ) : (
-            <EyeClosedIcon className="w-6 h-6 text-gray-500" />
-          )}
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Password</label>
+        <div className="relative mt-2">
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
+            placeholder="Enter your password"
+          />
+          <button
+            type="button"
+            onClick={handleTogglePasswordVisibility}
+            className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100"
+          >
+            {showPassword ? (
+              <EyeOpenIcon className="h-5 w-5" />
+            ) : (
+              <EyeClosedIcon className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
-      <div className="w-full flex justify-between items-end">
+
+      <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
         <button
           disabled={isPending}
-          className="p-2 sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] bg-[#00b9f1] mt-3 text-white rounded hover:bg-[#7ad4ef]"
+          className="flex min-h-[3rem] w-full items-center justify-center rounded-xl bg-[#00b9f1] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0aa6d8] disabled:opacity-70 sm:min-w-[13rem] sm:w-auto"
         >
           {isPending ? <DotsLoader /> : "LOGIN"}
         </button>
-        <Link
-          href="authenticate/forgot-password"
-          className="text-blue-500 hover:underline max-sm:text-[10px]"
-        >
-          Forgot password
-        </Link>
-        <Link
-          href="authenticate/privacy-policy"
-          className="text-blue-500 hover:underline max-sm:text-[10px] "
-        >
-          Privacy Policy
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
+          <Link href="/authenticate/forgot-password" className="transition hover:text-sky-600 hover:underline">
+            Forgot password
+          </Link>
+          <Link href="/authenticate/privacy-policy" className="transition hover:text-sky-600 hover:underline">
+            Privacy Policy
+          </Link>
+        </div>
       </div>
     </form>
   );
@@ -139,7 +139,7 @@ function RegistrationForm() {
   const [isInformationAccurate, setIsInformationAccurate] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState("");
 
-  const { data, isSuccess, error, isPending, mutate } = useMutation({
+  const { isSuccess, error, isPending, mutate } = useMutation({
     mutationFn: Register,
   });
 
@@ -192,12 +192,12 @@ function RegistrationForm() {
   return (
     <form
       onSubmit={handleRegistrationSubmit}
-      className="h-[27rem] overflow-auto space-y-4 p-4"
+      className="max-h-[34rem] space-y-4 overflow-auto pr-1"
     >
       {/* Email and Full Name row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-gray-700">
+          <label className="block text-sm font-medium text-slate-700">
             Email Address{" "}
             <span className="text-red-600 text-[11px]">(Required)</span>
           </label>
@@ -205,13 +205,13 @@ function RegistrationForm() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
             placeholder="Email Address"
             required
           />
         </div>
         <div>
-          <label className="block text-gray-700">
+          <label className="block text-sm font-medium text-slate-700">
             Full Name{" "}
             <span className="text-red-600 text-[11px]">(Required)</span>
           </label>
@@ -219,7 +219,7 @@ function RegistrationForm() {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
             placeholder="Full Name"
             required
           />
@@ -229,7 +229,7 @@ function RegistrationForm() {
       {/* Institution and Age Range row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-gray-700">
+          <label className="block text-sm font-medium text-slate-700">
             Institution{" "}
             <span className="text-red-600 text-[11px]">(Required)</span>
           </label>
@@ -237,20 +237,20 @@ function RegistrationForm() {
             type="text"
             value={institution}
             onChange={(e) => setInstitution(e.target.value)}
-            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
             placeholder="Institution"
             required
           />
         </div>
         <div>
-          <label title={"For analysis purposes"}  className="block text-gray-700">
+          <label title={"For analysis purposes"}  className="block text-sm font-medium text-slate-700">
               Age Range{" "}
               <span className="text-red-600 text-[11px]">(Required)</span>
           </label>
           <select
             value={ageRange}
             onChange={(e) => setAgeRange(e.target.value)}
-            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
             required
           >
             <option className="text-gray-700" value="" disabled>
@@ -267,7 +267,7 @@ function RegistrationForm() {
       {/* Password fields row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-gray-700">
+          <label className="block text-sm font-medium text-slate-700">
             Password{" "}
             <span className="text-red-600 text-[11px]">(Required)</span>
           </label>
@@ -278,7 +278,7 @@ function RegistrationForm() {
               setPassword(e.target.value);
               setPasswordStrength(checkPasswordStrength(e.target.value));
             }}
-            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
             placeholder="Password"
             required
           />
@@ -293,7 +293,7 @@ function RegistrationForm() {
           </p>
         </div>
         <div>
-          <label className="block text-gray-700">
+          <label className="block text-sm font-medium text-slate-700">
             Confirm Password{" "}
             <span className="text-red-600 text-[11px]">(Required)</span>
           </label>
@@ -301,7 +301,7 @@ function RegistrationForm() {
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full mt-1 p-2 bg-[#e6e6e6] rounded"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-[#00b9f1] focus:ring-2 focus:ring-[#00b9f1]/20"
             placeholder="Confirm Password"
             required
           />
@@ -310,33 +310,33 @@ function RegistrationForm() {
 
       {/* Checkboxes */}
       <div className="mt-4">
-        <div className="flex items-center mb-2">
+        <div className="mb-2 flex items-start gap-2">
           <input
             type="checkbox"
             id="privacyPolicy"
-            className="mr-2"
+            className="mt-1"
             checked={isPrivacyAccepted}
             onChange={(e) => setIsPrivacyAccepted(e.target.checked)}
           />
-          <label htmlFor="privacyPolicy" className="text-sm">
+          <label htmlFor="privacyPolicy" className="text-sm leading-6 text-slate-600">
             I accept the Privacy Policy.{" "}
             <Link
-              href="authenticate/privacy-policy"
+              href="/authenticate/privacy-policy"
               className="text-blue-500 hover:underline"
             >
               Privacy Policy
             </Link>
           </label>
         </div>
-        <div className="flex items-center mb-2">
+        <div className="mb-2 flex items-start gap-2">
           <input
             type="checkbox"
             id="informationAccuracy"
-            className="mr-2"
+            className="mt-1"
             checked={isInformationAccurate}
             onChange={(e) => setIsInformationAccurate(e.target.checked)}
           />
-          <label htmlFor="informationAccuracy" className="text-sm">
+          <label htmlFor="informationAccuracy" className="text-sm leading-6 text-slate-600">
             I confirm that the information provided is accurate to the best of
             my knowledge.
           </label>
@@ -347,16 +347,10 @@ function RegistrationForm() {
       <div className="flex flex-wrap justify-between items-center gap-4 mt-4">
         <button
           disabled={isPending}
-          className="p-2 bg-[#00b9f1] sm:min-w-[13rem] flex items-center justify-center min-h-[2.4rem] text-white rounded hover:bg-[#7ad4ef]"
+          className="flex min-h-[3rem] w-full items-center justify-center rounded-xl bg-[#00b9f1] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0aa6d8] disabled:opacity-70 sm:min-w-[13rem] sm:w-auto"
         >
           {isPending && !isSuccess && !error ? <DotsLoader /> : "REGISTER"}
         </button>
-        {/* <Link
-      href="authenticate/privacy-policy"
-      className="text-blue-500 hover:underline"
-    >
-      Privacy Policy
-    </Link> */}
       </div>
     </form>
   );
@@ -365,7 +359,6 @@ function RegistrationForm() {
 function AuthComponent() {
   const [activeTab, setActiveTab] = useState("login");
   const [showCookieConsent, setShowCookieConsent] = useState(false);
-  const myRouter = useRouter();
   const handleAcceptCookies = () => {
     Cookies.set("cookieConsent", "true");
     setShowCookieConsent(false);
@@ -378,75 +371,71 @@ function AuthComponent() {
   }, []);
 
   return (
-    <div
-      style={{ backgroundImage: "url(/backgroundImageNet.webp)" }}
-      className="flex justify-center items-center min-h-screen bg-gray-100 bg-no-repeat bg-cover relative bg-fixed bg-center"
+    <AuthShell
+      title="Access AMRDB"
+      backHref="/"
+      backLabel="Back to home"
+      contentClassName="relative"
     >
-      <div className="bg-[#161047] absolute h-[100%] w-[30%] top-0 left-0"></div>
-
-      <button
-        onClick={() => myRouter.push("/")}
-        className="absolute top-4 left-4 px-4 py-2 text-white bg-[#00b9f1] rounded hover:bg-[#007acc]"
-      >
-        Home
-      </button>
-      <div className="w-[70%] h-[full] bg-white rounded-[10px] shadow-box z-10">
-        {/* <div className="flex justify-between items-center p-4 rounded-t-lg border-b-gray-300 border-b-[2px]">
-          <LogoHeader />
-        </div> */}
-        <div className="py-6 bg-[#f2f2f2] min-h-[33rem] px-4 sm:px-[6rem] rounded-[10px] transition-all relative">
-          <div className="flex border-b mb-6">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-6 rounded-2xl border border-sky-100 bg-white p-2 shadow-sm">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setActiveTab("login")}
-              className={`w-1/2 text-center py-2 ${
+              className={`rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
                 activeTab === "login"
-                  ? "text-[#00b9f1] border-b-2 border-[#00b9f1]"
-                  : "text-gray-500 border-b-2 border-gray-500"
+                  ? "bg-[#00b9f1] text-white shadow-sm"
+                  : "text-slate-500 hover:bg-slate-50"
               }`}
             >
               LOGIN
             </button>
             <button
               onClick={() => setActiveTab("registration")}
-              className={`w-1/2 text-center py-2 ${
+              className={`rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
                 activeTab === "registration"
-                  ? "text-[#00b9f1] border-b-2 border-[#00b9f1]"
-                  : "text-gray-500 border-b-2 border-gray-500"
+                  ? "bg-[#00b9f1] text-white shadow-sm"
+                  : "text-slate-500 hover:bg-slate-50"
               }`}
             >
               REGISTRATION
             </button>
           </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           {activeTab === "registration" ? <RegistrationForm /> : (
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div className="py-10 text-center text-sm text-slate-500">Loading...</div>}>
               <LoginFormWithParams />
             </Suspense>
           )}
         </div>
       </div>
       {showCookieConsent && (
-        <div className="fixed bottom-0 left-0 w-full bg-white p-4 shadow-md flex gap-2  items-end  ">
-          <p className="text-gray-700">
+        <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:flex-row sm:items-end sm:justify-between">
+          <p className="text-sm leading-6 text-slate-600">
             This site uses cookies to enhance your experience. By continuing,
             you agree to our use of cookies.
           </p>
-          <button
-            onClick={handleAcceptCookies}
-            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-          >
-            Accept
-          </button>
-          <button
-            onClick={() => {
-              setShowCookieConsent(false);
-            }}
-            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-          >
-            Reject
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleAcceptCookies}
+              className="rounded-xl bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => {
+                setShowCookieConsent(false);
+              }}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Reject
+            </button>
+          </div>
         </div>
       )}
-    </div>
+    </AuthShell>
   );
 }
 

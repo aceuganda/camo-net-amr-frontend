@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useUserInfor } from "@/lib/hooks/useAuth";
 import AllModelsComponent from "@/components/models/allModels";
 import NavigationBar from "@/components/navigationBar";
-import LogoHeader from "@/components/logosHeader";
+import SiteFooter from "@/components/siteFooter";
 
 export default function ModelsPage() {
   const { error } = useUserInfor();
@@ -19,9 +19,9 @@ export default function ModelsPage() {
 
   return (
     <div className="flex flex-col w-[100%] h-[100%]">
-      <LogoHeader />
       <NavigationBar />
       <AllModelsComponent />
+      <SiteFooter />
     </div>
   );
 }

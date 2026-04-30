@@ -1,6 +1,7 @@
 import UserEditPage from "@/components/profile";
 import LogoHeader from "@/components/logosHeader";
 import NavigationBar from "@/components/navigationBar";
+import SiteFooter from "@/components/siteFooter";
 
 export default function Profile() {
   return (
@@ -8,6 +9,7 @@ export default function Profile() {
       <LogoHeader />
       <NavigationBar />
       <UserEditPage />
+      <SiteFooter />
     </div>
   );
 }

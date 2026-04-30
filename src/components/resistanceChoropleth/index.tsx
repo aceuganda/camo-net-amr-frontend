@@ -137,9 +137,9 @@ const ResistanceChoropleth: React.FC = () => {
 
   return (
     <div className="relative flex flex-col">
-      <div className="mb-4 flex flex-row gap-5">
-        <div className="flex flex-col text-black  mb-2">
-          <label className="ml-4 mr-2">Year</label>
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mb-1 flex flex-col text-black">
+          <label className="mb-1 text-sm font-medium">Year</label>
           <select
             value={year || ""}
             onChange={(e) =>
@@ -147,7 +147,7 @@ const ResistanceChoropleth: React.FC = () => {
                 e.target.value === "overall" ? null : parseInt(e.target.value)
               )
             }
-            className="border border-gray-300 rounded p-1 max-w-[15rem]"
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
           >
             <option value="overall">Overall</option>
             {/* <option value="2020">2020</option>
@@ -159,11 +159,11 @@ const ResistanceChoropleth: React.FC = () => {
           </select>
         </div>
         <div className="flex flex-col">
-          <label className="ml-4 mr-2">Organism</label>
+          <label className="mb-1 text-sm font-medium">Organism</label>
           <select
             value={selectedOrganism}
             onChange={handleOrganismChange}
-            className="border border-gray-300 rounded p-1 max-w-[15rem]"
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
           >
             {organisms.map((organism) => (
               <option key={organism.value} value={organism.value}>
@@ -173,11 +173,11 @@ const ResistanceChoropleth: React.FC = () => {
           </select>
         </div>
         <div className="flex flex-col">
-          <label className="ml-4 mr-2">Antibiotic</label>
+          <label className="mb-1 text-sm font-medium">Antibiotic</label>
           <select
             value={selectedAntibiotic}
             onChange={handleAntibioticChange}
-            className="border border-gray-300 rounded p-1 max-w-[15rem]"
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
           >
             {antibiotics.map((anti) => (
               <option key={anti.value} value={anti.value}>
@@ -203,9 +203,10 @@ const ResistanceChoropleth: React.FC = () => {
       )}
 
       {isSuccess && (
-        <div className="flex flex-col md:flex-row justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div
             ref={containerRef}
+            className="overflow-hidden rounded-lg"
             style={{
               height: screenSize < 640 ? "300px" : "500px",
               width: "100%",
