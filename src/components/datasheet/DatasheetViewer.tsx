@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Download, FileText } from "lucide-react";
+import { DatasheetContent } from "@/types/datasheet";
 
 interface DatasheetSection {
   title: string;
@@ -9,11 +10,6 @@ interface DatasheetSection {
     question: string;
     answer: string;
   }>;
-}
-
-interface DatasheetContent {
-  questions: Record<string, string[]>;
-  answers: Record<string, string>;
 }
 
 interface DatasheetData {

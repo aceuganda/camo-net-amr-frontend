@@ -4,11 +4,7 @@ import { useState } from "react";
 import FilesIcon from "../../../public/svgs/file.svg";
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
-
-interface DatasheetContent {
-  questions: Record<string, string[]>;
-  answers: Record<string, string>;
-}
+import { DatasheetContent } from "@/types/datasheet";
 
 interface DatasheetData {
   id: string;

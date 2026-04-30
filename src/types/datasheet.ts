@@ -1,6 +1,19 @@
+export interface DatasheetQuestion {
+  question?: string;
+  prompt?: string;
+  answer?: string;
+}
+
+export interface DatasheetSection {
+  title: string;
+  questions?: DatasheetQuestion[];
+}
+
 export interface DatasheetContent {
-  questions: Record<string, string[]>;
-  answers: Record<string, string>;
+  questions?: Record<string, string[]>;
+  answers?: Record<string, string>;
+  sections?: DatasheetSection[];
+  template_version?: string;
 }
 
 export interface DatasheetData {

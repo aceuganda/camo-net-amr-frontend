@@ -5,13 +5,9 @@ import { Upload, FileText, Save, X, AlertCircle, CheckCircle, Download } from "l
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { useDatasheetTemplate } from "@/lib/hooks/useDatasheets";
+import { DatasheetContent } from "@/types/datasheet";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
-
-interface DatasheetContent {
-  questions: Record<string, string[]>;
-  answers: Record<string, string>;
-}
 
 interface DatasheetData {
   id?: string;
@@ -358,9 +354,10 @@ export default function DatasheetAdmin({
     }
     // Handle old format
     else if (datasheetData.content.questions && datasheetData.content.answers) {
+      const answers = datasheetData.content.answers;
       return sectionData.questions.every((_, index) => {
         const answerKey = `${sectionData.sectionTitle}_${index}`;
-        return datasheetData.content.answers[answerKey]?.trim();
+        return answers[answerKey]?.trim();
       });
     }
 
