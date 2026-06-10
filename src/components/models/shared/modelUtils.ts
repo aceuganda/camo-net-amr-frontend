@@ -10,15 +10,18 @@ export const transformPredictionResult = (inferenceData: any): ModelPredictionRe
     rawResult.modal_name?.toLowerCase().includes("mortality") ||
     rawResult.modal_name?.toLowerCase().includes("risk")
   ) {
-    // Mortality model: 0 = survived, 1 = died
+    // Mortality model: 0 = survived, 1 = died.
+    // prediction_probabilities is [P(survive), P(die)] — the risk figure
+    // to surface is the probability of death.
     transformedResult = {
       prediction:
         rawResult.prediction === 0
           ? "Predicted to survive"
-          : "Predicted to not to survive",
+          : "Predicted not to survive",
       probability: rawResult.prediction_probabilities
-        ? Math.max(...rawResult.prediction_probabilities)
+        ? rawResult.prediction_probabilities[1]
         : undefined,
+      probabilityLabel: "Mortality risk",
       description: rawResult.output_description,
     };
   } else {
@@ -33,4 +36,16 @@ export const transformPredictionResult = (inferenceData: any): ModelPredictionRe
   }
 
   return transformedResult;
+};
+
+export const getInferenceErrorMessage = (error: any): string => {
+  const status = error?.response?.status;
+  if (status === 502 || status === 503) {
+    return "The prediction service is currently unavailable. Please try again shortly.";
+  }
+  const detail = error?.response?.data?.detail;
+  if (typeof detail === "string") {
+    return detail;
+  }
+  return "Failed to run prediction. Please try again.";
 };

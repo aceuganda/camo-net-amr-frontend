@@ -8,6 +8,14 @@ export interface PredictionResultProps {
 }
 
 export default function PredictionResult({ result }: PredictionResultProps) {
+  const predictionColor =
+    typeof result.prediction === "string" &&
+    result.prediction.toLowerCase().includes("survive")
+      ? result.prediction.toLowerCase().includes("not")
+        ? "text-red-600"
+        : "text-green-600"
+      : "text-[#24408E]";
+
   return (
     <div className="mt-8 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-6">
       <h3 className="text-lg font-semibold text-emerald-800 mb-4 flex items-center gap-2">
@@ -17,25 +25,15 @@ export default function PredictionResult({ result }: PredictionResultProps) {
 
       <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4">
         <div className="text-center">
-          <div
-            className={`text-3xl font-bold mb-2 ${
-              typeof result.prediction === "string" &&
-              result.prediction === "survived"
-                ? "text-green-600"
-                : typeof result.prediction === "string" &&
-                    result.prediction === "died"
-                  ? "text-red-600"
-                  : "text-[#24408E]"
-            }`}
-          >
+          <div className={`text-3xl font-bold mb-2 ${predictionColor}`}>
             {typeof result.prediction === "string"
               ? result.prediction.toUpperCase()
               : `${result.prediction} ${result.unit || ""}`}
           </div>
 
-          {result.probability && (
+          {result.probability !== undefined && (
             <p className="text-gray-600">
-              Confidence:{" "}
+              {result.probabilityLabel || "Confidence"}:{" "}
               <span className="font-semibold">
                 {(result.probability * 100).toFixed(1)}%
               </span>

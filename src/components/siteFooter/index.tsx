@@ -12,8 +12,8 @@ export default function SiteFooter() {
               <Image
                 src="/logos/amrdbwhite.png"
                 alt="AMRDB"
-                width={140}
-                height={52}
+                width={120}
+                height={50}
                 className="h-11 w-auto object-contain"
               />
               <p className="mt-5 text-sm leading-7 text-blue-100/90">

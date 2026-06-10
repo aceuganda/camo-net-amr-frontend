@@ -99,8 +99,8 @@ const NavigationBar = () => {
               <Image
                 src="/logos/amrdbwhite.png"
                 alt="AMRDB"
-                width={124}
-                height={44}
+                width={120}
+                height={50}
                 className="h-8 w-auto object-contain sm:h-9 lg:h-11"
                 priority
               />

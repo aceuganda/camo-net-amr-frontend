@@ -168,7 +168,15 @@ export interface ModelPredictionResult {
   prediction: string | number;
   description?: string;
   probability?: number;
+  probabilityLabel?: string;
   unit?: string;
+}
+
+export interface ModelPayload {
+  name: string;
+  modal_url: string;
+  dataset_id: string;
+  description: string;
 }
 
 export interface ModelsPageProps {

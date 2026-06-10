@@ -40,6 +40,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <li className={`mb-2 ${pathname === '/datasets/admin' ? 'text-[#24408E]' : ''}`}>
               <Link href="/datasets/admin">Requests</Link>
             </li>
+            {(roles?.includes("admin") || roles?.includes("super_admin")) && (
+              <li className={`mb-2 ${pathname === '/datasets/admin/models' ? 'text-[#24408E]' : ''}`}>
+                <Link href="/datasets/admin/models">Models</Link>
+              </li>
+            )}
             {roles?.includes("super_admin") && (
               <>
               <li className={`mb-2 ${pathname === '/datasets/admin/users' ? 'text-[#24408E]' : ''}`}>

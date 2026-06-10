@@ -1,14 +1,12 @@
-import HomeCatalogue from "@/components/landingCatalogue";
-import { link } from "fs";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function LogoHeader() {
   const images = [
-    { src: "/logos/cnetug.webp", alt: "", link: "https://camonet.org" },
-    { src: "/logos/idmak.webp", alt: " ", link: "https://idi.mak.ac.ug"  },
-    { src: "/logos/ace.webp", alt: "ACE", link: "https://ace.ac.ug"  },
-    { src: "/logos/welc.webp", alt: "", link: "https://wellcome.org"  },
+    { src: "/logos/cnetug.webp", alt: "CAMO-Net UG", link: "https://camonet.org" },
+    { src: "/logos/idmak.webp", alt: "IDI Makerere", link: "https://idi.mak.ac.ug" },
+    { src: "/logos/ace.webp", alt: "ACE", link: "https://ace.ac.ug" },
+    { src: "/logos/welc.webp", alt: "Wellcome Trust", link: "https://wellcome.org" },
   ];
   return (
       <div className="bg-white w-full h-auto pb-[1rem] flex items-center justify-around">
@@ -17,7 +15,7 @@ export default function LogoHeader() {
             <Image
               src={image.src}
               alt={image.alt}
-              className="object-scale-down w-[100%] max-h-[4.5rem] h-auto"
+              className="object-scale-down w-auto h-auto max-h-[4.5rem]"
               width={100}
               height={70}
             />
