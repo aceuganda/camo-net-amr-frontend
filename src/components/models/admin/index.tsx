@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
-import { Plus, AlertTriangle, Loader2 } from "lucide-react";
+import { Plus, AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import {
   useGetAllModels,
   useGetModelVariables,
   createModel,
   updateModel,
+  refreshModelVariables,
 } from "@/lib/hooks/useMLModels";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
 import { Model, ModelInput, ModelPayload, DatasetType } from "@/types/constants";
@@ -182,7 +183,10 @@ export default function AdminModelsPage() {
           )}
 
           {activeTab === "variables" && (
-            <VariablesPreview modelPath={selectedModel.modal_url} />
+            <VariablesPreview
+              modelId={selectedModel.id}
+              modelPath={selectedModel.modal_url}
+            />
           )}
         </div>
       )}
@@ -329,11 +333,44 @@ function ModelEditor({
   );
 }
 
-function VariablesPreview({ modelPath }: { modelPath: string }) {
+function VariablesPreview({
+  modelId,
+  modelPath,
+}: {
+  modelId: string;
+  modelPath: string;
+}) {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useGetModelVariables(modelPath, {
     enabled: !!modelPath,
   });
   const variables = data?.data;
+
+  const { mutate: refreshFn, isPending: refreshing } = useMutation({
+    mutationFn: () => refreshModelVariables(modelId),
+    onSuccess: () => {
+      toast.success("Model variables refreshed");
+      queryClient.invalidateQueries({
+        queryKey: ["dataset_model_variables", modelPath],
+      });
+      queryClient.invalidateQueries({ queryKey: ["all_ml_models"] });
+    },
+    onError: (e: any) =>
+      toast.error(
+        e?.response?.data?.detail || "Failed to refresh model variables"
+      ),
+  });
+
+  const refreshButton = (
+    <button
+      onClick={() => refreshFn()}
+      disabled={refreshing}
+      className="flex items-center gap-2 bg-[#24408E] text-white px-4 py-2 rounded hover:bg-[#1b3270] transition-colors disabled:opacity-50"
+    >
+      <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+      {refreshing ? "Refreshing..." : "Refresh Variables"}
+    </button>
+  );
 
   if (isLoading) {
     return (
@@ -347,22 +384,27 @@ function VariablesPreview({ modelPath }: { modelPath: string }) {
   if (error || !variables) {
     return (
       <div className="bg-white shadow-md rounded p-6">
-        <div className="flex items-center gap-2 text-red-600">
+        <div className="flex items-center gap-2 text-red-600 mb-4">
           <AlertTriangle className="w-5 h-5" />
           Failed to load variables for this model. Check that the model file
-          name is correct and the ML service is reachable.
+          name is correct and the ML service is reachable, or try refreshing
+          the variables.
         </div>
+        {refreshButton}
       </div>
     );
   }
 
   return (
     <div className="bg-white shadow-md rounded p-6">
-      <div className="mb-6">
-        <p className="text-sm font-medium text-gray-500 mb-1">PREDICTS</p>
-        <p className="text-gray-900">
-          {variables.output?.description || variables.output?.name || "N/A"}
-        </p>
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <p className="text-sm font-medium text-gray-500 mb-1">PREDICTS</p>
+          <p className="text-gray-900">
+            {variables.output?.description || variables.output?.name || "N/A"}
+          </p>
+        </div>
+        {refreshButton}
       </div>
 
       <p className="text-sm font-medium text-gray-500 mb-3">INPUT VARIABLES</p>

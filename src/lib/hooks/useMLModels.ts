@@ -55,3 +55,10 @@ export const updateModel = async ({ id, ...payload }: Partial<ModelPayload> & { 
   const response = await api.patch(`/ml_models/${id}`, payload);
   return response.data;
 };
+
+// Admin only — passing config: null makes the backend re-derive the
+// model config (variables) from its MODEL_CONFIGS.
+export const refreshModelVariables = async (id: string) => {
+  const response = await api.patch(`/ml_models/${id}`, { config: null });
+  return response.data;
+};
