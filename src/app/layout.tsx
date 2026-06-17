@@ -21,17 +21,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
   return (
-    <html lang="en">
-      <Providers>
-        <SearchProvider>
-          <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <Providers>
+          <SearchProvider>
             {children}
             <Toaster />
-          </body>
-        </SearchProvider>
-      </Providers>
+          </SearchProvider>
+        </Providers>
+      </body>
     </html>
   );
 }

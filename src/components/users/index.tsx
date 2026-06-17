@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAdminUsersWith } from "@/lib/hooks/useRoles";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assignRole, removeRole, revokeAccess } from "@/lib/hooks/useRoles";
 import { toast } from "sonner";
 import { useSearch } from "@/context/searchContext";
@@ -44,12 +44,24 @@ interface User {
   is_active: boolean;
   name: string;
   disabled: boolean | null;
-  hashed_password: string;
   is_superuser: boolean;
   roles: Role[];
 }
 
+const syncUserInCollection = (
+  users: User[] | undefined,
+  userId: string,
+  updater: (user: User) => User
+) => {
+  if (!users) {
+    return users;
+  }
+
+  return users.map((user) => (user.id === userId ? updater(user) : user));
+};
+
 const AdminUsers = () => {
+  const queryClient = useQueryClient();
   const { searchTerm } = useSearch();
   const { data, isLoading, error } = useAdminUsersWith();
   const users: User[] = data?.data || [];
@@ -63,9 +75,26 @@ const AdminUsers = () => {
     isPending: isAssigningAdmin,
   } = useMutation({ 
     mutationFn: assignRole,
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
       toast.success("Role updated successfully");
-      window.location.reload();
+      setSelectedUser((current) =>
+        current?.id === variables.user_id
+          ? {
+              ...current,
+              roles: [
+                ...current.roles,
+                {
+                  id: `optimistic-admin-${variables.user_id}`,
+                  role: "admin",
+                  user_id: variables.user_id,
+                  created_at: new Date().toISOString(),
+                },
+              ],
+            }
+          : current
+      );
+      setSheetOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["admin_users"] });
     },
     onError: () => {
       toast.error("Failed to update role");
@@ -77,9 +106,18 @@ const AdminUsers = () => {
     isPending: isRemovingAdmin,
   } = useMutation({ 
     mutationFn: removeRole,
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
       toast.success("Role updated successfully");
-      window.location.reload();
+      setSelectedUser((current) =>
+        current?.id === variables.user_id
+          ? {
+              ...current,
+              roles: current.roles.filter((role) => role.role !== variables.role),
+            }
+          : current
+      );
+      setSheetOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ["admin_users"] });
     },
     onError: () => {
       toast.error("Failed to update role");
@@ -91,12 +129,64 @@ const AdminUsers = () => {
     isPending: isRevokingAccess,
   } = useMutation({ 
     mutationFn: revokeAccess,
-    onSuccess: () => {
-      toast.success("Access revoked successfully");
-      window.location.reload();
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["admin_users"] });
+
+      const previousUsers = queryClient.getQueryData<{ data: User[] }>(["admin_users"]);
+      queryClient.setQueryData<{ data: User[] }>(["admin_users"], (current) => {
+        if (!current?.data) {
+          return current;
+        }
+
+        return {
+          ...current,
+          data: syncUserInCollection(current.data, variables.user_id, (user) => ({
+            ...user,
+            disabled: variables.disabled,
+            is_active: !variables.disabled,
+          })),
+        };
+      });
+
+      setSelectedUser((current) =>
+        current?.id === variables.user_id
+          ? {
+              ...current,
+              disabled: variables.disabled,
+              is_active: !variables.disabled,
+            }
+          : current
+      );
+
+      return { previousUsers };
     },
-    onError: () => {
-      toast.error("Failed to revoke access");
+    onSuccess: async (_, variables) => {
+      toast.success(
+        variables.disabled
+          ? "User disabled successfully"
+          : "User enabled successfully"
+      );
+      setSheetOpen(false);
+      await queryClient.refetchQueries({ queryKey: ["admin_users"], exact: true });
+    },
+    onError: (_, variables, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(["admin_users"], context.previousUsers);
+      }
+      setSelectedUser((current) =>
+        current?.id === variables.user_id
+          ? {
+              ...current,
+              disabled: !variables.disabled,
+              is_active: variables.disabled,
+            }
+          : current
+      );
+      toast.error(
+        variables.disabled
+          ? "Failed to disable user"
+          : "Failed to enable user"
+      );
     }
   });
 
@@ -115,44 +205,63 @@ const AdminUsers = () => {
     setSheetOpen(true);
   };
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US");
+  useEffect(() => {
+    if (currentPage > 1 && paginatedData.length === 0 && filteredUsers.length > 0) {
+      setCurrentPage(Math.min(currentPage, totalPages));
+    }
+  }, [currentPage, filteredUsers.length, paginatedData.length, totalPages]);
 
   return (
-    <div className="p-6 min-h-screen flex flex-col bg-white">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-[#00B9F1]">User Management</h1>
+    <div className="flex min-h-[calc(100vh-3rem)] flex-col gap-4 sm:gap-6">
+      <div className="rounded-[24px] border border-white/70 bg-white/90 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:rounded-[28px] sm:p-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-cyan-600 sm:text-xs">
+              Identity Control
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold text-slate-900 sm:text-3xl">
+              User Management
+            </h1>
+            <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-600 sm:text-sm">
+              Assign admin privileges, review account state, and disable access without forcing a full page refresh.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 sm:px-4 sm:py-3 sm:text-sm">
+            <span className="font-semibold text-slate-900">{filteredUsers.length}</span>{" "}
+            matching users
+          </div>
+        </div>
       </div>
 
       {isLoading && (
-        <div className="flex justify-center items-center h-64">
+        <div className="flex h-52 items-center justify-center rounded-[24px] border border-white/70 bg-white/80 sm:h-64 sm:rounded-[28px]">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#00B9F1]"></div>
         </div>
       )}
 
       {error && (
-        <div className="text-red-600 text-center bg-red-50 p-4 rounded-lg">
+        <div className="rounded-[24px] border border-red-200 bg-red-50 p-4 text-center text-sm text-red-600 sm:rounded-[28px]">
           Failed to load users. Make sure you&rsquo;re a super admin.
         </div>
       )}
 
       {filteredUsers.length === 0 && searchTerm && (
-        <div className="text-center text-gray-500 bg-gray-50 p-4 rounded-lg">
+        <div className="rounded-[24px] border border-slate-200 bg-white/90 p-4 text-center text-sm text-gray-500 sm:rounded-[28px]">
           No users found for search term: <strong>{searchTerm}</strong>
         </div>
       )}
 
       <div className="flex-1 overflow-auto">
         {filteredUsers.length > 0 && !isLoading && !error && (
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+          <div className="overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:rounded-[28px]">
             <Table>
-              <TableHeader className="bg-[#00B9F1] text-white">
+              <TableHeader className="bg-slate-950 text-white">
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Roles</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="px-3 py-3 text-xs text-slate-100 sm:text-sm">Name</TableHead>
+                  <TableHead className="hidden px-3 py-3 text-xs text-slate-100 sm:table-cell sm:text-sm">Email</TableHead>
+                  <TableHead className="px-3 py-3 text-xs text-slate-100 sm:text-sm">Roles</TableHead>
+                  <TableHead className="px-3 py-3 text-xs text-slate-100 sm:text-sm">Status</TableHead>
+                  <TableHead className="text-right text-xs text-slate-100 sm:text-sm">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -161,14 +270,14 @@ const AdminUsers = () => {
                   return (
                     <TableRow
                       key={user.id}
-                      className="hover:bg-[#F1F8FC] transition-colors cursor-pointer"
+                      className="cursor-pointer transition-colors hover:bg-cyan-50/70"
                       onClick={() => handleViewDetails(user)}
                     >
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.roles.map(role => role.role).join(", ")}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
+                      <TableCell className="px-3 py-3 text-xs font-medium sm:text-sm">{user.name}</TableCell>
+                      <TableCell className="hidden px-3 py-3 text-xs sm:table-cell sm:text-sm">{user.email}</TableCell>
+                      <TableCell className="px-3 py-3 text-xs sm:text-sm">{user.roles.map(role => role.role).join(", ")}</TableCell>
+                      <TableCell className="px-3 py-3">
+                        <span className={`rounded-full px-2 py-1 text-[10px] sm:text-xs ${
                           user.is_active 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
@@ -176,13 +285,13 @@ const AdminUsers = () => {
                           {user.is_active ? 'Active' : 'Inactive'}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                      <TableCell className="px-2 py-3 text-right sm:px-3">
+                        <div className="flex justify-end gap-1 sm:gap-2">
                           {isAdmin ? (
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-red-600 hover:bg-red-100"
+                              className="h-8 px-2 text-[11px] text-red-600 hover:bg-red-100 sm:h-9 sm:px-3 sm:text-sm"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 removeAdmin({ user_id: user.id, role: "admin" });
@@ -196,7 +305,7 @@ const AdminUsers = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-green-600 hover:bg-green-100"
+                              className="h-8 px-2 text-[11px] text-green-600 hover:bg-green-100 sm:h-9 sm:px-3 sm:text-sm"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 assignAdmin({ user_id: user.id, role: "admin" });
@@ -215,7 +324,7 @@ const AdminUsers = () => {
               </TableBody>
             </Table>
 
-            <Pagination className="p-4 bg-gray-50">
+            <Pagination className="bg-gray-50 p-3 sm:p-4">
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
@@ -258,19 +367,22 @@ const AdminUsers = () => {
       </div>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="w-[500px] overflow-y-auto">
+        <SheetContent
+          side="right"
+          className="w-full max-w-full overflow-y-auto border-l border-slate-200 bg-white px-4 sm:max-w-[500px] sm:px-6"
+        >
           {selectedUser && (
-            <div className="p-6 space-y-6">
+            <div className="space-y-5 py-4 sm:space-y-6 sm:py-6">
               <SheetHeader>
-                <SheetTitle className="text-2xl text-[#00B9F1]">
+                <SheetTitle className="text-xl text-[#00B9F1] sm:text-2xl">
                   User Details
                 </SheetTitle>
-                <SheetDescription>
+                <SheetDescription className="text-xs sm:text-sm">
                   Review and manage user information
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                 <div className="space-y-2">
                   <p className="font-semibold">Name:</p>
                   <p>{selectedUser.name}</p>
@@ -292,7 +404,7 @@ const AdminUsers = () => {
 
               <div className="space-y-2">
                 <p className="font-semibold">Roles:</p>
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="rounded-lg bg-gray-50 p-3 sm:p-4">
                   <p className="text-sm text-gray-600">
                     {selectedUser.roles.length > 0 
                       ? selectedUser.roles.map(role => role.role).join(", ")
@@ -301,7 +413,7 @@ const AdminUsers = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <Button 
                   variant={selectedUser.disabled? "default" : "destructive"}
                   className="w-full"
@@ -311,8 +423,6 @@ const AdminUsers = () => {
                     }else{
                       revokeAccessFn({ user_id: selectedUser.id, disabled: true });
                     }
-                    
-                    setSheetOpen(false);
                   }}
                   disabled={isRevokingAccess}
                 >
@@ -325,7 +435,6 @@ const AdminUsers = () => {
                     className="w-full bg-red-600 hover:bg-red-700"
                     onClick={() => {
                       removeAdmin({ user_id: selectedUser.id, role: "admin" });
-                      setSheetOpen(false);
                     }}
                     disabled={isRemovingAdmin}
                   >
@@ -338,7 +447,6 @@ const AdminUsers = () => {
                     className="w-full bg-[#00B9F1] hover:bg-[#00A0D0]"
                     onClick={() => {
                       assignAdmin({ user_id: selectedUser.id, role: "admin" });
-                      setSheetOpen(false);
                     }}
                     disabled={isAssigningAdmin}
                   >

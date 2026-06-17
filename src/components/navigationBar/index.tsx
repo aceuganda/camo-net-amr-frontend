@@ -33,7 +33,7 @@ const NavigationBar = () => {
   useEffect(() => {
     if (data?.data) {
       const roles = data.data.user.roles;
-      setAdmin(roles.includes('admin'));
+      setAdmin(roles.includes('admin') || roles.includes('super_admin'));
       setIsLoggedIn(data.data.logged_in);
     }
   }, [data, error]);
@@ -154,11 +154,10 @@ const NavigationBar = () => {
                   <Link
                     key={index}
                     href={item.href}
-                    className={`${item.className || ''} flex items-center gap-1 lg:gap-2 px-3 lg:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:scale-105 group ${
+                    className={`${item.className || ''} px-3 lg:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:scale-105 ${
                       isItemActive ? "text-[#00B9F1] bg-white/10" : "text-white hover:text-[#00B9F1]"
                     }`}
                   >
-                    <Icon className="w-4 h-4 group-hover:rotate-6 transition-transform duration-200" />
                     <span>{item.label}</span>
                   </Link>
                 );

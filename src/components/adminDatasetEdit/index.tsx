@@ -260,18 +260,18 @@ function DatasetDetails({
   };
 
   return (
-    <div className="bg-white shadow-md rounded p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">{details.name}</h2>
+    <div className="rounded bg-white p-4 shadow-md sm:p-6">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-bold sm:text-2xl">{details.name}</h2>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="rounded bg-blue-500 px-4 py-2 text-sm text-white sm:text-base"
         >
           {isEditing ? "Cancel" : "Edit"}
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {Object.entries(details)
           .filter(([key]) => !excludedFields.includes(key))
           .map(([key, value]) => (
@@ -332,7 +332,7 @@ function DatasetDetails({
         <div className="mt-4">
           <button
             onClick={handleSave}
-            className="bg-green-500 text-white px-4 py-2 rounded mr-2"
+            className="mr-2 rounded bg-green-500 px-4 py-2 text-sm text-white sm:text-base"
           >
             {updatePending ? <DotsLoader /> : "Save Changes"}
           </button>
