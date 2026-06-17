@@ -52,16 +52,10 @@ const isUserDisabled = (user: Pick<User, "disabled" | "is_active">) =>
   user.disabled === true || user.is_active === false;
 
 const syncUserInCollection = (
-  users: User[] | undefined,
+  users: User[],
   userId: string,
   updater: (user: User) => User
-) => {
-  if (!users) {
-    return users;
-  }
-
-  return users.map((user) => (user.id === userId ? updater(user) : user));
-};
+) => users.map((user) => (user.id === userId ? updater(user) : user));
 
 const AdminUsers = () => {
   const queryClient = useQueryClient();
