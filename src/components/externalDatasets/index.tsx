@@ -1,63 +1,174 @@
 "use client";
 import React, { useState, useEffect, FormEvent } from "react";
-import { ChevronLeftIcon,HeartFilledIcon } from "@radix-ui/react-icons";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Plus,
+} from "lucide-react";
 import { useGetExternalDatasets, submitExternalDataset } from "@/lib/hooks/useExternalDatasets";
 import dynamic from "next/dynamic";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-
 import { toast } from "sonner";
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
-const ContributeDataset: React.FC = () => {
-    const router = useRouter();
- const initialState = {
-    name: "",
-    category: "",
-    type: "",
-    size: "",
-    countries: "",
-    project_status: "",
-    title: "",
-    thematic_area: "",
-    study_design: "",
-    data_format: "",
-    source: "",
-    start_date: "",
-    end_date: "",
-    protocol_id: "",
-    country_protocol_id: "",
-    on_hold_reason: "",
-    data_collection_methods: "",
-    entries_count: "",
-    citation_info: "",
-    project_type: "",
-    main_project_name: "",
-    data_capture_method: "",
-    amr_category: "",
-    acronym: "",
-    description: "",
+const initialState = {
+  name: "",
+  category: "",
+  type: "",
+  size: "",
+  countries: "",
+  project_status: "",
+  title: "",
+  thematic_area: "",
+  study_design: "",
+  data_format: "",
+  source: "",
+  start_date: "",
+  end_date: "",
+  protocol_id: "",
+  country_protocol_id: "",
+  on_hold_reason: "",
+  data_collection_methods: "",
+  entries_count: "",
+  citation_info: "",
+  project_type: "",
+  main_project_name: "",
+  data_capture_method: "",
+  amr_category: "",
+  acronym: "",
+  description: "",
+};
+
+type FieldName = keyof typeof initialState;
+type FieldKind = "text" | "textarea" | "select" | "date";
+
+interface FieldConfig {
+  name: FieldName;
+  label: string;
+  type: FieldKind;
+  placeholder?: string;
+  options?: string[];
+}
+
+const fieldGroups: { title: string; description: string; fields: FieldConfig[] }[] = [
+  {
+    title: "Dataset Identity",
+    description: "Core identifying information for the dataset.",
+    fields: [
+      { name: "name", label: "Name", type: "text" },
+      { name: "title", label: "Title", type: "text" },
+      { name: "acronym", label: "Acronym", type: "text" },
+      { name: "category", label: "Category", type: "text" },
+      { name: "amr_category", label: "AMR Category", type: "text" },
+      { name: "thematic_area", label: "Thematic Area", type: "text" },
+    ],
+  },
+  {
+    title: "Project Details",
+    description: "Where and how the underlying project runs.",
+    fields: [
+      { name: "project_type", label: "Project Type", type: "text" },
+      { name: "main_project_name", label: "Main Project Name", type: "text" },
+      { name: "project_status", label: "Project Status", type: "select", options: ["Active", "Closed", "On Hold"] },
+      { name: "study_design", label: "Study Design", type: "text" },
+      { name: "source", label: "Source", type: "text" },
+      { name: "countries", label: "Countries", type: "text", placeholder: "Uganda, Kenya.." },
+    ],
+  },
+  {
+    title: "Data Characteristics",
+    description: "Shape and format of the data being contributed.",
+    fields: [
+      { name: "type", label: "Type", type: "text" },
+      { name: "data_format", label: "Data Format", type: "text" },
+      { name: "data_capture_method", label: "Data Capture Method", type: "text" },
+      { name: "entries_count", label: "Entries Count", type: "text" },
+      { name: "size", label: "Size", type: "text" },
+      { name: "data_collection_methods", label: "Data Collection Methods", type: "textarea" },
+    ],
+  },
+  {
+    title: "Timeline & Protocol",
+    description: "Dates and protocol references for the study.",
+    fields: [
+      { name: "start_date", label: "Start Date", type: "date" },
+      { name: "end_date", label: "End Date", type: "date" },
+      { name: "protocol_id", label: "Protocol ID", type: "text" },
+      { name: "country_protocol_id", label: "Country Protocol ID", type: "text" },
+      { name: "on_hold_reason", label: "On Hold Reason", type: "textarea" },
+    ],
+  },
+  {
+    title: "Description & Citation",
+    description: "Narrative context for reviewers.",
+    fields: [
+      { name: "description", label: "Description", type: "textarea" },
+      { name: "citation_info", label: "Citation Info", type: "textarea" },
+    ],
+  },
+];
+
+const inputClassName =
+  "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20";
+
+const formatDate = (value: string | null | undefined) => {
+  if (!value) return "N/A";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "N/A";
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "attained") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+        <CheckCircle2 className="h-3 w-3" /> Approved
+      </span>
+    );
   }
-  const [formData, setFormData] = useState({...initialState});
+  if (status === "pending_review") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+        <Clock className="h-3 w-3" /> Pending
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-red-700">
+      <XCircle className="h-3 w-3" /> Rejected
+    </span>
+  );
+}
+
+const ContributeDataset: React.FC = () => {
+  const router = useRouter();
+  const [formData, setFormData] = useState({ ...initialState });
+  const [selectedDataset, setSelectedDataset] = useState<any | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   const {
     data: submittedData,
     isSuccess: submittedSuccess,
-    error: submittedError,
     isPending: submittedPending,
     mutate: submittedFn,
-    
   } = useMutation({
     mutationFn: submitExternalDataset,
   });
-  const { data:extDs, isLoading:extDsLoading, error:extDsError, isSuccess, refetch } = useGetExternalDatasets();
-  var datasets: any[] = extDs?.data || [];
-  var datasets = datasets.map(({ id, ...dataset }) => dataset);
+  const { data: extDs, isLoading: extDsLoading, error: extDsError, isSuccess, refetch } = useGetExternalDatasets();
+  const datasets: any[] = extDs?.data || [];
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData({
@@ -65,10 +176,10 @@ const ContributeDataset: React.FC = () => {
       [name]: value,
     });
   };
+
   const validateForm = () => {
-    // Check if any field is empty
-    for (let field in formData) {
-    // @ts-ignore
+    for (const field in formData) {
+      // @ts-ignore
       if (!formData[field]) {
         toast.error(`Please fill in the ${field.replace(/_/g, " ").toUpperCase()}`);
         return false;
@@ -77,181 +188,218 @@ const ContributeDataset: React.FC = () => {
     return true;
   };
 
-
-  const [selectedDataset, setSelectedDataset] = useState<any | null>(null);
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-        const data = formData
-        submittedFn(data)
+      submittedFn(formData);
     }
   };
 
   useEffect(() => {
-     if(submittedSuccess){
-        toast.message('Dataset submitted successfully')
-        setFormData({...initialState})
-        refetch()
-     }
+    if (submittedSuccess) {
+      toast.message("Dataset submitted successfully");
+      setFormData({ ...initialState });
+      refetch();
+    }
   }, [submittedData]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      
-        <div className="bg-gray-100 w-full md:w-1/4 p-4 border-r max-sm:hidden">
-          
-          <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-            <ChevronLeftIcon onClick={()=>{router.back()}} className="w-5 h-5 mr-2" />
-            Previously Submitted Datasets
-          </h2>
-           {extDsLoading && <DotsLoader/>}
-           {extDsError && <p className="text-gray-600">Failed to load  previous datasets</p>}
-          {isSuccess && datasets.length === 0 && (
-            <p className="text-gray-600">No previous datasets.</p>)}
-          
-           {datasets && <ul>
-              {datasets.map((dataset,index) => (
-                 <li
-                 key={index}
-                 className="p-3 border border-gray-300 mb-[1px] rounded-md hover:bg-gray-50 cursor-pointer"
-                 onClick={() => setSelectedDataset(dataset)}
-               >
-                 <p className="font-semibold text-gray-700">{dataset.name}</p>
-                 <p className="text-sm text-gray-600">Category: {dataset.category}</p>
-               </li>
-              ))}
-            </ul>}
-          
-        </div>
-     
-      <div className="w-full sm:w-3/4 bg-white shadow-md rounded-lg p-6 ml-4">
-        {selectedDataset ? (
-          <>
-            <button
-              onClick={() => setSelectedDataset(null)}
-              className="bg-blue-500 text-white py-1 px-4 rounded-md mb-6 hover:bg-blue-600"
-            >
-              Submit new dataset
-            </button>
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-2xl font-bold text-gray-800 mr-[5rem]">{selectedDataset.name}</h1>
-              <div>
-                {selectedDataset.approval_status === "attained" ? (
-                  <p className="text-green-600 font-semibold">
-                    Approved. We will reach out for more collaboration!
-                  </p>
-                ) : selectedDataset.approval_status === "pending_review" ? 
-                (
-                    <p className="text-yellow-600 font-semibold">Pending review</p>
-                  ):
-                (
-                  <p className="text-red-600 font-semibold">Rejected. Please try again.</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(selectedDataset).map(([key, value], index) => (
-                <div key={index} className="text-gray-600">
-                  <strong>
-                    {key
-                      .replace(/_/g, " ")
-                      .replace(/\b\w/g, (l) => l.toUpperCase())}
-                    :
-                  </strong>{" "}
-                  {value !== undefined && value !== null
-                    ? String(value)
-                    : "N/A"}
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="bg-gray-100 shadow-md rounded-lg w-full max-w-4xl p-6">
-              <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                Contribute New Dataset
-              </h1>
-
-              <p className=" text-gray-800 mb-6 text-center">
-                Please fill in the following information about the dataset
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.2),_transparent_22%),radial-gradient(circle_at_right,_rgba(36,64,142,0.12),_transparent_26%),linear-gradient(180deg,_#edf7ff_0%,_#dbeafe_46%,_#eff6ff_100%)]">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+          <div className="min-w-0 flex-1 space-y-4">
+            <div className="rounded-[20px] border border-slate-200/70 bg-white/95 p-4 shadow-[0_12px_36px_rgba(15,23,42,0.05)] sm:p-5">
+              <button
+                onClick={() => router.back()}
+                className="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-sky-300 hover:text-sky-600"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Back
+              </button>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-600 sm:text-xs">
+                Community Contribution
               </p>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.keys(formData).map((field, index) => (
-                    <div key={index}>
-                      <label className="block text-sm font-medium text-gray-700 capitalize">
-                        {field.replace("_", " ")}
-                      </label>
-                      {field === "on_hold_reason" ||
-                      field === "data_collection_methods" ||
-                      field === "citation_info" ||
-                      field === "description" ? (
-                        <textarea
-                          name={field}
-                          value={(formData as any)[field]}
-                          onChange={handleChange}
-                          className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        ></textarea>
-                      ): field === "countries" ?
-                      <input
-                          type="text"
-                          name={field}
-                          placeholder="Uganda, Kenya.."
-                          value={(formData as any)[field]}
-                          onChange={handleChange}
-                          className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        /> 
-                        
-                      : field === "project_status" ? (
-                        <div>
-                          
-                          <select
-                            name={"project_status"}
-                            value={formData.project_status}
-                            onChange={(e) => setFormData({ ...formData, project_status: e.target.value })}
-                            className="mt-1 p-2 border rounded-md w-full"
-                          >
-                            <option value="">Select Project Status</option>
-                            <option value="Active">Active</option>
-                            <option value="Closed">Closed</option>
-                            <option value="On Hold">On Hold</option>
-                          </select>
-                        </div>
-                      ) :
-                      
-                      field === "start_date" || field === "end_date" ? (
-                        <input
-                          type="date"
-                          name={field}
-                          value={(formData as any)[field]}
-                          onChange={handleChange}
-                          className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      ) : (
-                        <input
-                          type="text"
-                          name={field}
-                          value={(formData as any)[field]}
-                          onChange={handleChange}
-                          className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      )}
-                    </div>
-                  ))}
+              <h1 className="mt-1.5 text-xl font-semibold text-slate-900 sm:text-2xl">
+                {selectedDataset ? selectedDataset.name : "Contribute a Dataset"}
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-xs leading-5 text-slate-500 sm:text-sm">
+                {selectedDataset
+                  ? "Submission details and current review status."
+                  : "Share metadata about an external AMR dataset for our team to review."}
+              </p>
+            </div>
+
+            {selectedDataset ? (
+              <div className="rounded-[20px] border border-slate-200/70 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-5">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <button
+                    onClick={() => setSelectedDataset(null)}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#00b9f1] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0aa6d8]"
+                  >
+                    <Plus className="h-4 w-4" /> Submit new dataset
+                  </button>
+                  <StatusBadge status={selectedDataset.approval_status} />
                 </div>
+
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Submitted {formatDate(selectedDataset.created_at)}
+                </p>
+
+                {selectedDataset.approval_status === "attained" ? (
+                  <p className="mt-2 text-sm font-medium text-emerald-600">
+                    Approved — we will reach out for further collaboration.
+                  </p>
+                ) : selectedDataset.approval_status === "pending_review" ? (
+                  <p className="mt-2 text-sm font-medium text-amber-600">
+                    Pending review by our team.
+                  </p>
+                ) : (
+                  <p className="mt-2 text-sm font-medium text-red-600">
+                    Rejected — feel free to revise and resubmit.
+                  </p>
+                )}
+
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {Object.entries(selectedDataset)
+                    .filter(([key]) => !["id", "approval_status", "created_at"].includes(key))
+                    .map(([key, value]) => (
+                      <div key={key} className="rounded-2xl border border-slate-100 bg-slate-50/75 px-3.5 py-3">
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                          {key.replace(/_/g, " ")}
+                        </p>
+                        <p className="mt-1 text-sm font-medium text-slate-800">
+                          {value !== undefined && value !== null && value !== ""
+                            ? String(value)
+                            : "—"}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {fieldGroups.map((group) => (
+                  <div
+                    key={group.title}
+                    className="rounded-[20px] border border-slate-200/70 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-5"
+                  >
+                    <h3 className="text-sm font-semibold text-slate-900">{group.title}</h3>
+                    <p className="mt-0.5 text-xs text-slate-500">{group.description}</p>
+
+                    <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {group.fields.map((field) => (
+                        <div key={field.name}>
+                          <label className="block text-xs font-medium text-slate-600">
+                            {field.label}
+                          </label>
+                          {field.type === "textarea" ? (
+                            <textarea
+                              name={field.name}
+                              rows={2}
+                              value={formData[field.name]}
+                              onChange={handleChange}
+                              className={inputClassName}
+                            />
+                          ) : field.type === "select" ? (
+                            <select
+                              name={field.name}
+                              value={formData[field.name]}
+                              onChange={handleChange}
+                              className={inputClassName}
+                            >
+                              <option value="">Select {field.label}</option>
+                              {field.options?.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              type={field.type}
+                              name={field.name}
+                              placeholder={field.placeholder}
+                              value={formData[field.name]}
+                              onChange={handleChange}
+                              className={inputClassName}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
 
                 <button
                   type="submit"
-                  className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  disabled={submittedPending}
+                  className="flex min-h-[3rem] w-full items-center justify-center rounded-xl bg-[#00b9f1] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0aa6d8] disabled:opacity-70 sm:w-auto sm:min-w-[13rem]"
                 >
-                  {submittedPending?<DotsLoader/> : "Submit"}
+                  {submittedPending ? <DotsLoader /> : "Submit Dataset"}
                 </button>
               </form>
-            </div>{" "}
-          </>
-        )}
+            )}
+          </div>
+
+          <aside
+            className={`shrink-0 transition-all duration-200 ${
+              sidebarCollapsed ? "w-full lg:w-14" : "w-full lg:w-80"
+            }`}
+          >
+            <div className="rounded-[20px] border border-slate-200/70 bg-white/95 shadow-[0_10px_30px_rgba(15,23,42,0.05)] lg:sticky lg:top-6">
+              <button
+                onClick={() => setSidebarCollapsed((current) => !current)}
+                className="flex w-full items-center justify-between rounded-[20px] p-4"
+              >
+                {!sidebarCollapsed && (
+                  <span className="text-sm font-semibold text-slate-900">
+                    Previously Submitted Datasets
+                  </span>
+                )}
+                {sidebarCollapsed ? (
+                  <ChevronLeft className="h-4 w-4 text-slate-500" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-slate-500" />
+                )}
+              </button>
+
+              {!sidebarCollapsed && (
+                <div className="max-h-[70vh] space-y-2 overflow-y-auto px-3 pb-4">
+                  {extDsLoading && (
+                    <div className="flex justify-center py-4">
+                      <DotsLoader />
+                    </div>
+                  )}
+                  {extDsError && (
+                    <p className="px-1 text-xs text-slate-500">Failed to load previous datasets.Please login before you try again</p>
+                  )}
+                  {isSuccess && datasets.length === 0 && (
+                    <p className="px-1 text-xs text-slate-500">No previous datasets.</p>
+                  )}
+                  {datasets.map((dataset, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedDataset(dataset)}
+                      className={`w-full rounded-2xl border px-3.5 py-3 text-left transition hover:border-sky-300 hover:bg-sky-50/50 ${
+                        selectedDataset?.name === dataset.name
+                          ? "border-sky-300 bg-sky-50"
+                          : "border-slate-100 bg-slate-50/75"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="truncate text-sm font-semibold text-slate-900">{dataset.name}</p>
+                        <StatusBadge status={dataset.approval_status} />
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">{dataset.category}</p>
+                      <p className="mt-1 text-[11px] text-slate-400">
+                        Submitted {formatDate(dataset.created_at)}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
   );

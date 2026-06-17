@@ -13,6 +13,7 @@ import {
   refreshModelVariables,
 } from "@/lib/hooks/useMLModels";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
+import { useUserInfor } from "@/lib/hooks/useAuth";
 import { Model, ModelInput, ModelPayload, DatasetType } from "@/types/constants";
 
 const DotsLoader = dynamic(() => import("@/components/ui/dotsLoader"), {
