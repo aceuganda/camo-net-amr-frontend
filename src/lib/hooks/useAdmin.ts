@@ -94,34 +94,42 @@ export interface AdminRecentSubmission {
   institution: string | null;
 }
 
-export const useAdminOverview = () =>
+export const useAdminOverview = (enabled = true) =>
   useQuery<any, Error, { data: AdminOverviewResponse }>({
     queryKey: ["admin_overview"],
     queryFn: () => api.get("/admin/overview"),
+    enabled,
     meta: {
       errorMessage: "Failed to fetch admin overview",
     },
   });
 
-export const useAdminRecentUsers = (days = 30, limit = 6) =>
+export const useAdminRecentUsers = (days = 30, limit = 6, enabled = true) =>
   useQuery<any, Error, { data: AdminRecentUser[] }>({
     queryKey: ["admin_recent_users", days, limit],
     queryFn: () => api.get(`/admin/users/recent?days=${days}&limit=${limit}`),
+    enabled,
     meta: {
       errorMessage: "Failed to fetch recent users",
     },
   });
 
-export const useAdminActiveUsers = (days = 7, limit = 6) =>
+export const useAdminActiveUsers = (days = 7, limit = 6, enabled = true) =>
   useQuery<any, Error, { data: AdminActiveUser[] }>({
     queryKey: ["admin_active_users", days, limit],
     queryFn: () => api.get(`/admin/users/active?days=${days}&limit=${limit}`),
+    enabled,
     meta: {
       errorMessage: "Failed to fetch active users",
     },
   });
 
-export const useAdminRecentRequests = (days = 30, limit = 6, status?: string) =>
+export const useAdminRecentRequests = (
+  days = 30,
+  limit = 6,
+  status?: string,
+  enabled = true
+) =>
   useQuery<any, Error, { data: AdminRecentRequest[] }>({
     queryKey: ["admin_recent_requests", days, limit, status ?? "all"],
     queryFn: () =>
@@ -130,16 +138,18 @@ export const useAdminRecentRequests = (days = 30, limit = 6, status?: string) =>
           status ? `&status=${status}` : ""
         }`
       ),
+    enabled,
     meta: {
       errorMessage: "Failed to fetch recent requests",
     },
   });
 
-export const useAdminRecentSubmissions = (days = 30, limit = 6) =>
+export const useAdminRecentSubmissions = (days = 30, limit = 6, enabled = true) =>
   useQuery<any, Error, { data: AdminRecentSubmission[] }>({
     queryKey: ["admin_recent_submissions", days, limit],
     queryFn: () =>
       api.get(`/admin/submissions/recent?days=${days}&limit=${limit}`),
+    enabled,
     meta: {
       errorMessage: "Failed to fetch recent submissions",
     },

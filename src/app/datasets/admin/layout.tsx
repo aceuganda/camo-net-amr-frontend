@@ -8,6 +8,7 @@ import {
   ChevronRightIcon,
 } from "@radix-ui/react-icons";
 import {
+  BarChart3,
   Database,
   FolderKanban,
   PanelsTopLeft,
@@ -18,6 +19,13 @@ import {
 const adminLinks = [
   {
     href: "/datasets/admin",
+    label: "Overview",
+    description: "Monitor platform health",
+    icon: BarChart3,
+    minRole: "admin",
+  },
+  {
+    href: "/datasets/admin/requests",
     label: "Requests",
     description: "Review data access decisions",
     icon: ShieldCheck,

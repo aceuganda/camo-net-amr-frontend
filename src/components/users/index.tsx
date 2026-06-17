@@ -48,6 +48,9 @@ interface User {
   roles: Role[];
 }
 
+const isUserDisabled = (user: Pick<User, "disabled" | "is_active">) =>
+  user.disabled === true || user.is_active === false;
+
 const syncUserInCollection = (
   users: User[] | undefined,
   userId: string,
@@ -267,6 +270,7 @@ const AdminUsers = () => {
               <TableBody>
                 {paginatedData.map((user) => {
                   const isAdmin = user.roles.some(role => role.role === "admin");
+                  const disabledAccount = isUserDisabled(user);
                   return (
                     <TableRow
                       key={user.id}
@@ -278,11 +282,11 @@ const AdminUsers = () => {
                       <TableCell className="px-3 py-3 text-xs sm:text-sm">{user.roles.map(role => role.role).join(", ")}</TableCell>
                       <TableCell className="px-3 py-3">
                         <span className={`rounded-full px-2 py-1 text-[10px] sm:text-xs ${
-                          user.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
+                          disabledAccount
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-green-100 text-green-800'
                         }`}>
-                          {user.is_active ? 'Active' : 'Inactive'}
+                          {disabledAccount ? 'Inactive' : 'Active'}
                         </span>
                       </TableCell>
                       <TableCell className="px-2 py-3 text-right sm:px-3">
@@ -393,8 +397,8 @@ const AdminUsers = () => {
 
                 <div className="space-y-2">
                   <p className="font-semibold">Status:</p>
-                  <p className={selectedUser.is_active ? 'text-green-600' : 'text-red-600'}>
-                    {selectedUser.is_active ? 'Active' : 'Inactive'}
+                  <p className={isUserDisabled(selectedUser) ? 'text-red-600' : 'text-green-600'}>
+                    {isUserDisabled(selectedUser) ? 'Inactive' : 'Active'}
                   </p>
 
                   <p className="font-semibold mt-4">Super User:</p>
@@ -415,19 +419,19 @@ const AdminUsers = () => {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <Button 
-                  variant={selectedUser.disabled? "default" : "destructive"}
+                  variant={isUserDisabled(selectedUser) ? "default" : "destructive"}
                   className="w-full"
                   onClick={() => {
-                    if(selectedUser.disabled){
+                    if (isUserDisabled(selectedUser)) {
                       revokeAccessFn({ user_id: selectedUser.id, disabled: false });
-                    }else{
+                    } else {
                       revokeAccessFn({ user_id: selectedUser.id, disabled: true });
                     }
                   }}
                   disabled={isRevokingAccess}
                 >
                   <XCircle className="mr-2 h-4 w-4" />
-                 { selectedUser.disabled ? "Enable User": "Disable user" }
+                  {isUserDisabled(selectedUser) ? "Enable User" : "Disable User"}
                 </Button>
                 {selectedUser.roles.some(role => role.role === "admin") ? (
                   <Button 

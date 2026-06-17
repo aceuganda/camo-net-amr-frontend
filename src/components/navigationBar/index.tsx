@@ -101,7 +101,7 @@ const NavigationBar = () => {
                 alt="AMRDB"
                 width={120}
                 height={50}
-                className="h-8 w-auto object-contain sm:h-9 lg:h-11"
+                className="h-9 w-auto object-contain sm:h-10 lg:h-12 xl:h-14"
                 priority
               />
             </Link>
@@ -145,7 +145,7 @@ const NavigationBar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="min-[861px]:flex hidden items-center gap-2 lg:gap-3 xl:gap-4">
+            <div className="min-[861px]:flex hidden items-center gap-1 lg:gap-1 xl:gap-1.5">
               {navItems.map((item, index) => {
                 if (item.mobileOnly) return null;
                 const Icon = item.icon;
@@ -154,7 +154,7 @@ const NavigationBar = () => {
                   <Link
                     key={index}
                     href={item.href}
-                    className={`${item.className || ''} px-3 lg:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:scale-105 ${
+                    className={`${item.className || ''} px-2 lg:px-2.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:scale-105 ${
                       isItemActive ? "text-[#00B9F1] bg-white/10" : "text-white hover:text-[#00B9F1]"
                     }`}
                   >

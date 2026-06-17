@@ -1,8 +1,5 @@
-import AdminRequests from "@/components/requests";
+import AdminOverview from "@/components/adminOverview";
 
 export default function Requests() {
-  return (
-      <AdminRequests />
-  );
+  return <AdminOverview />;
 }
- 
