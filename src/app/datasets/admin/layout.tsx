@@ -22,7 +22,7 @@ const adminLinks = [
     label: "Overview",
     description: "Monitor platform health",
     icon: BarChart3,
-    minRole: "admin",
+    minRole: "super_admin",
   },
   {
     href: "/datasets/admin/requests",
@@ -36,7 +36,7 @@ const adminLinks = [
     label: "Models",
     description: "Maintain ML model metadata",
     icon: PanelsTopLeft,
-    minRole: "admin",
+    minRole: "super_admin",
   },
   {
     href: "/datasets/admin/users",
@@ -95,9 +95,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !error && isAdmin && !canAccessPath) {
-      router.replace("/datasets/admin");
+      router.replace(isSuperAdmin ? "/datasets/admin" : "/datasets/admin/requests");
     }
-  }, [canAccessPath, error, isAdmin, isLoading, router]);
+  }, [canAccessPath, error, isAdmin, isLoading, isSuperAdmin, router]);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
