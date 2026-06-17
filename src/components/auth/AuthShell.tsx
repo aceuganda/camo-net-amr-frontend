@@ -12,6 +12,7 @@ type AuthShellProps = {
   backLabel?: string;
   children: React.ReactNode;
   contentClassName?: string;
+  backgroundClassName?: string;
 };
 
 export default function AuthShell({
@@ -21,14 +22,21 @@ export default function AuthShell({
   backLabel = "Back",
   children,
   contentClassName = "",
+  backgroundClassName,
 }: AuthShellProps) {
   return (
     <div
-      style={{ backgroundImage: "url(/backgroundImageNet.webp)" }}
-      className="relative min-h-screen overflow-hidden bg-slate-950 bg-cover bg-center bg-no-repeat"
+      style={backgroundClassName ? undefined : { backgroundImage: "url(/backgroundImageNet.webp)" }}
+      className={`relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat ${
+        backgroundClassName ?? "bg-slate-950"
+      }`}
     >
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(9,20,53,0.94)_0%,rgba(14,35,87,0.82)_35%,rgba(14,165,233,0.2)_100%)]" />
-      <div className="absolute left-0 top-0 h-full w-full bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(0,185,241,0.2),_transparent_24%)]" />
+      {!backgroundClassName && (
+        <>
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(9,20,53,0.94)_0%,rgba(14,35,87,0.82)_35%,rgba(14,165,233,0.2)_100%)]" />
+          <div className="absolute left-0 top-0 h-full w-full bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(0,185,241,0.2),_transparent_24%)]" />
+        </>
+      )}
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
         <div className="w-full max-w-5xl overflow-hidden rounded-[28px] border border-white/15 bg-white/95 shadow-2xl backdrop-blur-sm">
