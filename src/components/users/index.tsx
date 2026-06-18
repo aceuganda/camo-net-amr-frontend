@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAdminUsersWith } from "@/lib/hooks/useRoles";
+import { useAdminUsersWith, useUserDataSets } from "@/lib/hooks/useRoles";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { assignRole, removeRole, revokeAccess } from "@/lib/hooks/useRoles";
+import { assignRole, removeRole, revokeAccess, assignDataSet, removeDataSet } from "@/lib/hooks/useRoles";
+import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
 import { toast } from "sonner";
 import { useSearch } from "@/context/searchContext";
 import { 
@@ -51,6 +52,9 @@ interface User {
 const isUserDisabled = (user: Pick<User, "disabled" | "is_active">) =>
   user.disabled === true || user.is_active === false;
 
+const isAdminLike = (user: Pick<User, "roles">) =>
+  user.roles.some((role) => role.role === "admin" || role.role === "super_admin");
+
 const syncUserInCollection = (
   users: User[],
   userId: string,
@@ -65,7 +69,47 @@ const AdminUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [datasetToGrant, setDatasetToGrant] = useState("");
   const itemsPerPage = 8;
+
+  const { data: catalogueData } = useGetCatalogue();
+  const catalogueDatasets: { id: string; name: string }[] = catalogueData?.data || [];
+
+  const {
+    data: userDataSetsQuery,
+    isLoading: userDataSetsLoading,
+  } = useUserDataSets(selectedUser?.id || "", !!selectedUser && isAdminLike(selectedUser));
+  const userDataSets: { permission_id: string; data_set_id: string; data_set_name: string; title: string }[] =
+    userDataSetsQuery?.data || [];
+
+  const {
+    mutate: assignDataSetFn,
+    isPending: isAssigningDataSet,
+  } = useMutation({
+    mutationFn: assignDataSet,
+    onSuccess: async () => {
+      toast.success("Dataset granted successfully");
+      setDatasetToGrant("");
+      await queryClient.invalidateQueries({ queryKey: ["user_data_sets", selectedUser?.id] });
+    },
+    onError: () => {
+      toast.error("Failed to grant dataset access");
+    }
+  });
+
+  const {
+    mutate: removeDataSetFn,
+    isPending: isRemovingDataSet,
+  } = useMutation({
+    mutationFn: removeDataSet,
+    onSuccess: async () => {
+      toast.success("Dataset access removed");
+      await queryClient.invalidateQueries({ queryKey: ["user_data_sets", selectedUser?.id] });
+    },
+    onError: () => {
+      toast.error("Failed to remove dataset access");
+    }
+  });
 
   const {
     mutate: assignAdmin,
@@ -200,6 +244,7 @@ const AdminUsers = () => {
   const handleViewDetails = (user: User) => {
     setSelectedUser(user);
     setSheetOpen(true);
+    setDatasetToGrant("");
   };
 
   useEffect(() => {
@@ -404,12 +449,82 @@ const AdminUsers = () => {
                 <p className="font-semibold">Roles:</p>
                 <div className="rounded-lg bg-gray-50 p-3 sm:p-4">
                   <p className="text-sm text-gray-600">
-                    {selectedUser.roles.length > 0 
+                    {selectedUser.roles.length > 0
                       ? selectedUser.roles.map(role => role.role).join(", ")
                       : 'No roles assigned'}
                   </p>
                 </div>
               </div>
+
+              {isAdminLike(selectedUser) && (
+                <div className="space-y-2">
+                  <p className="font-semibold">Dataset Reviewer Access:</p>
+                  <div className="rounded-lg bg-gray-50 p-3 sm:p-4 space-y-3">
+                    {userDataSetsLoading && (
+                      <p className="text-sm text-gray-500">Loading datasets...</p>
+                    )}
+                    {!userDataSetsLoading && userDataSets.length === 0 && (
+                      <p className="text-sm text-gray-500">No datasets attached yet.</p>
+                    )}
+                    {!userDataSetsLoading && userDataSets.length > 0 && (
+                      <ul className="space-y-2">
+                        {userDataSets.map((dataset) => (
+                          <li
+                            key={dataset.permission_id}
+                            className="flex items-center justify-between gap-2 rounded-md border border-gray-200 bg-white px-3 py-2"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-sm text-gray-700">{dataset.data_set_name}</p>
+                              <p className="truncate text-xs text-gray-400">{dataset.title}</p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 shrink-0 px-2 text-[11px] text-red-600 hover:bg-red-100"
+                              disabled={isRemovingDataSet}
+                              onClick={() =>
+                                removeDataSetFn({ user_id: selectedUser.id, data_set_id: dataset.data_set_id })
+                              }
+                            >
+                              <XCircle className="mr-1 h-3.5 w-3.5" />
+                              Remove
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <select
+                        value={datasetToGrant}
+                        onChange={(e) => setDatasetToGrant(e.target.value)}
+                        className="flex-1 rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select a dataset to grant...</option>
+                        {catalogueDatasets
+                          .filter((dataset) => !userDataSets.some((granted) => granted.data_set_id === dataset.id))
+                          .map((dataset) => (
+                            <option key={dataset.id} value={dataset.id}>
+                              {dataset.name}
+                            </option>
+                          ))}
+                      </select>
+                      <Button
+                        variant="default"
+                        className="bg-[#00B9F1] hover:bg-[#00A0D0]"
+                        disabled={!datasetToGrant || isAssigningDataSet}
+                        onClick={() =>
+                          datasetToGrant &&
+                          assignDataSetFn({ user_id: selectedUser.id, data_set_id: datasetToGrant })
+                        }
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Grant
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <Button 

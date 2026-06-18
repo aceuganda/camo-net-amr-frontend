@@ -20,6 +20,27 @@ export const removeRole = async (data: {user_id:string, role: string}) => {
     return response.data;
   };
 
+export const assignDataSet = async (data: {user_id: string, data_set_id: string}) => {
+  const response = await api.post('/roles/assign_data_set', data);
+  return response.data;
+};
+
+export const removeDataSet = async (data: {user_id: string, data_set_id: string}) => {
+  const response = await api.patch('/roles/remove_data_set', data);
+  return response.data;
+};
+
+export const useUserDataSets = (userId: string, enabled = true) => {
+  return useQuery<any, Error, {data: any}>({
+    queryFn: () => api.get(`/users/${userId}/data_sets`),
+    queryKey: ["user_data_sets", userId],
+    enabled: !!userId && enabled,
+    meta: {
+      errorMessage: "Failed to fetch user datasets"
+    }
+  });
+};
+
   export const useAdminUsersWith = () => {
     return useQuery<any, Error, {data: any}>({
       queryFn: () =>
