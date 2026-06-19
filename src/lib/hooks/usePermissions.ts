@@ -4,10 +4,10 @@ import api from './../axios';
 
 
 
-  export const useFetchAdminPermissions = () => {
+  export const useFetchAdminPermissions = (q = "") => {
     return useQuery<any, Error, {data: any}>({
-      queryFn: () => api.get('/user_permissions'),
-      queryKey: ["user_permissions"],
+      queryFn: () => api.get('/user_permissions', { params: q ? { q } : {} }),
+      queryKey: ["user_permissions", q],
       meta: {
         errorMessage: "Failed to fetch permissions"
       }

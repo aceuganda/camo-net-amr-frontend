@@ -1,10 +1,9 @@
 "use client";
 import { useState, useEffect, Fragment } from "react";
 import { useSearch } from "@/context/searchContext";
-import { Search } from "lucide-react";
+import { Search, X, TrendingUp } from "lucide-react";
 import { useGetUserCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
-import SidebarMenu from "../filter";
 import { useRouter } from "next/navigation";
 import { dataAccessPage } from "../GuideTour/steps";
 import {
@@ -114,6 +113,13 @@ export interface FetchedDataset {
   access: string;
 }
 
+const filterCategories = [
+  "Economic burden",
+  "Antibiotic Use",
+  "Antibiotic Consumption",
+  "Antibiotic Resistance",
+];
+
 export default function UserCatalogue() {
   const { searchTerm, setSearchTerm } = useSearch();
   const [selectedDataset, setSelectedDataset] = useState<string | null>(null);
@@ -122,7 +128,6 @@ export default function UserCatalogue() {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const { data, isLoading, error } = useGetUserCatalogue();
   const datasets: FetchedDataset[] = data?.data || [];
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isTrendsMenuOpen, setIsTrendsMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -132,6 +137,16 @@ export default function UserCatalogue() {
     return () => {
       document.body.style.overflow = "auto";
     };
+  }, [isTrendsMenuOpen]);
+
+  // Close trends panel on Escape
+  useEffect(() => {
+    if (!isTrendsMenuOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsTrendsMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isTrendsMenuOpen]);
 
   const computeAccess = (permissions: FetchedDataset["user_permissions"]) => {
@@ -161,6 +176,14 @@ export default function UserCatalogue() {
       );
     return matchesSearchTerm && matchesCategory && matchesStatus;
   });
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
+    );
+  };
 
   const handleDatasetClick = (datasetId: string) => {
     setSelectedDataset(datasetId);
@@ -226,18 +249,7 @@ export default function UserCatalogue() {
   return (
     <>
       <main className="flex min-h-screen flex-col items-center bg-gradient-to-br from-blue-50 to-cyan-50">
-        <div className="max-sm:h-[120vh] w-full flex sm:flex-row flex-col overflow-x-auto">
-          <SidebarMenu
-            isMenuOpen={isMenuOpen}
-            setIsMenuOpen={setIsMenuOpen}
-            selectedCategories={selectedCategories}
-            setSelectedCategories={setSelectedCategories}
-            selectedStatuses={selectedStatuses}
-            setSelectedStatuses={setSelectedStatuses}
-            className="menu_button"
-          />
-
-          <div className="flex-1 p-4 sm:p-6 min-w-0">
+        <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 min-w-0">
             {/* Search Bar */}
             <div className="bg-white/80 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg p-4 mb-6">
               <div className="relative max-w-md">
@@ -251,6 +263,31 @@ export default function UserCatalogue() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-gray-500">Category:</span>
+                {filterCategories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => toggleCategory(category)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                      selectedCategories.includes(category)
+                        ? "border-[#00B9F1] bg-[#00B9F1] text-white"
+                        : "border-gray-300 bg-white text-gray-600 hover:border-[#00B9F1] hover:text-[#00B9F1]"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+                {selectedCategories.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCategories([])}
+                    className="text-xs text-gray-400 underline hover:text-red-500"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
 
@@ -640,43 +677,65 @@ export default function UserCatalogue() {
                 </div>
               </div>
             )}
-          </div>
         </div>
 
-       
-
+        {/* Backdrop */}
         <div
-          className={`fixed top-0 right-0 h-full w-full sm:w-[95%] bg-gradient-to-br from-blue-50 to-cyan-50 shadow-2xl transition-transform transform ${
+          onClick={() => setIsTrendsMenuOpen(false)}
+          className={`fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm transition-opacity ${
+            isTrendsMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
+        />
+
+        {/* Trends drawer */}
+        <div
+          className={`fixed top-0 right-0 z-50 h-full w-full sm:w-[34rem] lg:w-[40rem] bg-gradient-to-br from-blue-50 to-cyan-50 shadow-2xl transition-transform transform ${
             isTrendsMenuOpen ? "translate-x-0" : "translate-x-full"
-          } z-50`}
+          }`}
         >
-          <button
-            onClick={() => setIsTrendsMenuOpen(false)}
-            className="absolute top-4 left-4 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-          >
-            Close
-          </button>
-          <div className="p-4 px-8 sm:px-16 h-full flex flex-col overflow-y-auto">
-            <h1 className="font-[600] mt-[5rem] text-center text-2xl text-[#24408E] mb-8">
-              Sample trends from the datasets
-            </h1>
-            <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-6 rounded-xl shadow-lg mb-6">
-              <h3 className="text-[11px] sm:text-xl text-center font-semibold text-[#24408E] mb-4">
-                Resistance Cases By Gender
-              </h3>
-              <ResistanceLinesByGender />
+          <div className="flex h-full flex-col">
+            <div className="flex items-center justify-between gap-3 border-b border-white/40 bg-white/80 px-5 py-4 backdrop-blur-sm sm:px-8">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#24408E]/10 text-[#24408E]">
+                  <TrendingUp className="h-5 w-5" />
+                </div>
+                <div>
+                  <h1 className="text-base font-semibold text-[#24408E] sm:text-lg">
+                    Sample Trends
+                  </h1>
+                  <p className="text-xs text-gray-500">
+                    Resistance patterns across your accessible datasets
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsTrendsMenuOpen(false)}
+                aria-label="Close trends panel"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-6 rounded-xl shadow-lg mb-6">
-              <h3 className="text-[11px] sm:text-xl text-center font-semibold text-[#24408E] mb-4">
-                Resistant cases of organisms over time (by year)
-              </h3>
-              <OrganismResistanceByTime />
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-6 rounded-xl shadow-lg">
-              <h3 className="text-[11px] sm:text-xl text-center font-semibold text-[#24408E] mb-4">
-                Percentage resistance of organisms as per antibiotics vs age groups
-              </h3>
-              <OrganismResistanceByAge />
+
+            <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
+              <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-4 sm:p-6 rounded-xl shadow-lg">
+                <h3 className="text-sm sm:text-base text-center font-semibold text-[#24408E] mb-4">
+                  Resistance Cases By Gender
+                </h3>
+                <ResistanceLinesByGender />
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-4 sm:p-6 rounded-xl shadow-lg">
+                <h3 className="text-sm sm:text-base text-center font-semibold text-[#24408E] mb-4">
+                  Resistant cases of organisms over time (by year)
+                </h3>
+                <OrganismResistanceByTime />
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-4 sm:p-6 rounded-xl shadow-lg">
+                <h3 className="text-sm sm:text-base text-center font-semibold text-[#24408E] mb-4">
+                  Percentage resistance of organisms as per antibiotics vs age groups
+                </h3>
+                <OrganismResistanceByAge />
+              </div>
             </div>
           </div>
         </div>

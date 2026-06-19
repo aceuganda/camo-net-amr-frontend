@@ -28,8 +28,7 @@ import { useFetchAdminPermissions } from "@/lib/hooks/usePermissions";
 import { denyAccess, allowAccess } from "@/lib/hooks/usePermissions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useSearch } from "@/context/searchContext";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Search, XCircle } from "lucide-react";
 
 interface Permission {
   permission_id: string;
@@ -51,16 +50,26 @@ interface Permission {
 
 const AdminRequests = () => {
   const queryClient = useQueryClient();
-  const { data, isLoading, error } = useFetchAdminPermissions();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { data, isLoading, error } = useFetchAdminPermissions(debouncedSearch);
   const datasets: Permission[] = data?.data || [];
   const [selectedRequest, setSelectedRequest] = useState<Permission | null>(
     null
   );
   const [sheetOpen, setSheetOpen] = useState(false);
-  const { searchTerm } = useSearch();
   const [denyReason, setDenyReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350);
+    return () => clearTimeout(handle);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   const {
     isPending: denyPending,
@@ -94,9 +103,7 @@ const AdminRequests = () => {
     },
   });
 
-  const filteredData = datasets.filter((data) =>
-    data.user_email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredData = datasets;
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -154,9 +161,21 @@ const AdminRequests = () => {
               Review incoming requests, inspect referee feedback, and approve or deny access without leaving the queue.
             </p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 sm:px-4 sm:py-3 sm:text-sm">
-            <span className="font-semibold text-slate-900">{filteredData.length}</span>{" "}
-            matching requests
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by requester, dataset, project, institution..."
+                className="w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-4 text-xs text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 sm:w-72 sm:text-sm"
+              />
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 sm:px-4 sm:py-3 sm:text-sm">
+              <span className="font-semibold text-slate-900">{filteredData.length}</span>{" "}
+              matching requests
+            </div>
           </div>
         </div>
       </div>

@@ -214,7 +214,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </aside>
 
-        <main className="flex-1">
+        <main className="min-w-0 flex-1">
           <div className="border-b border-slate-200 bg-white/85 px-3 py-3 backdrop-blur sm:px-6 sm:py-4 xl:hidden">
             <div className="flex items-center justify-between gap-3">
               <div>

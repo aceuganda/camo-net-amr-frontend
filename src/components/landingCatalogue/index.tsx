@@ -13,7 +13,6 @@ import { Search } from "lucide-react";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
 import { useUserInfor } from "@/lib/hooks/useAuth";
 import dynamic from "next/dynamic";
-import SidebarMenu from "../filter";
 import Link from "next/link";
 import { catalogueSteps } from "../GuideTour/steps";
 import DatasetCard from "./DatasetCard";
@@ -123,9 +122,15 @@ const convertToCSV = (datasets: FetchedDataset[]) => {
   return encodeURI(csvContent);
 };
 
+const filterCategories = [
+  "Economic burden",
+  "Antibiotic Use",
+  "Antibiotic Consumption",
+  "Antibiotic Resistance",
+];
+
 export default function HomeCatalogue() {
   const { searchTerm, setSearchTerm } = useSearch();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -153,6 +158,14 @@ export default function HomeCatalogue() {
       );
     return matchesSearchTerm && matchesCategory && matchesStatus;
   });
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
+    );
+  };
 
   const handleSelectAll = (e: any) => {
     if (e.target.checked) {
@@ -199,18 +212,7 @@ export default function HomeCatalogue() {
           </div>
         </div>
 
-        <div className="flex flex-row">
-          <SidebarMenu
-            isMenuOpen={isMenuOpen}
-            setIsMenuOpen={setIsMenuOpen}
-            selectedCategories={selectedCategories}
-            setSelectedCategories={setSelectedCategories}
-            selectedStatuses={selectedStatuses}
-            setSelectedStatuses={setSelectedStatuses}
-            className="menu_view"
-          />
-
-          <div className="flex-1 px-4 sm:px-6 pt-4 min-w-0">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 pt-4 min-w-0">
             <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4 sm:p-6 my-6 sm:my-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
@@ -276,6 +278,31 @@ export default function HomeCatalogue() {
                     <span className="text-sm font-medium">Table</span>
                   </button>
                 </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-gray-500">Category:</span>
+                {filterCategories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => toggleCategory(category)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                      selectedCategories.includes(category)
+                        ? "border-[#00B9F1] bg-[#00B9F1] text-white"
+                        : "border-gray-300 bg-white text-gray-600 hover:border-[#00B9F1] hover:text-[#00B9F1]"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+                {selectedCategories.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCategories([])}
+                    className="text-xs text-gray-400 underline hover:text-red-500"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
 
@@ -611,7 +638,6 @@ export default function HomeCatalogue() {
                 </div>
               </>
             )}
-          </div>
         </div>
       </main>
       <GuideTour steps={catalogueSteps} guideKey="catalogue_page" />

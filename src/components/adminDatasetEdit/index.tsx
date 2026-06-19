@@ -60,7 +60,7 @@ export default function DatasetsPage() {
   };
 
   return (
-    <div className=" mx-auto p-4 flex flex-col overflow-hidden ">
+    <div className="mx-auto flex w-full min-w-0 flex-col overflow-hidden p-4">
       <div className="bg-white shadow-md w-full rounded">
         <div className="p-4 border-b">
           <input

@@ -5,8 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assignRole, removeRole, revokeAccess, assignDataSet, removeDataSet } from "@/lib/hooks/useRoles";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
 import { toast } from "sonner";
-import { useSearch } from "@/context/searchContext";
-import { 
+import {
   Sheet, 
   SheetContent, 
   SheetHeader, 
@@ -30,7 +29,7 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Search, XCircle } from "lucide-react";
 
 interface Role {
   id: string;
@@ -63,14 +62,24 @@ const syncUserInCollection = (
 
 const AdminUsers = () => {
   const queryClient = useQueryClient();
-  const { searchTerm } = useSearch();
-  const { data, isLoading, error } = useAdminUsersWith();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { data, isLoading, error } = useAdminUsersWith(debouncedSearch);
   const users: User[] = data?.data || [];
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [datasetToGrant, setDatasetToGrant] = useState("");
   const itemsPerPage = 8;
+
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350);
+    return () => clearTimeout(handle);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   const { data: catalogueData } = useGetCatalogue();
   const catalogueDatasets: { id: string; name: string }[] = catalogueData?.data || [];
@@ -171,10 +180,10 @@ const AdminUsers = () => {
   } = useMutation({ 
     mutationFn: revokeAccess,
     onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: ["admin_users"] });
+      await queryClient.cancelQueries({ queryKey: ["admin_users", debouncedSearch] });
 
-      const previousUsers = queryClient.getQueryData<{ data: User[] }>(["admin_users"]);
-      queryClient.setQueryData<{ data: User[] }>(["admin_users"], (current) => {
+      const previousUsers = queryClient.getQueryData<{ data: User[] }>(["admin_users", debouncedSearch]);
+      queryClient.setQueryData<{ data: User[] }>(["admin_users", debouncedSearch], (current) => {
         if (!current?.data) {
           return current;
         }
@@ -208,11 +217,11 @@ const AdminUsers = () => {
           : "User enabled successfully"
       );
       setSheetOpen(false);
-      await queryClient.refetchQueries({ queryKey: ["admin_users"], exact: true });
+      await queryClient.refetchQueries({ queryKey: ["admin_users", debouncedSearch], exact: true });
     },
     onError: (_, variables, context) => {
       if (context?.previousUsers) {
-        queryClient.setQueryData(["admin_users"], context.previousUsers);
+        queryClient.setQueryData(["admin_users", debouncedSearch], context.previousUsers);
       }
       setSelectedUser((current) =>
         current?.id === variables.user_id
@@ -231,9 +240,7 @@ const AdminUsers = () => {
     }
   });
 
-  const filteredUsers = users.filter((user) =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users;
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const paginatedData = filteredUsers.slice(
@@ -268,9 +275,21 @@ const AdminUsers = () => {
               Assign admin privileges, review account state, and disable access without forcing a full page refresh.
             </p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 sm:px-4 sm:py-3 sm:text-sm">
-            <span className="font-semibold text-slate-900">{filteredUsers.length}</span>{" "}
-            matching users
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by name or email..."
+                className="w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-4 text-xs text-slate-700 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 sm:w-64 sm:text-sm"
+              />
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 sm:px-4 sm:py-3 sm:text-sm">
+              <span className="font-semibold text-slate-900">{filteredUsers.length}</span>{" "}
+              matching users
+            </div>
           </div>
         </div>
       </div>

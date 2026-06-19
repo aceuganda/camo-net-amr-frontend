@@ -41,7 +41,7 @@ export const useUserDataSets = (userId: string, enabled = true) => {
   });
 };
 
-  export const useAdminUsersWith = () => {
+  export const useAdminUsersWith = (q = "") => {
     return useQuery<any, Error, {data: any}>({
       queryFn: () =>
         api.get("/users", {
@@ -52,9 +52,10 @@ export const useUserDataSets = (userId: string, enabled = true) => {
           },
           params: {
             t: Date.now(),
+            ...(q ? { q } : {}),
           },
         }),
-      queryKey: ["admin_users"],
+      queryKey: ["admin_users", q],
       meta: {
         errorMessage: "Failed to fetch users"
       },
