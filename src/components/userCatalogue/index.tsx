@@ -704,7 +704,7 @@ export default function UserCatalogue() {
                     Sample Trends
                   </h1>
                   <p className="text-xs text-gray-500">
-                    Resistance patterns across your accessible datasets
+                    Resistance patterns across the AMR datasets datasets
                   </p>
                 </div>
               </div>
