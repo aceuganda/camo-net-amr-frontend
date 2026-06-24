@@ -55,6 +55,8 @@
     "typescript": "^5"
   },
   "resolutions": {
+    "form-data": "^4.0.6",
+    "@opentelemetry/core": "^2.8.0",
     "postcss": "^8.5.12",
     "uuid": "^14.0.0",
     "svgo": "^4.0.1",
