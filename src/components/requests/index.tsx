@@ -76,16 +76,17 @@ const statusMeta = (status?: string | null) => {
   }
 };
 
+// Labels stay short — these render inside a narrow table cell.
 const refereeStatusMeta = (status?: string | null) => {
   switch ((status || "").toLowerCase()) {
     case "approved":
       return { label: "Endorsed", tone: "bg-emerald-100 text-emerald-800 ring-emerald-200" };
     case "denied":
-      return { label: "Not endorsed", tone: "bg-red-100 text-red-800 ring-red-200" };
+      return { label: "Declined", tone: "bg-red-100 text-red-800 ring-red-200" };
     case "pending":
-      return { label: "Awaiting response", tone: "bg-amber-100 text-amber-800 ring-amber-200" };
+      return { label: "Awaiting", tone: "bg-amber-100 text-amber-800 ring-amber-200" };
     default:
-      return { label: "No response", tone: "bg-slate-100 text-slate-600 ring-slate-200" };
+      return { label: "Awaiting", tone: "bg-slate-100 text-slate-600 ring-slate-200" };
   }
 };
 
