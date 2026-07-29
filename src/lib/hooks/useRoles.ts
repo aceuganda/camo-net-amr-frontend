@@ -41,21 +41,28 @@ export const useUserDataSets = (userId: string, enabled = true) => {
   });
 };
 
-  export const useAdminUsersWith = (q = "") => {
+const noCacheHeaders = {
+  "Cache-Control": "no-cache, no-store, must-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
+
+/** `/users` is paginated server side, so skip/limit must be sent or only the
+ *  first page ever reaches the table. The matching total comes from
+ *  `useAdminUsersCount`, which is a separate endpoint. */
+export const useAdminUsersWith = (q = "", skip = 0, limit = 10) => {
     return useQuery<any, Error, {data: any}>({
       queryFn: () =>
         api.get("/users", {
-          headers: {
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0",
-          },
+          headers: noCacheHeaders,
           params: {
             t: Date.now(),
+            skip,
+            limit,
             ...(q ? { q } : {}),
           },
         }),
-      queryKey: ["admin_users", q],
+      queryKey: ["admin_users", q, skip, limit],
       meta: {
         errorMessage: "Failed to fetch users"
       },
@@ -65,3 +72,24 @@ export const useUserDataSets = (userId: string, enabled = true) => {
       refetchOnWindowFocus: true,
     });
   }
+
+export const useAdminUsersCount = (q = "") => {
+  return useQuery<any, Error, {data: {total: number}}>({
+    queryFn: () =>
+      api.get("/users/count", {
+        headers: noCacheHeaders,
+        params: {
+          t: Date.now(),
+          ...(q ? { q } : {}),
+        },
+      }),
+    queryKey: ["admin_users_count", q],
+    meta: {
+      errorMessage: "Failed to fetch user count"
+    },
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+  });
+}

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAdminUsersWith, useUserDataSets } from "@/lib/hooks/useRoles";
+import { useAdminUsersWith, useAdminUsersCount, useUserDataSets } from "@/lib/hooks/useRoles";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assignRole, removeRole, revokeAccess, assignDataSet, removeDataSet } from "@/lib/hooks/useRoles";
 import { useGetCatalogue } from "@/lib/hooks/useCatalogue";
@@ -64,13 +64,24 @@ const AdminUsers = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const { data, isLoading, error } = useAdminUsersWith(debouncedSearch);
-  const users: User[] = data?.data || [];
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [datasetToGrant, setDatasetToGrant] = useState("");
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
+  const skip = (currentPage - 1) * itemsPerPage;
+
+  // The server returns one page at a time and the matching total separately,
+  // so the table shows `users` as-is and the pager is driven by `totalUsers`.
+  const { data, isLoading, error } = useAdminUsersWith(
+    debouncedSearch,
+    skip,
+    itemsPerPage
+  );
+  const users: User[] = data?.data || [];
+  const { data: countData } = useAdminUsersCount(debouncedSearch);
+  const totalUsers: number = countData?.data?.total ?? 0;
+  const usersQueryKey = ["admin_users", debouncedSearch, skip, itemsPerPage];
 
   useEffect(() => {
     const handle = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350);
@@ -180,10 +191,10 @@ const AdminUsers = () => {
   } = useMutation({ 
     mutationFn: revokeAccess,
     onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: ["admin_users", debouncedSearch] });
+      await queryClient.cancelQueries({ queryKey: usersQueryKey });
 
-      const previousUsers = queryClient.getQueryData<{ data: User[] }>(["admin_users", debouncedSearch]);
-      queryClient.setQueryData<{ data: User[] }>(["admin_users", debouncedSearch], (current) => {
+      const previousUsers = queryClient.getQueryData<{ data: User[] }>(usersQueryKey);
+      queryClient.setQueryData<{ data: User[] }>(usersQueryKey, (current) => {
         if (!current?.data) {
           return current;
         }
@@ -217,11 +228,11 @@ const AdminUsers = () => {
           : "User enabled successfully"
       );
       setSheetOpen(false);
-      await queryClient.refetchQueries({ queryKey: ["admin_users", debouncedSearch], exact: true });
+      await queryClient.refetchQueries({ queryKey: usersQueryKey, exact: true });
     },
     onError: (_, variables, context) => {
       if (context?.previousUsers) {
-        queryClient.setQueryData(["admin_users", debouncedSearch], context.previousUsers);
+        queryClient.setQueryData(usersQueryKey, context.previousUsers);
       }
       setSelectedUser((current) =>
         current?.id === variables.user_id
@@ -240,13 +251,7 @@ const AdminUsers = () => {
     }
   });
 
-  const filteredUsers = users;
-
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const paginatedData = filteredUsers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.max(1, Math.ceil(totalUsers / itemsPerPage));
 
   const handleViewDetails = (user: User) => {
     setSelectedUser(user);
@@ -254,11 +259,13 @@ const AdminUsers = () => {
     setDatasetToGrant("");
   };
 
+  // Disabling the last user on the final page shrinks the total; step back so
+  // the table never sits on a page the server no longer has rows for.
   useEffect(() => {
-    if (currentPage > 1 && paginatedData.length === 0 && filteredUsers.length > 0) {
-      setCurrentPage(Math.min(currentPage, totalPages));
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
     }
-  }, [currentPage, filteredUsers.length, paginatedData.length, totalPages]);
+  }, [currentPage, totalPages]);
 
   return (
     <div className="flex min-h-[calc(100vh-3rem)] flex-col gap-4 sm:gap-6">
@@ -287,8 +294,13 @@ const AdminUsers = () => {
               />
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 sm:px-4 sm:py-3 sm:text-sm">
-              <span className="font-semibold text-slate-900">{filteredUsers.length}</span>{" "}
-              matching users
+              <span className="font-semibold text-slate-900">{totalUsers}</span>{" "}
+              {debouncedSearch ? "matching users" : "total users"}
+              {totalUsers > 0 ? (
+                <span className="ml-1 text-slate-500">
+                  &middot; page {currentPage} of {totalPages}
+                </span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -306,14 +318,14 @@ const AdminUsers = () => {
         </div>
       )}
 
-      {filteredUsers.length === 0 && searchTerm && (
+      {users.length === 0 && !isLoading && !error && searchTerm && (
         <div className="rounded-[24px] border border-slate-200 bg-white/90 p-4 text-center text-sm text-gray-500 sm:rounded-[28px]">
           No users found for search term: <strong>{searchTerm}</strong>
         </div>
       )}
 
       <div className="flex-1 overflow-auto">
-        {filteredUsers.length > 0 && !isLoading && !error && (
+        {users.length > 0 && !isLoading && !error && (
           <div className="overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:rounded-[28px]">
             <Table>
               <TableHeader className="bg-slate-950 text-white">
@@ -326,7 +338,7 @@ const AdminUsers = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((user) => {
+                {users.map((user) => {
                   const isAdmin = user.roles.some(role => role.role === "admin");
                   const disabledAccount = isUserDisabled(user);
                   return (
