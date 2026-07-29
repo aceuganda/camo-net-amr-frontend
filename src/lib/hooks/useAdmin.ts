@@ -1,7 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import api from "../axios";
 
+export interface AdminRange {
+  from: string;
+  to: string;
+  days: number;
+  new_users: number;
+  new_requests: number;
+  pending_requests: number;
+  approved_requests: number;
+  denied_requests: number;
+  page_views: number;
+  active_users: number;
+  new_submissions: number;
+}
+
 export interface AdminOverviewResponse {
+  range: AdminRange;
   users: {
     total: number;
     verified: number;
@@ -33,6 +48,8 @@ export interface AdminOverviewResponse {
     new_last_7d: number;
     new_last_30d: number;
     total_downloads: number;
+    with_irb_number: number;
+    missing_irb_number: number;
   };
   external_submissions: {
     total: number;
@@ -73,6 +90,10 @@ export interface AdminRecentRequest {
   last_update: string | null;
   project_title: string | null;
   institution: string | null;
+  irb_number: string | null;
+  referee_name: string | null;
+  referee_email: string | null;
+  category: string | null;
   downloads_count: number;
   re_request_count: number;
   user_name: string;
@@ -94,62 +115,96 @@ export interface AdminRecentSubmission {
   institution: string | null;
 }
 
-export const useAdminOverview = (enabled = true) =>
+/** Inclusive window sent to every admin endpoint so all panels report the same period. */
+export interface DateRangeParams {
+  date_from: string;
+  date_to: string;
+}
+
+const rangeQuery = ({ date_from, date_to }: DateRangeParams) =>
+  `date_from=${encodeURIComponent(date_from)}&date_to=${encodeURIComponent(date_to)}`;
+
+export const useAdminOverview = (range: DateRangeParams, enabled = true) =>
   useQuery<any, Error, { data: AdminOverviewResponse }>({
-    queryKey: ["admin_overview"],
-    queryFn: () => api.get("/admin/overview"),
+    queryKey: ["admin_overview", range.date_from, range.date_to],
+    queryFn: () => api.get(`/admin/overview?${rangeQuery(range)}`),
     enabled,
+    placeholderData: keepPreviousData,
     meta: {
       errorMessage: "Failed to fetch admin overview",
     },
   });
 
-export const useAdminRecentUsers = (days = 30, limit = 6, enabled = true) =>
+export const useAdminRecentUsers = (
+  range: DateRangeParams,
+  limit = 6,
+  enabled = true
+) =>
   useQuery<any, Error, { data: AdminRecentUser[] }>({
-    queryKey: ["admin_recent_users", days, limit],
-    queryFn: () => api.get(`/admin/users/recent?days=${days}&limit=${limit}`),
+    queryKey: ["admin_recent_users", range.date_from, range.date_to, limit],
+    queryFn: () =>
+      api.get(`/admin/users/recent?${rangeQuery(range)}&limit=${limit}`),
     enabled,
+    placeholderData: keepPreviousData,
     meta: {
       errorMessage: "Failed to fetch recent users",
     },
   });
 
-export const useAdminActiveUsers = (days = 7, limit = 6, enabled = true) =>
+export const useAdminActiveUsers = (
+  range: DateRangeParams,
+  limit = 6,
+  enabled = true
+) =>
   useQuery<any, Error, { data: AdminActiveUser[] }>({
-    queryKey: ["admin_active_users", days, limit],
-    queryFn: () => api.get(`/admin/users/active?days=${days}&limit=${limit}`),
+    queryKey: ["admin_active_users", range.date_from, range.date_to, limit],
+    queryFn: () =>
+      api.get(`/admin/users/active?${rangeQuery(range)}&limit=${limit}`),
     enabled,
+    placeholderData: keepPreviousData,
     meta: {
       errorMessage: "Failed to fetch active users",
     },
   });
 
 export const useAdminRecentRequests = (
-  days = 30,
+  range: DateRangeParams,
   limit = 6,
   status?: string,
   enabled = true
 ) =>
   useQuery<any, Error, { data: AdminRecentRequest[] }>({
-    queryKey: ["admin_recent_requests", days, limit, status ?? "all"],
+    queryKey: [
+      "admin_recent_requests",
+      range.date_from,
+      range.date_to,
+      limit,
+      status ?? "all",
+    ],
     queryFn: () =>
       api.get(
-        `/admin/requests/recent?days=${days}&limit=${limit}${
+        `/admin/requests/recent?${rangeQuery(range)}&limit=${limit}${
           status ? `&status=${status}` : ""
         }`
       ),
     enabled,
+    placeholderData: keepPreviousData,
     meta: {
       errorMessage: "Failed to fetch recent requests",
     },
   });
 
-export const useAdminRecentSubmissions = (days = 30, limit = 6, enabled = true) =>
+export const useAdminRecentSubmissions = (
+  range: DateRangeParams,
+  limit = 6,
+  enabled = true
+) =>
   useQuery<any, Error, { data: AdminRecentSubmission[] }>({
-    queryKey: ["admin_recent_submissions", days, limit],
+    queryKey: ["admin_recent_submissions", range.date_from, range.date_to, limit],
     queryFn: () =>
-      api.get(`/admin/submissions/recent?days=${days}&limit=${limit}`),
+      api.get(`/admin/submissions/recent?${rangeQuery(range)}&limit=${limit}`),
     enabled,
+    placeholderData: keepPreviousData,
     meta: {
       errorMessage: "Failed to fetch recent submissions",
     },

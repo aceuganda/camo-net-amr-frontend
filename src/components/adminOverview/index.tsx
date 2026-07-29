@@ -10,6 +10,7 @@ import {
   Download,
   FileClock,
   ShieldAlert,
+  ShieldCheck,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -41,41 +42,41 @@ const globalRangeOptions = [
 ] as const;
 
 const compactNumber = (value: number) =>
-  new Intl.NumberFormat("en", { notation: "compact" }).format(value);
+  new Intl.NumberFormat("en", { notation: "compact" }).format(value ?? 0);
 
-const formatInputDate = (value: Date) => value.toISOString().split("T")[0];
+/** Local calendar date (YYYY-MM-DD). toISOString() would shift the day for non-UTC users. */
+const formatInputDate = (value: Date) => {
+  const month = `${value.getMonth() + 1}`.padStart(2, "0");
+  const day = `${value.getDate()}`.padStart(2, "0");
+  return `${value.getFullYear()}-${month}-${day}`;
+};
+
+const daysAgo = (days: number) =>
+  new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
 const formatDate = (value: string | null) => {
   if (!value) {
     return "N/A";
   }
 
-  return new Date(value).toLocaleDateString("en-US", {
+  return new Date(value).toLocaleDateString("en-GB", {
+    day: "2-digit",
     month: "short",
-    day: "numeric",
     year: "numeric",
   });
 };
 
-const startOfDay = (value: Date) => {
-  const next = new Date(value);
-  next.setHours(0, 0, 0, 0);
-  return next;
-};
-
-const endOfDay = (value: Date) => {
-  const next = new Date(value);
-  next.setHours(23, 59, 59, 999);
-  return next;
-};
-
-const isWithinRange = (value: string | null, from: Date, to: Date) => {
-  if (!value) {
-    return false;
+const statusTone = (status: string) => {
+  switch (status) {
+    case "approved":
+      return "bg-emerald-100 text-emerald-700";
+    case "denied":
+      return "bg-red-100 text-red-700";
+    case "requested":
+      return "bg-amber-100 text-amber-700";
+    default:
+      return "bg-slate-100 text-slate-600";
   }
-
-  const current = new Date(value);
-  return current >= startOfDay(from) && current <= endOfDay(to);
 };
 
 function MetricCard({
@@ -193,60 +194,41 @@ function SimpleList({
 export default function AdminOverview() {
   const [globalRange, setGlobalRange] = useState("30");
   const [recentRequestsStatus, setRecentRequestsStatus] = useState("all");
-  const [customFrom, setCustomFrom] = useState(formatInputDate(new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)));
+  const [customFrom, setCustomFrom] = useState(formatInputDate(daysAgo(29)));
   const [customTo, setCustomTo] = useState(formatInputDate(new Date()));
   const { data: userInfo } = useUserInfor();
   const roles = userInfo?.data?.user?.roles ?? [];
   const isSuperAdmin = roles.includes("super_admin");
 
-  const today = useMemo(() => startOfDay(new Date()), []);
-  const derivedFrom = useMemo(() => {
+  // A single inclusive window shared by every panel, resolved server side so the
+  // counts are not capped by how many rows the list endpoints return.
+  const range = useMemo(() => {
     if (globalRange === "custom") {
-      return startOfDay(new Date(customFrom));
+      return { date_from: customFrom, date_to: customTo };
     }
 
     const days = Number(globalRange);
-    return startOfDay(new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000));
-  }, [customFrom, globalRange]);
-
-  const derivedTo = useMemo(() => {
-    if (globalRange === "custom") {
-      return endOfDay(new Date(customTo));
-    }
-    return endOfDay(today);
-  }, [customTo, globalRange, today]);
-
-  const daysForRange = useMemo(() => {
-    const diff = Math.ceil(
-      (endOfDay(derivedTo).getTime() - startOfDay(derivedFrom).getTime()) /
-        (1000 * 60 * 60 * 24)
-    ) + 1;
-    return Math.max(diff, 1);
-  }, [derivedFrom, derivedTo]);
+    return {
+      date_from: formatInputDate(daysAgo(days - 1)),
+      date_to: formatInputDate(new Date()),
+    };
+  }, [customFrom, customTo, globalRange]);
 
   const {
     data: overviewQuery,
     isLoading: overviewLoading,
     error: overviewError,
-  } = useAdminOverview(isSuperAdmin);
-  const { data: recentUsersQuery } = useAdminRecentUsers(
-    daysForRange,
-    50,
-    isSuperAdmin
-  );
-  const { data: activeUsersQuery } = useAdminActiveUsers(
-    daysForRange,
-    50,
-    isSuperAdmin
-  );
+  } = useAdminOverview(range, isSuperAdmin);
+  const { data: recentUsersQuery } = useAdminRecentUsers(range, 50, isSuperAdmin);
+  const { data: activeUsersQuery } = useAdminActiveUsers(range, 50, isSuperAdmin);
   const { data: recentRequestsQuery } = useAdminRecentRequests(
-    daysForRange,
+    range,
     50,
     recentRequestsStatus === "all" ? undefined : recentRequestsStatus,
     isSuperAdmin
   );
   const { data: recentSubmissionsQuery } = useAdminRecentSubmissions(
-    daysForRange,
+    range,
     50,
     isSuperAdmin
   );
@@ -286,27 +268,23 @@ export default function AdminOverview() {
   }
 
   const overview = overviewQuery.data;
-  const recentUsers = (recentUsersQuery?.data || []).filter((user) =>
-    isWithinRange(user.registered_at, derivedFrom, derivedTo)
-  );
-  const activeUsers = (activeUsersQuery?.data || []).filter((user) =>
-    isWithinRange(user.last_seen, derivedFrom, derivedTo)
-  );
-  const recentRequests = (recentRequestsQuery?.data || []).filter((request) =>
-    isWithinRange(request.created_at, derivedFrom, derivedTo)
-  );
-  const recentSubmissions = (recentSubmissionsQuery?.data || []).filter((submission) =>
-    isWithinRange(submission.created_at, derivedFrom, derivedTo)
-  );
+  const rangeStats = overview.range;
+  const recentUsers = recentUsersQuery?.data || [];
+  const activeUsers = activeUsersQuery?.data || [];
+  const recentRequests = recentRequestsQuery?.data || [];
+  const recentSubmissions = recentSubmissionsQuery?.data || [];
   const topRequested = overview.datasets.most_requested || [];
-  const activeUsersCount = activeUsers.length;
-  const recentUsersCount = recentUsers.length;
-  const recentRequestsCount = recentRequests.length;
-  const pageViewsInRange = activeUsers.reduce((total, user) => total + user.page_views, 0);
+  const daysForRange = rangeStats.days;
   const rangeLabel =
     globalRange === "custom"
-      ? `${formatDate(derivedFrom.toISOString())} to ${formatDate(derivedTo.toISOString())}`
+      ? `${formatDate(rangeStats.from)} to ${formatDate(rangeStats.to)}`
       : `Last ${daysForRange} days`;
+  const irbCoverage =
+    overview.data_requests.total > 0
+      ? Math.round(
+          (overview.data_requests.with_irb_number / overview.data_requests.total) * 100
+        )
+      : 0;
 
   const filterClassName =
     "appearance-none rounded-full border border-slate-200 bg-white px-3 py-2 pr-8 text-xs font-medium text-slate-700 outline-none transition hover:border-sky-300 focus:border-sky-400";
@@ -363,7 +341,7 @@ export default function AdminOverview() {
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 sm:text-sm">
               {rangeLabel}:{" "}
               <span className="font-semibold text-slate-900">
-                {compactNumber(activeUsersCount)}
+                {compactNumber(rangeStats.active_users)}
               </span>{" "}
               active users
             </div>
@@ -371,28 +349,40 @@ export default function AdminOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           label={`New Users ${daysForRange}D`}
-          value={recentUsersCount}
+          value={rangeStats.new_users}
           hint={`Member registrations captured in ${rangeLabel.toLowerCase()}.`}
           icon={UserCheck}
           compact
         />
         <MetricCard
           label={`New Requests ${daysForRange}D`}
-          value={recentRequestsCount}
-          hint={`Recent access demand in ${rangeLabel.toLowerCase()}.`}
+          value={rangeStats.new_requests}
+          hint={`${rangeStats.pending_requests} still pending, ${rangeStats.approved_requests} approved.`}
           icon={CheckCircle2}
           compact
         />
         <MetricCard
           label={`Page Views ${daysForRange}D`}
-          value={pageViewsInRange}
-          hint={`Activity proxy based on users active in ${rangeLabel.toLowerCase()}.`}
+          value={rangeStats.page_views}
+          hint={`Dataset page views across ${compactNumber(
+            rangeStats.active_users
+          )} active users.`}
           icon={Activity}
           compact
         />
+        <MetricCard
+          label={`Submissions ${daysForRange}D`}
+          value={rangeStats.new_submissions}
+          hint={`External dataset submissions in ${rangeLabel.toLowerCase()}.`}
+          icon={FileClock}
+          compact
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           label="Users"
           value={overview.users.total}
@@ -414,7 +404,9 @@ export default function AdminOverview() {
         <MetricCard
           label="Downloads"
           value={overview.data_requests.total_downloads}
-          hint={`${overview.activity.page_views_last_7d} page views in the last 7 days`}
+          hint={`Total dataset downloads across ${compactNumber(
+            overview.data_requests.approved
+          )} approved requests`}
           icon={Download}
         />
       </div>
@@ -470,7 +462,7 @@ export default function AdminOverview() {
           <div className="mb-3">
             <h3 className="text-base font-semibold text-slate-900">Operational Ratios</h3>
             <p className="mt-1 text-xs text-slate-500">
-              A quick read on user verification and request flow.
+              A quick read on user verification, request flow, and ethics coverage.
             </p>
           </div>
 
@@ -495,6 +487,17 @@ export default function AdminOverview() {
               </p>
               <p className="mt-1 text-[11px] text-slate-500">
                 {overview.data_requests.approved} approved, {overview.data_requests.denied} denied
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/75 px-3.5 py-3">
+              <p className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                <ShieldCheck className="h-3 w-3" /> IRB Coverage
+              </p>
+              <p className="mt-1.5 text-2xl font-semibold text-slate-900">
+                {irbCoverage}%
+              </p>
+              <p className="mt-1 text-[11px] text-slate-500">
+                {overview.data_requests.missing_irb_number} requests have no IRB number on file
               </p>
             </div>
             <div className="rounded-2xl border border-slate-100 bg-slate-50/75 px-3.5 py-3">
@@ -588,16 +591,13 @@ export default function AdminOverview() {
           }
           items={recentRequests.map((request) => ({
             title: request.dataset_name,
-            meta: `${request.user_name} • ${request.user_email}`,
+            meta: `${request.user_name} • ${request.user_email}${
+              request.irb_number ? ` • IRB ${request.irb_number}` : " • no IRB number"
+            }`,
             value: formatDate(request.created_at),
             status: {
               label: request.status,
-              tone:
-                request.status === "approved"
-                  ? "bg-emerald-100 text-emerald-700"
-                  : request.status === "denied"
-                  ? "bg-red-100 text-red-700"
-                  : "bg-amber-100 text-amber-700",
+              tone: statusTone(request.status),
             },
           }))}
         />
@@ -620,7 +620,6 @@ export default function AdminOverview() {
           }))}
         />
       </div>
-
     </section>
   );
 }
