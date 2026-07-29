@@ -12,6 +12,18 @@ spec:
       labels:
         app: amr-portal
     spec:
+      # Prefer amrdb but do not require it — the portal only needs to reach the API
+      # over ClusterIP, so it stays schedulable elsewhere if amrdb is full or down.
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - amrdb
       containers:
         - name: amr-portal-container
           image: khalifan1126/amr_portal:latest
