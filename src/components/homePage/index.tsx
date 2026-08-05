@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import SiteFooter from "@/components/siteFooter";
+import PillMark from "./pillMark";
+import DataWarehouseCorrection from "./dataWarehouseCorrection";
+import { MIN_DATA_YEAR, MAX_DATA_YEAR } from "./constants";
 
 const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), {
   ssr: false,
@@ -12,7 +15,7 @@ const ResistanceChoropleth = dynamic(() => import("../resistanceChoropleth"), {
 
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center bg-white text-gray-800 max-md:-z-10">
+    <main className="flex min-h-screen flex-col items-center bg-white text-gray-800">
       <motion.div
         className="w-full h-[35vh] relative"
         initial={{ opacity: 0 }}
@@ -23,13 +26,14 @@ export default function HomePage() {
           src="/antibios.png"
           alt="Research laboratory"
           fill
-          objectFit="cover"
+          className="object-cover"
           priority
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="text-center text-white max-w-4xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
               AMRDB
+              <PillMark />
             </h1>
             <p className="text-xl mb-4">
               A dedicated data portal facilitating access to antimicrobial
@@ -47,13 +51,16 @@ export default function HomePage() {
             Supported &amp; Partnered By
           </p>
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-8 sm:gap-12">
+            {/* width/height are each file's true pixel size — the rendered size
+                comes from the h-10 class, and mismatched ratios here make Next
+                warn about a modified dimension */}
             {[
-              { src: "/logos/cnetug.webp", alt: "CAMO-Net UG", href: "https://camonet.org" },
-              { src: "/logos/idmak.webp", alt: "IDI Makerere", href: "https://idi.mak.ac.ug" },
-              { src: "/logos/ace.webp", alt: "ACE", href: "https://ace.ac.ug" },
-              { src: "/logos/welc.webp", alt: "Wellcome Trust", href: "https://wellcome.org" },
-              { src: "/logos/lacuna.webp", alt: "Lacuna Fund", href: "https://lacunafund.org" },
-              { src: "/logos/moh.webp", alt: "Ministry of Health", href: "https://www.health.go.ug" },
+              { src: "/logos/cnetug.webp", alt: "CAMO-Net UG", href: "https://camonet.org", width: 462, height: 168 },
+              { src: "/logos/idmak.webp", alt: "IDI Makerere", href: "https://idi.mak.ac.ug", width: 2848, height: 1086 },
+              { src: "/logos/ace.webp", alt: "ACE", href: "https://ace.ac.ug", width: 1051, height: 369 },
+              { src: "/logos/welc.webp", alt: "Wellcome Trust", href: "https://wellcome.org", width: 262, height: 254 },
+              { src: "/logos/lacuna.webp", alt: "Lacuna Fund", href: "https://lacunafund.org", width: 160, height: 60 },
+              { src: "/logos/moh.webp", alt: "Ministry of Health", href: "https://www.health.go.ug", width: 448, height: 408 },
             ].map((s) => (
               <a
                 key={s.src}
@@ -65,8 +72,8 @@ export default function HomePage() {
                 <Image
                   src={s.src}
                   alt={s.alt}
-                  width={110}
-                  height={50}
+                  width={s.width}
+                  height={s.height}
                   className="h-10 w-auto object-contain"
                 />
               </a>
@@ -87,18 +94,19 @@ export default function HomePage() {
             </h2>
             <p className="text-gray-700 text-[12px] mb-4">
               The Data Portal connects to the central antimicrobial resistance
-              (AMR) related Data Warehouse, serving as a user-friendly interface
-              for accessing the data. Users can request access to specific
-              datasets, and the portal also provides visualizations of key
-              trends derived from the data stored in the warehouse, facilitating
-              informed decision-making and research.
+              (AMR) related <DataWarehouseCorrection />, serving as a
+              user-friendly interface for accessing the data. Users can
+              request access to specific datasets, and the portal also
+              provides visualizations of key trends derived from the data
+              stored in the warehouse, facilitating informed decision-making
+              and research.
             </p>
             <Image
               src="/data_visualization.webp"
               alt="Laboratory research"
-              width={300}
-              height={200}
-              className="rounded-lg mb-4 max-sm:w-full"
+              width={1900}
+              height={1266}
+              className="rounded-lg mb-4 h-auto w-full"
             />
             <Link href="/datasets">
               <button className="w-full py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-lightblue-600 transition duration-200">
@@ -118,10 +126,19 @@ export default function HomePage() {
             </h2> */}
             <div className="space-y-8">
               <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl text-center font-semibold text-[#003366] mb-4">
+                <h3 className="text-xl text-center font-semibold text-[#003366] mb-2">
                   Overall pathogen-antibiotic number of resistance cases in 9
                   Regional Referral Hospitals
                 </h3>
+                <p className="mb-4 flex flex-wrap items-center justify-center gap-2 text-center">
+                  <span className="rounded-full bg-[#24408E]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#24408E]">
+                    Retrospective
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Laboratory records collected from {MIN_DATA_YEAR} to{" "}
+                    {MAX_DATA_YEAR}
+                  </span>
+                </p>
                 <ResistanceChoropleth />
               </div>
 
@@ -167,9 +184,9 @@ export default function HomePage() {
             <Image
               src="/idiclinic.webp"
               alt="Capacity building"
-              width={300}
-              height={200}
-              className="rounded-lg mb-4 max-sm:w-full"
+              width={294}
+              height={232}
+              className="rounded-lg mb-4 h-auto max-sm:w-full"
             />
 
             <Link href="/datasets/access">

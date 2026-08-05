@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useQueryClient } from '@tanstack/react-query';
 import { HomeIcon, HamburgerMenuIcon, Cross1Icon} from "@radix-ui/react-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { logout } from "@/lib/hooks/useAuth";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -16,16 +16,26 @@ import { BookOpen, Shield, Database, FileText, Plus, Settings, LogOut, User, Bra
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 const GuideTour = dynamic(() => import("@/components/GuideTour"), { ssr: false });
 
-import { appMenuSteps } from "../GuideTour/steps";
+import { getAppMenuSteps } from "../GuideTour/steps";
 
 const NavigationBar = () => {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [admin, setAdmin] = useState(false);
-  
+  // The desktop nav links are hidden below 861px, so the tour walks a different path there.
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 860px)");
+    setIsMobile(query.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
   const router = useRouter();
-  const { data, error } = useUserInfor(); 
+  const { data, error, isFetched } = useUserInfor();
   const {isSuccess:logoutSuccess, isPending:logoutPending, mutate:logoutFn} = useMutation({
     mutationFn: logout,
   });
@@ -46,6 +56,11 @@ const NavigationBar = () => {
       router.push('/')
     } 
   }, [logoutSuccess,router]);
+
+  const tourSteps = useMemo(
+    () => getAppMenuSteps({ isLoggedIn, isMobile }),
+    [isLoggedIn, isMobile]
+  );
 
   const isActive = (path: string) => pathname === path;
 
@@ -76,7 +91,7 @@ const NavigationBar = () => {
       isActive: pathname.includes("/models")
     },
     { href: "/datasets/publication", label: "Publications", icon: FileText, className: "publications_button" },
-    { href: "/datasets/external", label: "Contribute", icon: Plus },
+    { href: "/datasets/external", label: "Contribute", icon: Plus, className: "contribute_button" },
   ];
 
   if (admin) {
@@ -91,7 +106,9 @@ const NavigationBar = () => {
 
   return (
     <>
-      <nav className="bg-gradient-to-r from-[#24408E] via-[#1e3a82] to-[#24408E] backdrop-blur-sm border-b border-white/10 shadow-2xl">
+      {/* relative z-50 keeps the mobile dropdown above page content without
+          pushing that content into a negative stacking layer */}
+      <nav className="relative z-50 bg-gradient-to-r from-[#24408E] via-[#1e3a82] to-[#24408E] backdrop-blur-sm border-b border-white/10 shadow-2xl">
         <div className="w-full min-h-[4.25rem] lg:min-h-[5.1rem] flex justify-between items-center px-4 sm:px-5 lg:px-8 text-white relative overflow-hidden">
           <div className="flex items-center gap-2 lg:gap-5 flex-1 min-w-0">
             {/* AMRDB Logo */}
@@ -107,8 +124,8 @@ const NavigationBar = () => {
             </Link>
 
             <div className="max-[860px]:block hidden relative">
-              <button 
-                className="p-2 hover:bg-white/10 rounded-lg transition-all duration-200 hover:scale-105" 
+              <button
+                className="menu_button p-2 hover:bg-white/10 rounded-lg transition-all duration-200 hover:scale-105"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               >
                 {!dropdownOpen ? (
@@ -221,7 +238,8 @@ const NavigationBar = () => {
 
       </nav>
       
-      <GuideTour steps={appMenuSteps} guideKey="menu-page" />
+      {/* Only start once we know who the visitor is, so the steps don't swap mid-tour */}
+      {isFetched && <GuideTour steps={tourSteps} guideKey="menu-page-v2" />}
     </>
   );
 };

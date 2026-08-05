@@ -14,3 +14,49 @@
 .background-net{
   background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url(/backgroundImageNet.webp)
 }
+
+/* Always-on labels for the regional resistance choropleth */
+.leaflet-tooltip.facility-tooltip {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(36, 64, 142, 0.18);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  padding: 1px 5px;
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #24408E;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Leaflet draws a callout arrow on tooltips; centred labels don't need one */
+.leaflet-tooltip.facility-tooltip::before {
+  display: none;
+}
+
+.facility-tooltip__name {
+  display: block;
+  font-size: 8px;
+  font-weight: 500;
+  color: #4B5563;
+}
+
+.facility-tooltip__count {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #24408E;
+}
+
+@media (min-width: 640px) {
+  .leaflet-tooltip.facility-tooltip {
+    padding: 2px 6px;
+  }
+  .facility-tooltip__name {
+    font-size: 9px;
+  }
+  .facility-tooltip__count {
+    font-size: 11px;
+  }
+}
