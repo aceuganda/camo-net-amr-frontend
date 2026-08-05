@@ -1,20 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useMapRegionalResistance } from "@/lib/hooks/useAMRTrends";
+import { useMapRegionalResistanceRange } from "@/lib/hooks/useAMRTrends";
 import ugandaGeoJSON from "../../../public/uganda_geo.json";
 import Legend from "./legend";
 import useScreenSize from "@/lib/hooks/useScreenSize";
 import dynamic from "next/dynamic";
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
-import { organisms, antibiotics } from "../homePage/constants";
-
-interface FacilityData {
-  facility_name: string;
-  resistant_cases: number;
-}
+import {
+  organisms,
+  antibiotics,
+  DATA_YEARS,
+  MIN_DATA_YEAR,
+  MAX_DATA_YEAR,
+} from "../homePage/constants";
 
 const getZoomLevel = (screenSize: number): number => {
   if (screenSize < 640) {
@@ -35,7 +36,8 @@ const getColor = (d: number) => {
 };
 
 const ResistanceChoropleth: React.FC = () => {
-  const [year, setYear] = useState<number | null>(null);
+  const [startYear, setStartYear] = useState(MIN_DATA_YEAR);
+  const [endYear, setEndYear] = useState(MAX_DATA_YEAR);
 
   const screenSize = useScreenSize();
   const zoomLevel = getZoomLevel(screenSize);
@@ -43,24 +45,29 @@ const ResistanceChoropleth: React.FC = () => {
   const [selectedAntibiotic, setSelectedAntibiotic] = useState(
     antibiotics[0].value
   );
-  const { data, isLoading, error, isSuccess, refetch } =
-    useMapRegionalResistance(year, selectedOrganism, selectedAntibiotic);
+  const coversAllYears =
+    startYear === MIN_DATA_YEAR && endYear === MAX_DATA_YEAR;
+  const { facilityTotals, isLoading, error, isSuccess } =
+    useMapRegionalResistanceRange(
+      startYear,
+      endYear,
+      selectedOrganism,
+      selectedAntibiotic,
+      coversAllYears
+    );
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const geoJsonRef = useRef<L.GeoJSON | null>(null);
 
-  const resistanceMap = data?.data?.data?.reduce(
-    (acc: any, facility: FacilityData) => {
-      acc[facility.facility_name.trim()] = facility.resistant_cases;
-      return acc;
-    },
-    {} as Record<string, number>
+  // Keyed on the totals themselves so the GeoJSON layer is only rebuilt when
+  // the numbers actually change, not on every render
+  const resistanceMapKey = JSON.stringify(facilityTotals);
+  const resistanceMap = useMemo<Record<string, number>>(
+    () => facilityTotals,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [resistanceMapKey]
   );
-
-  useEffect(() => {
-    refetch();
-  }, [year, selectedAntibiotic, selectedOrganism]);
 
   // Initialize Leaflet map when data is ready.
   // Returning map.remove() in cleanup is what makes this survive
@@ -102,7 +109,7 @@ const ResistanceChoropleth: React.FC = () => {
 
   // Swap the GeoJSON layer whenever the resistance data changes
   useEffect(() => {
-    if (!mapRef.current || !resistanceMap) return;
+    if (!mapRef.current || !isSuccess) return;
 
     if (geoJsonRef.current) {
       mapRef.current.removeLayer(geoJsonRef.current);
@@ -120,14 +127,37 @@ const ResistanceChoropleth: React.FC = () => {
       }),
       onEachFeature: (feature: any, layer: L.Layer) => {
         const facilityName = feature.properties.name;
-        const resistantCases = resistanceMap[facilityName.trim()] || "unknown";
+        const cases = resistanceMap[facilityName.trim()];
         layer.bindPopup(
-          `<strong>${facilityName}</strong><br/>Resistant Cases: ${resistantCases}`
+          `<strong>${facilityName}</strong><br/>Resistant Cases: ${
+            cases ?? "unknown"
+          }`
         );
+        // Permanent labels, but only where there are cases to report —
+        // otherwise the map fills up with zeroes and "unknown"
+        if (cases) {
+          layer.bindTooltip(
+            `<span class="facility-tooltip__name">${facilityName.trim()}</span><span class="facility-tooltip__count">${cases}</span>`,
+            {
+              permanent: true,
+              direction: "center",
+              className: "facility-tooltip",
+            }
+          );
+        }
       },
     }).addTo(mapRef.current);
-  }, [resistanceMap]);
+  }, [resistanceMap, isSuccess]);
 
+  const handleStartYearChange = (e: any) => {
+    const value = parseInt(e.target.value);
+    setStartYear(value);
+    // Keep the range valid rather than letting From overtake To
+    if (value > endYear) setEndYear(value);
+  };
+  const handleEndYearChange = (e: any) => {
+    setEndYear(parseInt(e.target.value));
+  };
   const handleOrganismChange = (e: any) => {
     setSelectedOrganism(e.target.value);
   };
@@ -137,25 +167,33 @@ const ResistanceChoropleth: React.FC = () => {
 
   return (
     <div className="relative flex flex-col">
-      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="mb-1 flex flex-col text-black">
-          <label className="mb-1 text-sm font-medium">Year</label>
+      <div className="mb-4 grid grid-cols-2 gap-x-3 gap-y-3">
+        <div className="flex flex-col text-black">
+          <label className="mb-1 text-sm font-medium">From</label>
           <select
-            value={year || ""}
-            onChange={(e) =>
-              setYear(
-                e.target.value === "overall" ? null : parseInt(e.target.value)
-              )
-            }
+            value={startYear}
+            onChange={handleStartYearChange}
             className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
           >
-            <option value="overall">Overall</option>
-            {/* <option value="2020">2020</option>
-            <option value="2021">2021</option>
-            <option value="2022">2022</option>
-            <option value="2023">2023</option>
-            <option value="2024">2024</option> */}
-            {/* Hide year filter for now */}
+            {DATA_YEARS.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col text-black">
+          <label className="mb-1 text-sm font-medium">To</label>
+          <select
+            value={endYear}
+            onChange={handleEndYearChange}
+            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+          >
+            {DATA_YEARS.filter((y) => y >= startYear).map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex flex-col">
@@ -214,6 +252,14 @@ const ResistanceChoropleth: React.FC = () => {
           />
           <Legend />
         </div>
+      )}
+
+      {isSuccess && (
+        <p className="mt-2 text-xs font-medium text-gray-600">
+          Showing resistant cases from{" "}
+          {startYear === endYear ? startYear : `${startYear} to ${endYear}`}
+          {coversAllYears ? " (all collection years)" : ""}
+        </p>
       )}
 
       <p className="text-xs text-gray-500 mt-2">CLSI. Performance Standards for Antimicrobial Susceptibility Testing. 34th ed. CLSI supplement M100. Clinical and Laboratory Standards Institute; 2024.</p>
