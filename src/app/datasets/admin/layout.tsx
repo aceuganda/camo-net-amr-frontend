@@ -14,6 +14,7 @@ import {
   PanelsTopLeft,
   ShieldCheck,
   Users,
+  Warehouse,
 } from "lucide-react";
 
 const adminLinks = [
@@ -50,6 +51,13 @@ const adminLinks = [
     label: "Datasets",
     description: "Edit catalogue and datasheets",
     icon: FolderKanban,
+    minRole: "super_admin",
+  },
+  {
+    href: "/datasets/admin/lakehouse",
+    label: "Lakehouse",
+    description: "Inspect warehouse catalogues",
+    icon: Warehouse,
     minRole: "super_admin",
   },
 ] as const;
