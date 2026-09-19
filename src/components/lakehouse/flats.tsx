@@ -12,13 +12,14 @@
  * why uploading a document requires the flat to exist first.
  */
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   AlertTriangle,
   Columns3,
   Database,
+  Eye,
   FileJson,
   Hammer,
   Loader2,
@@ -26,24 +27,60 @@ import {
   RotateCcw,
   Table2,
   Trash2,
+  X,
 } from "lucide-react";
 
 import {
   buildFlat,
   dropFlat,
+  fetchLatestFlatBuild,
+  isBuildActive,
   refreshFlat,
   resetDatasetVariables,
   uploadDatasetVariablesFile,
   useDatasetVariables,
+  useFlatBuild,
   useLakehouseDatasets,
   useLakehouseFlat,
   useLakehouseFlats,
+  type FlatBuild,
   type FlatShape,
   type LakehouseDataset,
 } from "@/lib/hooks/useLakehouse";
+import FlatPreviewSheet from "./flatPreview";
 
 /** Datasets whose repeating records can be pivoted into numbered columns. */
 const WIDE_CAPABLE = new Set(["flemming", "patient_outcomes", "daring"]);
+
+/**
+ * Builds this browser is watching, keyed by slug:shape. Kept in localStorage
+ * so a reload mid-build picks the progress bar back up instead of losing it.
+ */
+const WATCHED_BUILDS_KEY = "lakehouse_flat_builds";
+
+const buildKey = (slug: string, shape: FlatShape) => `${slug}:${shape}`;
+
+const readWatchedBuilds = (): Record<string, string> => {
+  try {
+    const raw = localStorage.getItem(WATCHED_BUILDS_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeWatchedBuilds = (builds: Record<string, string>) => {
+  try {
+    if (Object.keys(builds).length === 0) {
+      localStorage.removeItem(WATCHED_BUILDS_KEY);
+    } else {
+      localStorage.setItem(WATCHED_BUILDS_KEY, JSON.stringify(builds));
+    }
+  } catch {
+    // Private mode or blocked storage: the bar still works for this page load.
+  }
+};
 
 const formatWhen = (value: string | null) => {
   if (!value) return "never";
@@ -54,8 +91,110 @@ const formatWhen = (value: string | null) => {
 const formatCount = (value: number | null | undefined) =>
   value === null || value === undefined ? "-" : value.toLocaleString();
 
+const formatBytes = (value: number | null | undefined) => {
+  if (value === null || value === undefined) return null;
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let size = value;
+  let unit = 0;
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit += 1;
+  }
+  return `${size < 10 && unit > 0 ? size.toFixed(1) : Math.round(size)} ${units[unit]}`;
+};
+
+const formatElapsed = (ms: number | null | undefined) => {
+  if (ms === null || ms === undefined) return null;
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ${String(seconds % 60).padStart(2, "0")}s`;
+  return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m`;
+};
+
 const errorText = (error: any, fallback: string) =>
   error?.response?.data?.detail ?? error?.message ?? fallback;
+
+/**
+ * Progress of one in-flight build, polled until it settles. Rendered inside
+ * the dataset row so the bar sits next to the button that started it.
+ */
+function BuildProgress({
+  buildId,
+  onSettled,
+}: {
+  buildId: string;
+  /** Called once, with the final record, or null if the build cannot be read. */
+  onSettled: (build: FlatBuild | null) => void;
+}) {
+  const { data, error } = useFlatBuild(buildId);
+  const build = data?.data;
+  const settled = useRef(false);
+
+  useEffect(() => {
+    if (settled.current) return;
+    if (error) {
+      settled.current = true;
+      onSettled(null);
+    } else if (build && !isBuildActive(build)) {
+      settled.current = true;
+      onSettled(build);
+    }
+  }, [build, error, onSettled]);
+
+  const percent = Math.max(0, Math.min(100, build?.percent ?? 0));
+  const query = build?.detail?.query;
+  const isLoading = build?.detail?.step === "load";
+
+  // Only the load step has stats worth reading; the rest are metadata commits.
+  const stats = [
+    isLoading && query?.processed_rows != null
+      ? `${formatCount(query.processed_rows)} rows`
+      : null,
+    isLoading && query?.written_bytes ? `${formatBytes(query.written_bytes)} written` : null,
+    query?.elapsed_ms ? formatElapsed(query.elapsed_ms) : null,
+  ].filter(Boolean);
+
+  return (
+    <div className="mt-2 rounded-lg bg-cyan-50/60 px-3 py-2">
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <p className="flex min-w-0 items-center gap-1.5 text-cyan-900">
+          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
+          <span className="truncate">
+            {build?.phase ?? "Starting build…"}
+            {build?.shape === "wide" && (
+              <span className="ml-1.5 rounded-full bg-cyan-100 px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-cyan-800">
+                wide
+              </span>
+            )}
+          </span>
+        </p>
+        <span className="shrink-0 font-medium tabular-nums text-cyan-900">
+          {percent}%
+        </span>
+      </div>
+
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-cyan-100"
+      >
+        <div
+          className="h-full rounded-full bg-cyan-600 transition-[width] duration-700 ease-out"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+
+      {stats.length > 0 && (
+        <p className="mt-1.5 text-[11px] tabular-nums text-cyan-800/80">
+          {stats.join(" · ")}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function LakehouseFlats() {
   const queryClient = useQueryClient();
@@ -63,6 +202,7 @@ export default function LakehouseFlats() {
 
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [activeTable, setActiveTable] = useState<string | null>(null);
+  const [previewTable, setPreviewTable] = useState<string | null>(null);
   const [uploadTarget, setUploadTarget] = useState<string | null>(null);
 
   const { data: datasetsData, isLoading: datasetsLoading } =
@@ -87,6 +227,71 @@ export default function LakehouseFlats() {
     queryClient.invalidateQueries({ queryKey: ["lakehouse_flat"] });
   };
 
+  // Builds being polled, keyed slug:shape -> build id. Seeded from storage so
+  // a reload mid-build resumes the bar.
+  const [watched, setWatched] = useState<Record<string, string>>({});
+  const [buildErrors, setBuildErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    setWatched(readWatchedBuilds());
+  }, []);
+
+  const watch = (build: FlatBuild) => {
+    setWatched((current) => {
+      const next = { ...current, [buildKey(build.slug, build.shape)]: build.id };
+      writeWatchedBuilds(next);
+      return next;
+    });
+    setBuildErrors((current) => {
+      const { [buildKey(build.slug, build.shape)]: _dropped, ...rest } = current;
+      return rest;
+    });
+  };
+
+  const unwatch = (key: string) => {
+    setWatched((current) => {
+      const { [key]: _dropped, ...next } = current;
+      writeWatchedBuilds(next);
+      return next;
+    });
+  };
+
+  const onBuildSettled = (key: string) => (build: FlatBuild | null) => {
+    unwatch(key);
+    if (!build) return; // The build record is gone; nothing to report.
+
+    if (build.status === "failed") {
+      setBuildErrors((current) => ({
+        ...current,
+        [key]: build.error ?? "Build failed",
+      }));
+      toast.error(`Build of ${build.slug} (${build.shape}) failed`);
+      return;
+    }
+
+    const result = build.result;
+    // A wide build clips groups that exceed the column ceiling. That is
+    // invisible in the resulting file, so surface it rather than log it.
+    const truncated = (result?.flats ?? []).flatMap((flat: any) =>
+      Object.entries(flat.truncated ?? {}).map(
+        ([group, count]) => `${group} (${count})`
+      )
+    );
+
+    if (truncated.length > 0) {
+      toast.warning(
+        `Built, but truncated to the column limit: ${truncated.join(", ")}`
+      );
+    } else {
+      toast.success(
+        `Built ${result?.flat_count ?? 1} ${
+          result?.flat_count === 1 ? "table" : "tables"
+        } for ${result?.dataset ?? build.slug}`
+      );
+    }
+    refreshAll();
+  };
+
   const build = useMutation({
     mutationFn: ({
       slug,
@@ -97,30 +302,25 @@ export default function LakehouseFlats() {
       shape: FlatShape;
       existing: boolean;
     }) => (existing ? refreshFlat(slug, shape) : buildFlat(slug, shape)),
-    onSuccess: (result) => {
-      // A wide build clips groups that exceed the column ceiling. That is
-      // invisible in the resulting file, so surface it rather than log it.
-      const truncated = (result?.flats ?? []).flatMap((flat: any) =>
-        Object.entries(flat.truncated ?? {}).map(
-          ([group, count]) => `${group} (${count})`
-        )
-      );
-
-      if (truncated.length > 0) {
-        toast.warning(
-          `Built, but truncated to the column limit: ${truncated.join(", ")}`
-        );
-      } else {
-        toast.success(
-          `Built ${result?.flat_count ?? 1} ${
-            result?.flat_count === 1 ? "table" : "tables"
-          } for ${result?.dataset ?? "dataset"}`
-        );
+    // 202: the job is queued; from here the progress bar takes over.
+    onSuccess: (started) => watch(started),
+    onError: async (error: any, { slug, shape }) => {
+      // 409 means a build is already running, most likely started elsewhere.
+      // Attach to it rather than just reporting the refusal.
+      if (error?.response?.status === 409) {
+        try {
+          const running = await fetchLatestFlatBuild(slug, shape);
+          if (isBuildActive(running)) {
+            watch(running);
+            toast.info(`Attached to the ${shape} build already running for ${slug}`);
+            return;
+          }
+        } catch {
+          // Fall through to the plain error.
+        }
       }
-      refreshAll();
+      toast.error(errorText(error, "Flat build failed"));
     },
-    onError: (error: any) =>
-      toast.error(errorText(error, "Flat build failed")),
   });
 
   const remove = useMutation({
@@ -172,6 +372,13 @@ export default function LakehouseFlats() {
       : reset.isPending
       ? (reset.variables as string)
       : null;
+
+  /** Build ids in flight for one dataset, by shape. */
+  const activeBuilds = (slug: string) =>
+    (["long", "wide"] as FlatShape[])
+      .map((shape) => ({ shape, key: buildKey(slug, shape) }))
+      .filter(({ key }) => watched[key])
+      .map(({ shape, key }) => ({ shape, key, buildId: watched[key] }));
 
   const totals = useMemo(() => {
     const built = datasets.filter((d) => d.has_flat).length;
@@ -266,7 +473,9 @@ export default function LakehouseFlats() {
 
         <div className="space-y-2">
           {datasets.map((dataset) => {
-            const isBusy = busySlug === dataset.slug;
+            const inFlight = activeBuilds(dataset.slug);
+            const isBuilding = inFlight.length > 0;
+            const isBusy = busySlug === dataset.slug || isBuilding;
             const isActive = activeSlug === dataset.slug;
             const partial =
               dataset.built_count > 0 &&
@@ -332,7 +541,7 @@ export default function LakehouseFlats() {
                       }
                       className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
                     >
-                      {isBusy ? (
+                      {isBusy && !isBuilding ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
                         <Hammer className="h-3.5 w-3.5" />
@@ -353,7 +562,11 @@ export default function LakehouseFlats() {
                         title="One row per visit, repeating records in numbered columns"
                         className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
                       >
-                        <Columns3 className="h-3.5 w-3.5" />
+                        {inFlight.some((b) => b.shape === "wide") ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Columns3 className="h-3.5 w-3.5" />
+                        )}
                         Wide
                       </button>
                     )}
@@ -383,7 +596,47 @@ export default function LakehouseFlats() {
                   </div>
                 </div>
 
-                {partial && (
+                {inFlight.map(({ key, buildId }) => (
+                  <BuildProgress
+                    key={buildId}
+                    buildId={buildId}
+                    onSettled={onBuildSettled(key)}
+                  />
+                ))}
+
+                {(["long", "wide"] as FlatShape[]).map((shape) => {
+                  const key = buildKey(dataset.slug, shape);
+                  const message = buildErrors[key];
+                  if (!message) return null;
+                  return (
+                    <div
+                      key={key}
+                      className="mt-2 flex items-start gap-1.5 rounded-lg bg-rose-50 px-2 py-1.5 text-xs text-rose-800"
+                    >
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span className="min-w-0 flex-1 break-words">
+                        <span className="font-medium">
+                          {shape === "wide" ? "Wide build" : "Build"} failed:
+                        </span>{" "}
+                        {message}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setBuildErrors((current) => {
+                            const { [key]: _dropped, ...rest } = current;
+                            return rest;
+                          })
+                        }
+                        aria-label="Dismiss"
+                        className="shrink-0 rounded p-0.5 text-rose-500 hover:bg-rose-100"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+
+                {partial && !isBuilding && (
                   <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                     Only some sections are built. Downloads keep using the slow
@@ -464,6 +717,7 @@ export default function LakehouseFlats() {
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-500">
                     <th className="py-2 pr-2 font-medium">Table</th>
+                    <th className="py-2 pr-2 text-right font-medium">Patients</th>
                     <th className="py-2 pr-2 text-right font-medium">Rows</th>
                     <th className="py-2 pr-2 text-right font-medium">Cols</th>
                     <th className="py-2 pr-2 font-medium">Built</th>
@@ -491,25 +745,59 @@ export default function LakehouseFlats() {
                         >
                           {flat.table}
                         </button>
+                        {flat.slug && (
+                          <p className="mt-0.5 text-[11px] text-slate-500">
+                            {flat.slug}
+                            {flat.section && (
+                              <span className="text-slate-400">
+                                {" "}/ {flat.section.replace(/_/g, " ")}
+                              </span>
+                            )}
+                            {flat.shape === "wide" && (
+                              <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-px text-[10px] text-slate-600">
+                                wide
+                              </span>
+                            )}
+                          </p>
+                        )}
                       </td>
-                      <td className="py-1.5 pr-2 text-right tabular-nums text-slate-600">
+                      <td
+                        className="py-1.5 pr-2 text-right tabular-nums text-slate-800"
+                        title={
+                          flat.visit_count !== null && flat.visit_count !== undefined
+                            ? `${flat.visit_count.toLocaleString()} visits`
+                            : undefined
+                        }
+                      >
+                        {formatCount(flat.patient_count)}
+                      </td>
+                      <td className="py-1.5 pr-2 text-right tabular-nums text-slate-500">
                         {formatCount(flat.row_count)}
                       </td>
-                      <td className="py-1.5 pr-2 text-right tabular-nums text-slate-600">
+                      <td className="py-1.5 pr-2 text-right tabular-nums text-slate-500">
                         {formatCount(flat.column_count)}
                       </td>
                       <td className="py-1.5 pr-2 text-slate-500">
                         {formatWhen(flat.built_at)}
                       </td>
                       <td className="py-1.5 text-right">
-                        <button
-                          disabled={remove.isPending}
-                          onClick={() => remove.mutate(flat.table)}
-                          title="Drop this table"
-                          className="rounded p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        <div className="inline-flex items-center gap-0.5">
+                          <button
+                            onClick={() => setPreviewTable(flat.table)}
+                            title="Preview rows"
+                            className="rounded p-1 text-slate-400 transition hover:bg-cyan-50 hover:text-cyan-700"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            disabled={remove.isPending}
+                            onClick={() => remove.mutate(flat.table)}
+                            title="Drop this table"
+                            className="rounded p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -572,6 +860,8 @@ export default function LakehouseFlats() {
           )}
         </div>
       </section>
+
+      <FlatPreviewSheet table={previewTable} onClose={() => setPreviewTable(null)} />
     </div>
   );
 }

@@ -129,10 +129,21 @@ export type FlatShape = "long" | "wide";
 
 export interface LakehouseFlat {
   table: string;
+  /** The dataset this flat is built from. A many-sheet dataset is many flats. */
   dataset: string | null;
+  slug: string | null;
+  /** data_sets.id of the catalogue entry, when the dataset has one. */
+  dataset_id: string | null;
+  /** Section of a multi-section dataset (economic); null for single-flat datasets. */
+  section: string | null;
+  shape: FlatShape;
   template: string | null;
   column_count: number;
+  /** Rows in the flat. In a long patient flat these are records, not people. */
   row_count: number | null;
+  /** Distinct patients / visits, counted at build time. Null for flats without those keys. */
+  patient_count: number | null;
+  visit_count: number | null;
   built_at: string | null;
   built_by: string | null;
 }
@@ -163,6 +174,7 @@ export interface LakehouseFlatDetail extends LakehouseFlat {
 export interface LakehouseDataset {
   slug: string;
   dataset: string;
+  dataset_id: string | null;
   variable_count: number;
   flat_tables: string[];
   flat_count: number;
@@ -193,6 +205,93 @@ export interface DatasetVariables {
   variables: Record<string, DatasetVariable>;
 }
 
+/* ------------------------------------------------------------------------ *
+ * Flat builds
+ *
+ * Building is a background job: the POST answers 202 with a build record
+ * straight away and the page polls it. A wide build measures the data before
+ * it can even create the table, so it can run for minutes; the record carries
+ * the current step, a weighted percentage and the live Trino query stats.
+ * ------------------------------------------------------------------------ */
+
+export type FlatBuildStatus = "queued" | "running" | "succeeded" | "failed";
+
+export interface FlatBuildQueryStats {
+  query_id: string | null;
+  state: string | null;
+  /** Trino's own 0-100 progress for the running statement. */
+  progress: number | null;
+  processed_rows: number | null;
+  written_bytes: number | null;
+  elapsed_ms: number | null;
+}
+
+export interface FlatBuildDetail {
+  table: string | null;
+  step: "measure" | "probe" | "create" | "load" | "swap" | null;
+  flat_index: number | null;
+  flat_count: number | null;
+  query: FlatBuildQueryStats | null;
+}
+
+export interface FlatBuild {
+  /** Stable per slug+shape: a rebuild reuses the record rather than adding one. */
+  id: string;
+  slug: string;
+  dataset: string | null;
+  dataset_id: string | null;
+  shape: FlatShape;
+  status: FlatBuildStatus;
+  /** Human-readable current step, e.g. "Loading flat_daring_wide (3 of 8)". */
+  phase: string | null;
+  percent: number;
+  detail: FlatBuildDetail | null;
+  /** The build report, present once status is "succeeded". */
+  result: any | null;
+  error: string | null;
+  started_by: string | null;
+  started_at: string;
+  updated_at: string;
+  finished_at: string | null;
+}
+
+export const isBuildActive = (build: FlatBuild | null | undefined) =>
+  build?.status === "queued" || build?.status === "running";
+
+/** How often an in-flight build is re-read. */
+const BUILD_POLL_MS = 2000;
+
+/** Poll one build until it settles; stops refetching once it has. */
+export const useFlatBuild = (buildId: string | null) =>
+  useQuery<any, Error, { data: FlatBuild }>({
+    queryKey: ["lakehouse_flat_build", buildId],
+    queryFn: () =>
+      api.get(`/lakehouse/flats/builds/${encodeURIComponent(buildId as string)}`),
+    enabled: Boolean(buildId),
+    refetchInterval: (query) => {
+      const build = query.state.data?.data as FlatBuild | undefined;
+      return build && !isBuildActive(build) ? false : BUILD_POLL_MS;
+    },
+    retry: false,
+    meta: {
+      errorMessage: "Failed to read flat build progress",
+    },
+  });
+
+/**
+ * The most recent build of one flat, whatever its state. Used to attach to a
+ * build another session started when a POST is refused with 409.
+ */
+export const fetchLatestFlatBuild = async (
+  slug: string,
+  shape: FlatShape
+): Promise<FlatBuild> => {
+  const response = await api.get(
+    `/lakehouse/flats/${encodeURIComponent(slug)}/builds/latest?shape=${shape}`
+  );
+  return response.data;
+};
+
 export const useLakehouseFlats = (enabled = true) =>
   useQuery<any, Error, { data: LakehouseFlats }>({
     queryKey: ["lakehouse_flats"],
@@ -211,6 +310,60 @@ export const useLakehouseFlat = (table: string | null, enabled = true) =>
     enabled: enabled && Boolean(table),
     meta: {
       errorMessage: "Failed to fetch flat table details",
+    },
+  });
+
+/* ------------------------------------------------------------------------ *
+ * Flat preview: the first rows of a flat as the table really holds them.
+ * ------------------------------------------------------------------------ */
+
+export interface FlatPreviewColumn extends FlatColumn {}
+
+export interface FlatPreview extends Pick<
+  LakehouseFlat,
+  | "table"
+  | "dataset"
+  | "slug"
+  | "dataset_id"
+  | "section"
+  | "shape"
+  | "patient_count"
+  | "visit_count"
+> {
+  limit: number;
+  /** Total rows in the flat (from the Iceberg snapshot), not the rows returned. */
+  row_count: number | null;
+  built_at: string | null;
+  column_count: number;
+  /**
+   * Columns the rows are ordered and grouped by, as stored (e.g. patientid,
+   * visitid). Empty for a flat without patient/visit keys.
+   */
+  grain_columns: string[];
+  columns: FlatPreviewColumn[];
+  /** One array per row, in column order. Decimals arrive as strings. */
+  rows: (string | number | boolean | null)[][];
+}
+
+export const PREVIEW_LIMITS = [25, 50, 100, 200] as const;
+export type PreviewLimit = (typeof PREVIEW_LIMITS)[number];
+
+export const useFlatPreview = (
+  table: string | null,
+  limit: PreviewLimit = 50,
+  enabled = true
+) =>
+  useQuery<any, Error, { data: FlatPreview }>({
+    queryKey: ["lakehouse_flat_preview", table, limit],
+    queryFn: () =>
+      api.get(
+        `/lakehouse/flats/table/${encodeURIComponent(table as string)}/preview?limit=${limit}`
+      ),
+    enabled: enabled && Boolean(table),
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+    meta: {
+      errorMessage: "Failed to load flat preview",
     },
   });
 
@@ -240,11 +393,16 @@ export const useDatasetVariables = (slug: string | null, enabled = true) =>
 // Super admin only ---------------------------------------------------------
 
 /**
- * Build a dataset's flats, replacing any that exist. A wide build first
- * measures how many times each repeating record occurs within a visit, so it
- * takes longer than a long one and its column count depends on the data.
+ * Start building a dataset's flats, replacing any that exist. Answers 202 with
+ * the build to poll (see useFlatBuild); 409 if one is already running. A wide
+ * build first measures how many times each repeating record occurs within a
+ * visit, so it takes longer than a long one and its column count depends on
+ * the data.
  */
-export const buildFlat = async (slug: string, shape: FlatShape = "long") => {
+export const buildFlat = async (
+  slug: string,
+  shape: FlatShape = "long"
+): Promise<FlatBuild> => {
   const response = await api.post(
     `/lakehouse/flats/${encodeURIComponent(slug)}?shape=${shape}`
   );
@@ -252,7 +410,10 @@ export const buildFlat = async (slug: string, shape: FlatShape = "long") => {
 };
 
 /** Rebuild from source. Documentation on the existing flat is carried over. */
-export const refreshFlat = async (slug: string, shape: FlatShape = "long") => {
+export const refreshFlat = async (
+  slug: string,
+  shape: FlatShape = "long"
+): Promise<FlatBuild> => {
   const response = await api.post(
     `/lakehouse/flats/${encodeURIComponent(slug)}/refresh?shape=${shape}`
   );
