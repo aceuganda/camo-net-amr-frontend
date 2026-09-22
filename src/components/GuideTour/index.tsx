@@ -1,7 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Joyride, {
-  CallBackProps,
+import {
+  EventData,
+  Joyride,
+  STATUS,
   Step,
   TooltipRenderProps,
 } from "react-joyride";
@@ -114,11 +116,8 @@ const GuideTour: React.FC<GuideTourProps> = ({ steps, guideKey, delay = 600 }) =
     return () => clearTimeout(timer);
   }, [guideKey, delay]);
 
-  const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status } = data;
-    const finishedStatuses = ["finished", "skipped"];
-
-    if (finishedStatuses.includes(status)) {
+  const handleJoyrideEvent = ({ status }: EventData) => {
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       // Mark the guide as completed
       localStorage.setItem(guideKey, "true");
       setRun(false); // Stop the guide
@@ -130,29 +129,20 @@ const GuideTour: React.FC<GuideTourProps> = ({ steps, guideKey, delay = 600 }) =
       steps={steps}
       run={run}
       continuous
-      showSkipButton
-      disableOverlayClose
-      disableScrollParentFix
-      scrollOffset={120}
-      spotlightPadding={6}
       tooltipComponent={Tooltip}
-      floaterProps={{
-        disableAnimation: true,
-        styles: { arrow: { length: 8, spread: 14 } },
+      options={{
+        arrowColor: "#24408E",
+        arrowSize: 8,
+        arrowBase: 14,
+        overlayClickAction: false,
+        overlayColor: "rgba(10, 20, 45, 0.65)",
+        primaryColor: "#00B9F1",
+        scrollOffset: 120,
+        spotlightPadding: 6,
+        spotlightRadius: 12,
+        zIndex: 100000,
       }}
-      styles={{
-        options: {
-          arrowColor: "#24408E",
-          overlayColor: "rgba(10, 20, 45, 0.65)",
-          primaryColor: "#00B9F1",
-          zIndex: 100000,
-        },
-        spotlight: {
-          borderRadius: 12,
-          boxShadow: "0 0 0 3px rgba(0, 185, 241, 0.6)",
-        },
-      }}
-      callback={handleJoyrideCallback}
+      onEvent={handleJoyrideEvent}
     />
   );
 };

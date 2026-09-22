@@ -7,10 +7,12 @@ import {
   ChevronRight,
   CircleAlert,
   Layers,
+  Package,
   RefreshCw,
   Table2,
   Warehouse,
 } from "lucide-react";
+import LakehouseFlats from "./flats";
 import {
   useLakehouseCatalogs,
   useLakehouseHealth,
@@ -73,6 +75,8 @@ export default function LakehouseOverview() {
   );
 
   const isConnected = !healthError && health?.status === "success";
+
+  const [tab, setTab] = useState<"catalog" | "flats">("catalog");
 
   return (
     <div className="space-y-4">
@@ -154,6 +158,35 @@ export default function LakehouseOverview() {
         )}
       </section>
 
+      {/* Section switch ---------------------------------------------------- */}
+      <div className="flex gap-2">
+        {[
+          { id: "catalog" as const, label: "Catalog", icon: Boxes },
+          { id: "flats" as const, label: "Flat exports", icon: Package },
+        ].map((entry) => {
+          const Icon = entry.icon;
+          const isActive = tab === entry.id;
+          return (
+            <button
+              key={entry.id}
+              onClick={() => setTab(entry.id)}
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+                isActive
+                  ? "bg-cyan-400 text-slate-950"
+                  : "bg-slate-100 text-slate-700 hover:text-cyan-700"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {entry.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === "flats" && <LakehouseFlats />}
+
+      {tab === "catalog" && (
+        <>
       {/* Summary tiles ---------------------------------------------------- */}
       <section className="grid gap-3 sm:grid-cols-3">
         {[
@@ -360,6 +393,8 @@ export default function LakehouseOverview() {
           )}
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }

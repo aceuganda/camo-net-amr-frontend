@@ -8,6 +8,12 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # id-token lets the runner mint a GitHub OIDC token; Teleport exchanges it
+    # for short-lived kube credentials, so no long-lived KUBECONFIG secret is
+    # stored in GitHub.
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout code
@@ -35,15 +41,28 @@ jobs:
           push: true
           tags: khalifan1126/amr_portal:latest
 
-      - name: Configure Kubeconfig
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-          export KUBECONFIG=$HOME/.kube/config
-      
+      # auth-k8s does not ship tbot; setup installs the Teleport binaries,
+      # with `version: auto` matching whatever the proxy is running.
+      - name: Fetch Teleport binaries
+        uses: teleport-actions/setup@v1
+        with:
+          version: auto
+          proxy: teleport.aceuganda.org:443
+
+      # Exports KUBECONFIG for every later step, so the kubectl calls below
+      # need no changes.
+      - name: Fetch Teleport credentials
+        uses: teleport-actions/auth-k8s@v2
+        with:
+          proxy: teleport.aceuganda.org:443
+          token: github-actions-token
+          kubernetes-cluster: amrdb
+        env:
+          TELEPORT_ANONYMOUS_TELEMETRY: "0"
+
       - name: Create Kubernetes Secrets
         run: |
-          kubectl apply -f - <<EOF
+          kubectl apply --validate=false -f - <<EOF
           apiVersion: v1
           kind: Secret
           metadata:
@@ -59,4 +78,4 @@ jobs:
           kubectl patch deployment amr-portal-deployment -p \
             "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"kubectl.kubernetes.io/restartedAt\":\"$(date +'%Y-%m-%dT%H:%M:%S%z')\"}}}}}"
           
-          kubectl apply -f k8s/amr_portal_deployment.yaml
+          kubectl apply --validate=false -f k8s/amr_portal_deployment.yaml

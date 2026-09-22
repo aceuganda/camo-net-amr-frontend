@@ -18,7 +18,7 @@ export const getAppMenuSteps = ({
   const welcome: Step = {
     target: "body",
     placement: "center",
-    disableBeacon: true,
+    skipBeacon: true,
     title: "Welcome to AMRDB",
     content:
       "A quick tour of the portal — where to find datasets, how to request access, and what else you can do here. It takes less than a minute.",

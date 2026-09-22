@@ -18,6 +18,7 @@ const cspHeader = `
 `;
 
 const nextConfig = {
+  agentRules: false,
   turbopack: {
     rules: {
       "*.svg": {
