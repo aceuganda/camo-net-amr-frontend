@@ -420,6 +420,37 @@ export const refreshFlat = async (
   return response.data;
 };
 
+// --- Export schema maintenance -----------------------------------------------
+
+export type ExportSchemaStatus = {
+  catalog: string;
+  schema: string;
+  exists: boolean;
+  location: string | null;
+  expected_location: string | null;
+  healthy: boolean;
+  problem: string | null;
+  ddl: string | null;
+  dropped_tables?: string[];
+};
+
+/** Where the export schema is stored and whether that matches the config. */
+export const useExportSchemaStatus = (enabled = true) =>
+  useQuery<any, Error, { data: ExportSchemaStatus }>({
+    queryKey: ["lakehouse_export_schema"],
+    queryFn: () => api.get("/lakehouse/flats/schema"),
+    enabled,
+    meta: {
+      errorMessage: "Failed to inspect the export schema",
+    },
+  });
+
+/** Drop the export schema with every flat in it and recreate it in the warehouse. */
+export const repairExportSchema = async (): Promise<ExportSchemaStatus> => {
+  const response = await api.post("/lakehouse/flats/schema/repair");
+  return response.data;
+};
+
 export const dropFlat = async (table: string) => {
   const response = await api.delete(
     `/lakehouse/flats/table/${encodeURIComponent(table)}`

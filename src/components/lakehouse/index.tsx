@@ -11,8 +11,10 @@ import {
   RefreshCw,
   Table2,
   Warehouse,
+  Wrench,
 } from "lucide-react";
 import LakehouseFlats from "./flats";
+import LakehouseMaintenance from "./maintenance";
 import {
   useLakehouseCatalogs,
   useLakehouseHealth,
@@ -76,7 +78,7 @@ export default function LakehouseOverview() {
 
   const isConnected = !healthError && health?.status === "success";
 
-  const [tab, setTab] = useState<"catalog" | "flats">("catalog");
+  const [tab, setTab] = useState<"catalog" | "flats" | "maintenance">("catalog");
 
   return (
     <div className="space-y-4">
@@ -163,6 +165,7 @@ export default function LakehouseOverview() {
         {[
           { id: "catalog" as const, label: "Catalog", icon: Boxes },
           { id: "flats" as const, label: "Flat exports", icon: Package },
+          { id: "maintenance" as const, label: "Maintenance", icon: Wrench },
         ].map((entry) => {
           const Icon = entry.icon;
           const isActive = tab === entry.id;
@@ -184,6 +187,8 @@ export default function LakehouseOverview() {
       </div>
 
       {tab === "flats" && <LakehouseFlats />}
+
+      {tab === "maintenance" && <LakehouseMaintenance />}
 
       {tab === "catalog" && (
         <>
