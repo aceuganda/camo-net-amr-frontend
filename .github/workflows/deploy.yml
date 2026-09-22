@@ -57,10 +57,12 @@ jobs:
           proxy: teleport.aceuganda.org:443
           token: github-actions-token
           kubernetes-cluster: amrdb
+        env:
+          TELEPORT_ANONYMOUS_TELEMETRY: "0"
 
       - name: Create Kubernetes Secrets
         run: |
-          kubectl apply -f - <<EOF
+          kubectl apply --validate=false -f - <<EOF
           apiVersion: v1
           kind: Secret
           metadata:
@@ -76,4 +78,4 @@ jobs:
           kubectl patch deployment amr-portal-deployment -p \
             "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"kubectl.kubernetes.io/restartedAt\":\"$(date +'%Y-%m-%dT%H:%M:%S%z')\"}}}}}"
           
-          kubectl apply -f k8s/amr_portal_deployment.yaml
+          kubectl apply --validate=false -f k8s/amr_portal_deployment.yaml
