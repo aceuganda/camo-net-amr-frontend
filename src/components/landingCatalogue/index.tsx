@@ -16,6 +16,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { catalogueSteps } from "../GuideTour/steps";
 import DatasetCard from "./DatasetCard";
+import { useProfiledDatasets } from "@/lib/hooks/useExports";
 const GuideTour = dynamic(() => import("@/components/GuideTour"), {
   ssr: false,
 });
@@ -141,6 +142,9 @@ export default function HomeCatalogue() {
   const { data: userData } = useUserInfor();
   const datasets: FetchedDataset[] = data?.data || [];
   const isLoggedIn = !!userData?.data;
+  // Profile badges follow the data profile tab: super admins only for now.
+  const isSuperAdmin = (userData?.data?.user?.roles ?? []).includes("super_admin");
+  const profiledIds = useProfiledDatasets(isSuperAdmin);
 
   const filteredDatasets = datasets.filter((dataset) => {
     const matchesSearchTerm = dataset.name
@@ -551,6 +555,7 @@ export default function HomeCatalogue() {
                           key={dataset.id}
                           dataset={dataset}
                           isLoggedIn={isLoggedIn}
+                          hasProfile={profiledIds.has(dataset.id)}
                         />
                       ))}
                   </div>

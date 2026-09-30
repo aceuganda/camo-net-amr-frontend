@@ -3,6 +3,7 @@
 import { ExternalLinkIcon, ChevronRightIcon, EyeOpenIcon, DownloadIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { getDatasetCardPath } from "@/lib/datasetCardLinks";
+import ProfileBadge from "../dataDetails/profile/ProfileBadge";
 
 const formatNumber = (num: number) => {
   if (num >= 1000000) {
@@ -34,9 +35,11 @@ type DatasetCardProps = {
     total_downloads?: number;
   };
   isLoggedIn: boolean;
+  /** A data profile (EDA) has been generated for this dataset. */
+  hasProfile?: boolean;
 };
 
-export default function DatasetCard({ dataset, isLoggedIn }: DatasetCardProps) {
+export default function DatasetCard({ dataset, isLoggedIn, hasProfile = false }: DatasetCardProps) {
   const doiHref =
     dataset.doi &&
     (dataset.doi.startsWith("http") ? dataset.doi : `https://doi.org/${dataset.doi}`);
@@ -50,6 +53,7 @@ export default function DatasetCard({ dataset, isLoggedIn }: DatasetCardProps) {
             <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-cyan-100 rounded-full text-xs font-medium text-[#24408E]">
               {dataset.thematic_area}
             </span>
+            {hasProfile && <ProfileBadge />}
           </div>
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
             dataset.project_status === 'Active' 

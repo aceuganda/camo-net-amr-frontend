@@ -5,6 +5,9 @@ import dynamic from "next/dynamic";
 import FoldersIcon from "../../../public/svgs/folders.svg";
 import WarningIcon from "../../../public/svgs/warning.svg";
 import FileIcon from "../../../public/svgs/file.svg";
+import DownloadContents from "./DownloadContents";
+import DownloadProgress from "./DownloadProgress";
+import type { ExportOptions } from "@/types/exports";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
 
@@ -19,6 +22,12 @@ interface DownloadModalProps {
   onAgreedToConfidentiality: (agreed: boolean) => void;
   onAgreedToDataSharing: (agreed: boolean) => void;
   canDownload?: boolean;
+  exportOptions?: ExportOptions;
+  exportOptionsLoading?: boolean;
+  /** Bytes of the running download received so far. */
+  downloadedBytes?: number;
+  downloadsUsed?: number;
+  maxDownloads?: number;
 }
 
 export default function DownloadModal({
@@ -32,15 +41,26 @@ export default function DownloadModal({
   onAgreedToConfidentiality: onConfidentialityAgreed,
   onAgreedToDataSharing: onDataSharingAgreed,
   canDownload = false,
+  exportOptions,
+  exportOptionsLoading = false,
+  downloadedBytes = 0,
+  downloadsUsed = 0,
+  maxDownloads = 3,
 }: DownloadModalProps) {
   if (!isOpen) return null;
+
+  const remaining = Math.max(0, maxDownloads - downloadsUsed);
+  const zipReady = !!exportOptions?.available && exportOptions.files.length > 0;
+  const whatDownloads = zipReady
+    ? "a .zip with the data, catalogue and data dictionary"
+    : "one CSV file";
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="absolute inset-y-0 right-0 w-full sm:w-[60%] md:w-[50%] lg:w-[40%] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto">
-        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-6 z-10">
+      <div className="absolute inset-y-0 right-0 w-full sm:w-[85%] md:w-[75%] lg:w-[60%] xl:w-[52%] 2xl:max-w-5xl bg-white shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto">
+        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-6 py-5 sm:px-8 z-10">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-[#24408E] bg-gradient-to-r from-[#24408E] to-[#00B9F1] bg-clip-text text-transparent flex items-center gap-2">
               <DownloadIcon className="w-6 h-6 text-[#24408E]" />
@@ -55,7 +75,7 @@ export default function DownloadModal({
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 sm:p-8 space-y-6">
       
           <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6">
             <h3 className="font-semibold text-[#24408E] mb-4 flex items-center gap-2">
@@ -83,7 +103,7 @@ export default function DownloadModal({
                             Variables: {vars.length} selected
                           </p>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                           {vars.map((variable: string, vIdx: number) => (
                             <div
                               key={`${idx}-${vIdx}`}
@@ -136,11 +156,8 @@ export default function DownloadModal({
             )}
           </div>
 
-          {dlPending && (
-            <div className="bg-[#24408E] text-white p-4 rounded-lg flex items-center justify-center gap-3">
-              <DotsLoader />
-              <span className="font-medium">Processing data download...</span>
-            </div>
+          {canDownload && (
+            <DownloadContents options={exportOptions} loading={exportOptionsLoading} />
           )}
 
           <div className="space-y-4">
@@ -158,14 +175,42 @@ export default function DownloadModal({
           </div>
 
           {canDownload && (
-            <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 pt-6">
+            <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 pt-4 pb-2 space-y-3">
+              {/* In the sticky footer, where the user is looking once they press Download. */}
+              {dlPending ? (
+                <DownloadProgress
+                  loaded={downloadedBytes}
+                  expected={exportOptions?.expected_bytes ?? null}
+                />
+              ) : (
+              <p className="text-sm text-slate-600" aria-live="polite">
+                {exportOptions && (
+                  <>
+                    Downloading <span className="font-semibold text-[#24408E]">{whatDownloads}</span>.{" "}
+                  </>
+                )}
+                This uses <span className="font-semibold text-[#24408E]">1 of your {maxDownloads}</span>{" "}
+                downloads
+                {remaining > 0 ? (
+                  <>
+                    {" "}(you have <span className="font-semibold">{remaining}</span> left
+                    {remaining === 1 ? ", so this is your last" : ""}).
+                  </>
+                ) : (
+                  "."
+                )}
+              </p>
+              )}
               <button
                 onClick={onDownload}
                 disabled={dlPending}
                 className="w-full bg-gradient-to-r from-[#00B9F1] to-[#24408E] text-white py-4 rounded-lg hover:shadow-lg transition-all duration-200 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {dlPending ? (
-                  <DotsLoader />
+                  <>
+                    <DotsLoader />
+                    Downloading…
+                  </>
                 ) : (
                   <>
                     <DownloadIcon className="w-5 h-5" />

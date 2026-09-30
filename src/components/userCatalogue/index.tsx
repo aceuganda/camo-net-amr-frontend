@@ -6,6 +6,9 @@ import { useGetUserCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { dataAccessPage } from "../GuideTour/steps";
+import { useUserInfor } from "@/lib/hooks/useAuth";
+import { useProfiledDatasets } from "@/lib/hooks/useExports";
+import ProfileBadge from "../dataDetails/profile/ProfileBadge";
 import {
   CopyIcon,
   ExternalLinkIcon,
@@ -127,6 +130,10 @@ export default function UserCatalogue() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const { data, isLoading, error } = useGetUserCatalogue();
+  // Profile badges follow the data profile tab: super admins only for now.
+  const { data: userInfo } = useUserInfor();
+  const isSuperAdmin = (userInfo?.data?.user?.roles ?? []).includes("super_admin");
+  const profiledIds = useProfiledDatasets(isSuperAdmin);
   const datasets: FetchedDataset[] = data?.data || [];
   const [isTrendsMenuOpen, setIsTrendsMenuOpen] = useState(false);
   const router = useRouter();
@@ -337,6 +344,7 @@ export default function UserCatalogue() {
                                 </p>
                               )}
                             </div>
+                            {profiledIds.has(dataset.id) && <ProfileBadge className="ml-2" />}
                             <ExternalLinkIcon className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
                           </div>
 

@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import FilesIcon from "../../../public/svgs/file.svg";
-import { FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { FileText, ChevronDown, ChevronUp, ChartNoAxesColumn, BookDown } from "lucide-react";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
 import { DatasheetContent } from "@/types/datasheet";
+
+// Loaded only when the tab is opened.
+const DataProfile = dynamic(() => import("./profile/DataProfile"), { ssr: false });
 
 interface DatasheetData {
   id: string;
@@ -21,6 +25,11 @@ interface DatasetInfoTabsProps {
   formatDate: (date: any) => string;
   datasheet?: DatasheetData | null;
   onDownloadDatasheet?: () => void;
+  /** Export source key (data_set.db_name); the Data profile tab shows only when set. */
+  profileSource?: string;
+  /** Downloads the variable dictionary; the button shows only when set. */
+  onDownloadDictionary?: () => void;
+  dictionaryVariableCount?: number;
 }
 
 const hasAnsweredQuestions = (datasheet: DatasheetData | null | undefined): boolean => {
@@ -57,8 +66,11 @@ export default function DatasetInfoTabs({
   formatDate,
   datasheet,
   onDownloadDatasheet,
+  profileSource,
+  onDownloadDictionary,
+  dictionaryVariableCount,
 }: DatasetInfoTabsProps) {
-  const [activeTab, setActiveTab] = useState<"about" | "datasheet">("about");
+  const [activeTab, setActiveTab] = useState<"about" | "datasheet" | "profile">("about");
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(["Motivation"])
   );
@@ -169,40 +181,129 @@ export default function DatasetInfoTabs({
 
   const sections = parseSections();
 
+  const datasheetMissing = !hasAnsweredQuestions(datasheet);
+  const tabs = [
+    {
+      id: "about" as const,
+      label: "About Dataset",
+      hint: "Overview and project details",
+      icon: FilesIcon,
+      disabled: false,
+      onSelect: () => setActiveTab("about"),
+    },
+    ...(profileSource
+      ? [
+          {
+            id: "profile" as const,
+            label: "Data profile",
+            hint: "Statistics for every variable",
+            icon: ChartNoAxesColumn,
+            disabled: false,
+            onSelect: () => setActiveTab("profile"),
+          },
+        ]
+      : []),
+    {
+      id: "datasheet" as const,
+      label: "Datasheet",
+      hint: datasheetMissing ? "Not provided yet" : "How the data was collected and used",
+      icon: FileText,
+      disabled: datasheetMissing,
+      onSelect: handleDatasheetTabClick,
+    },
+  ];
+
   return (
     <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg mb-8">
-      <div className="border-b border-gray-200">
-        <div className="flex">
-          <button
-            onClick={() => setActiveTab("about")}
-            className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 text-left font-semibold transition-all duration-200 ${
-              activeTab === "about"
-                ? "text-[#24408E] border-b-2 border-[#00B9F1] bg-gradient-to-r from-blue-50/50 to-transparent"
-                : "text-gray-600 hover:text-[#24408E] hover:bg-gray-50"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <FilesIcon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-              <span className="text-sm sm:text-base">About Dataset</span>
-            </div>
-          </button>
-          <button
-            onClick={handleDatasheetTabClick}
-            className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 text-left font-semibold transition-all duration-200 ${
-              activeTab === "datasheet"
-                ? "text-[#24408E] border-b-2 border-[#00B9F1] bg-gradient-to-r from-blue-50/50 to-transparent"
-                : "text-gray-600 hover:text-[#24408E] hover:bg-gray-50"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-              <span className="text-sm sm:text-base">Datasheet</span>
-            </div>
-          </button>
+      <div className="flex flex-col gap-2 border-b border-gray-200 p-2 sm:flex-row sm:items-stretch sm:p-3">
+        <div
+          role="tablist"
+          aria-label="Dataset information"
+          className="flex min-w-0 flex-1 gap-1 overflow-x-auto rounded-xl bg-slate-100/80 p-1"
+        >
+          {tabs.map((tab) => {
+            const active = activeTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                id={`dataset-tab-${tab.id}`}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                aria-controls="dataset-tab-panel"
+                aria-disabled={tab.disabled || undefined}
+                onClick={tab.onSelect}
+                className={`group flex min-w-[9.5rem] flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B9F1] sm:px-4 sm:py-3 ${
+                  active
+                    ? "bg-white shadow-md ring-1 ring-[#24408E]/10"
+                    : tab.disabled
+                      ? "cursor-not-allowed text-slate-400"
+                      : "text-slate-600 hover:bg-white/60 hover:text-[#24408E]"
+                }`}
+              >
+                <span
+                  className={`shrink-0 rounded-lg p-2 transition-colors ${
+                    active
+                      ? "bg-gradient-to-br from-[#00B9F1] to-[#24408E] text-white shadow-sm"
+                      : tab.disabled
+                        ? "bg-slate-200/70 text-slate-400"
+                        : "bg-white text-[#24408E] group-hover:text-[#00B9F1]"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                </span>
+                <span className="min-w-0">
+                  <span
+                    className={`block truncate text-sm font-semibold sm:text-base ${
+                      active ? "text-[#24408E]" : ""
+                    }`}
+                  >
+                    {tab.label}
+                  </span>
+                  <span
+                    className={`hidden truncate text-xs sm:block ${
+                      active ? "text-slate-500" : "text-slate-400"
+                    }`}
+                  >
+                    {tab.hint}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </div>
+        {onDownloadDictionary && (
+          <button
+            type="button"
+            onClick={onDownloadDictionary}
+            title="Download the variable dictionary (CSV)"
+            className="flex shrink-0 items-center justify-center gap-2.5 rounded-xl border border-[#24408E]/15 bg-white px-4 py-2.5 text-left text-[#24408E] shadow-sm transition-all duration-200 hover:border-[#00B9F1] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B9F1] sm:justify-start"
+          >
+            <span className="rounded-lg bg-gradient-to-br from-[#00B9F1] to-[#24408E] p-2 text-white">
+              <BookDown className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold sm:text-base">
+                <span className="sm:hidden">Download dictionary</span>
+                <span className="hidden sm:inline">Dictionary</span>
+              </span>
+              <span className="hidden text-xs text-slate-500 sm:block">
+                {dictionaryVariableCount != null
+                  ? `${dictionaryVariableCount} variables · CSV`
+                  : "Download CSV"}
+              </span>
+            </span>
+          </button>
+        )}
       </div>
 
-      <div className="p-6">
+      <div
+        id="dataset-tab-panel"
+        role="tabpanel"
+        aria-labelledby={`dataset-tab-${activeTab}`}
+        className="p-6"
+      >
         {activeTab === "about" && (
           <div>
             <div className="prose max-w-none mb-6">
@@ -258,6 +359,8 @@ export default function DatasetInfoTabs({
             </div>
           </div>
         )}
+
+        {activeTab === "profile" && profileSource && <DataProfile source={profileSource} />}
 
         {activeTab === "datasheet" && datasheet && (
           <div>

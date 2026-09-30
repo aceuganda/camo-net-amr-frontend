@@ -11,6 +11,9 @@ import { getDatasetCardPath } from "@/lib/datasetCardLinks";
 import { DataCard } from "@/types/constants";
 import { useDatasetDatasheet } from "@/lib/hooks/useDatasheets";
 import { DatasheetViewer } from "@/components/datasheet";
+import { useUserInfor } from "@/lib/hooks/useAuth";
+import { useProfiledDatasets } from "@/lib/hooks/useExports";
+import ProfileBadge from "../dataDetails/profile/ProfileBadge";
 import dynamic from "next/dynamic";
 
 const DotsLoader = dynamic(() => import("../ui/dotsLoader"), { ssr: false });
@@ -26,6 +29,11 @@ export default function DatasetCardPageContent() {
 
   // Get the dataset ID from the loaded data card
   const datasetId = dataset?.id || "";
+
+  // Profile badges follow the data profile tab: super admins only for now.
+  const { data: userInfo } = useUserInfor();
+  const isSuperAdmin = (userInfo?.data?.user?.roles ?? []).includes("super_admin");
+  const profiledIds = useProfiledDatasets(isSuperAdmin);
 
   const {
     data: datasheetData,
@@ -124,8 +132,11 @@ export default function DatasetCardPageContent() {
           <div className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 pb-6 border-b border-gray-200 gap-4">
               <div className="flex-1 min-w-0">
-                <div className="inline-block px-3 py-1 bg-blue-50 text-[#24408E] rounded-full text-sm font-medium mb-3">
-                  {dataCard.thematic_area}
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="inline-block px-3 py-1 bg-blue-50 text-[#24408E] rounded-full text-sm font-medium">
+                    {dataCard.thematic_area}
+                  </span>
+                  {profiledIds.has(datasetId) && <ProfileBadge />}
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{dataCard.name}</h1>
                 <p className="text-base sm:text-lg text-gray-600 mb-2">{dataCard.title}</p>

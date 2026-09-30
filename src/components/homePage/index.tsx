@@ -184,6 +184,7 @@ export default function HomePage() {
             <Image
               src="/idiclinic.webp"
               alt="Capacity building"
+              loading="eager"
               width={294}
               height={232}
               className="rounded-lg mb-4 h-auto max-sm:w-full"
