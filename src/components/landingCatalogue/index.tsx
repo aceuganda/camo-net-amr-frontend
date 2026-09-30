@@ -16,6 +16,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { catalogueSteps } from "../GuideTour/steps";
 import DatasetCard from "./DatasetCard";
+import ProfileBadge from "../dataDetails/profile/ProfileBadge";
 import { useProfiledDatasets } from "@/lib/hooks/useExports";
 const GuideTour = dynamic(() => import("@/components/GuideTour"), {
   ssr: false,
@@ -142,9 +143,8 @@ export default function HomeCatalogue() {
   const { data: userData } = useUserInfor();
   const datasets: FetchedDataset[] = data?.data || [];
   const isLoggedIn = !!userData?.data;
-  // Profile badges follow the data profile tab: super admins only for now.
-  const isSuperAdmin = (userData?.data?.user?.roles ?? []).includes("super_admin");
-  const profiledIds = useProfiledDatasets(isSuperAdmin);
+  // Profiles need a login, so badges show once signed in.
+  const profiledIds = useProfiledDatasets(isLoggedIn);
 
   const filteredDatasets = datasets.filter((dataset) => {
     const matchesSearchTerm = dataset.name
@@ -360,8 +360,8 @@ export default function HomeCatalogue() {
                           { header: "Study Design" },
                           { header: "Data collected" },
                           {
-                            header: "Entries",
-                            tooltip: "Number of data records.",
+                            header: "Data profile",
+                            tooltip: "Whether a data profile (statistics for every variable) is available.",
                           },
                           {
                             header: "Data source",
@@ -462,9 +462,16 @@ export default function HomeCatalogue() {
                             </span>
                           </td>
 
+                          <td className="p-3 sm:p-4 md:p-5">
+                            {profiledIds.has(dataset.id) ? (
+                              <ProfileBadge />
+                            ) : (
+                              <span className="text-gray-400" aria-label="No data profile">—</span>
+                            )}
+                          </td>
+
                           {/* Remaining columns */}
                           {[
-                            dataset.entries_count,
                             dataset.source,
                             dataset.countries,
                             dataset.data_capture_method,

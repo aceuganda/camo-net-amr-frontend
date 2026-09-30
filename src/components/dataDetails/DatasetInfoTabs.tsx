@@ -162,8 +162,6 @@ export default function DatasetInfoTabs({
     { label: "Thematic area", value: dataset.thematic_area },
     { label: "AMR Category", value: dataset.amr_category },
     { label: "Status", value: dataset.project_status },
-    { label: "Size", value: dataset.size },
-    { label: "Entries", value: dataset.entries_count || "UNK" },
     { label: "Study Design", value: dataset.study_design },
   ];
 
@@ -306,7 +304,7 @@ export default function DatasetInfoTabs({
       >
         {activeTab === "about" && (
           <div>
-            <div className="prose max-w-none mb-6">
+            <div className="prose max-w-none mb-5">
               <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-100">
                 <p className="text-gray-700 mb-3 text-sm sm:text-base leading-relaxed">
                   {dataset.description}
@@ -318,44 +316,9 @@ export default function DatasetInfoTabs({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-[#24408E] mb-4 pb-2 border-b border-gray-200">
-                  Dataset Information
-                </h3>
-                {leftColumnData.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start space-x-3 p-3 hover:bg-blue-50 rounded-lg transition-colors"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-500 mb-1">{item.label}</p>
-                      <p className="text-gray-900 text-sm sm:text-base break-words">
-                        {item.value}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-[#24408E] mb-4 pb-2 border-b border-gray-200">
-                  Project Details
-                </h3>
-                {rightColumnData.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start space-x-3 p-3 hover:bg-cyan-50 rounded-lg transition-colors"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-500 mb-1">{item.label}</p>
-                      <p className="text-gray-900 text-sm sm:text-base break-words">
-                        {item.value}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="grid grid-cols-1 gap-x-8 gap-y-5 lg:grid-cols-2">
+              <InfoList title="Dataset Information" items={leftColumnData} />
+              <InfoList title="Project Details" items={rightColumnData} />
             </div>
           </div>
         )}
@@ -436,5 +399,27 @@ export default function DatasetInfoTabs({
         )}
       </div>
     </div>
+  );
+}
+
+/** A compact label / value list: label on the left, value on the right, hairlines between. */
+function InfoList({ title, items }: { title: string; items: { label: string; value: any }[] }) {
+  return (
+    <section>
+      <h3 className="mb-1 border-b border-gray-200 pb-1.5 text-base font-semibold text-[#24408E]">
+        {title}
+      </h3>
+      <dl className="divide-y divide-gray-100">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="grid grid-cols-[minmax(6.5rem,34%)_1fr] gap-3 rounded px-1.5 py-2 transition-colors hover:bg-blue-50/60"
+          >
+            <dt className="text-xs font-medium text-gray-500 pt-0.5">{item.label}</dt>
+            <dd className="text-sm text-gray-900 break-words">{item.value || "—"}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }

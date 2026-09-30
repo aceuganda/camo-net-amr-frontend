@@ -38,8 +38,7 @@ export const useExportOptions = (source: string | undefined) => {
 
 /**
  * Ids of datasets with a generated data profile, for catalogue badges. The
- * endpoint is super-admin only while profiles are trialled, so pass `enabled`
- * only for super admins.
+ * endpoint needs a login, so pass `enabled` only for signed-in users.
  */
 export const useProfiledDatasets = (enabled: boolean) => {
   const query = useQuery<{ dataset_ids: string[] }, Error>({

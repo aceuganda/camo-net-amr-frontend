@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, FileSpreadsheet, FileText, FolderArchive, Rows3 } from "lucide-react";
+import { BookOpen, Coins, FileSpreadsheet, FileText, FolderArchive, Rows3 } from "lucide-react";
 import type { ExportOptions } from "@/types/exports";
 import { formatCompact, formatDateTime } from "./profile/profileUtils";
 
@@ -102,6 +102,16 @@ export default function DownloadContents({ options, loading }: DownloadContentsP
           <p>
             <span className="font-medium text-[#24408E]">Row layout: </span>
             {options.description}
+          </p>
+        </div>
+      )}
+
+      {options?.currency_note && (
+        <div className="mt-2 flex gap-2.5 rounded-lg bg-amber-50/80 px-3 py-2.5 text-xs text-slate-600 leading-relaxed">
+          <Coins className="h-4 w-4 mt-0.5 shrink-0 text-amber-700" aria-hidden />
+          <p>
+            <span className="font-medium text-amber-800">Currency: </span>
+            {options.currency_note}
           </p>
         </div>
       )}

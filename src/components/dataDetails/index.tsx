@@ -14,7 +14,6 @@ import {
 } from "@/lib/hooks/useDataSets";
 import { useDatasetDatasheet } from "@/lib/hooks/useDatasheets";
 import { getErrorDetail, useExportOptions } from "@/lib/hooks/useExports";
-import { useUserInfor } from "@/lib/hooks/useAuth";
 import type { DownloadRequest } from "@/types/exports";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -96,10 +95,6 @@ export default function DatasetDetails({ id }: any) {
 
   const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
 
-  // Data profiles are temporarily super-admin only while they are trialled on
-  // staging and prod; the API enforces the same. Drop this gate to open them up.
-  const { data: userInfo } = useUserInfor();
-  const isSuperAdmin = (userInfo?.data?.user?.roles ?? []).includes("super_admin");
 
   // What the download holds (files, sizes, row layout) for the download drawer.
   const exportSource = dataset?.data_set?.db_name || "";
@@ -489,9 +484,7 @@ export default function DatasetDetails({ id }: any) {
                   dataset={dataset.data_set}
                   datasheet={datasheet}
                   formatDate={formatDate}
-                  profileSource={
-                    isSuperAdmin && dataset.data_set.in_warehouse ? exportSource : undefined
-                  }
+                  profileSource={dataset.data_set.in_warehouse ? exportSource : undefined}
                   onDownloadDictionary={
                     dataset.data_set.in_warehouse && dictionarySuccess
                       ? generateCSVFromDataset
