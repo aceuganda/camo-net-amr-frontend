@@ -13,6 +13,9 @@ import {
   deletePermission,
 } from "@/lib/hooks/useDataSets";
 import { useDatasetDatasheet } from "@/lib/hooks/useDatasheets";
+import { getErrorDetail, useExportOptions } from "@/lib/hooks/useExports";
+import { useUserInfor } from "@/lib/hooks/useAuth";
+import type { DownloadRequest } from "@/types/exports";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import FileSaver from "file-saver";
@@ -35,9 +38,6 @@ const DatasetInfoTabs = dynamic(() => import("./DatasetInfoTabs"), {
   ssr: false,
 });
 const CredibilityPanel = dynamic(() => import("./CredibilityPanel"), {
-  ssr: false,
-});
-const VariablesGrid = dynamic(() => import("./VariablesGrid"), {
   ssr: false,
 });
 const RequestAccessModal = dynamic(() => import("./RequestAccessModal"), {
@@ -96,6 +96,20 @@ export default function DatasetDetails({ id }: any) {
 
   const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
 
+  // Data profiles are temporarily super-admin only while they are trialled on
+  // staging and prod; the API enforces the same. Drop this gate to open them up.
+  const { data: userInfo } = useUserInfor();
+  const isSuperAdmin = (userInfo?.data?.user?.roles ?? []).includes("super_admin");
+
+  // What the download holds (files, sizes, row layout) for the download drawer.
+  const exportSource = dataset?.data_set?.db_name || "";
+  const {
+    data: exportOptions,
+    isLoading: exportOptionsLoading,
+  } = useExportOptions(dataset?.data_set?.in_warehouse ? exportSource : undefined);
+  // Bytes of the current download received so far, for the progress bar.
+  const [downloadedBytes, setDownloadedBytes] = useState(0);
+
   // Get dictionary data - use db_name as it matches the backend source values
   const {
     data: dictionaryData,
@@ -148,20 +162,24 @@ export default function DatasetDetails({ id }: any) {
     mutate: downloadFn,
   } = useMutation({
     mutationFn: downloadData,
-    onSuccess: (data) => {
-      if (data instanceof Blob) {
-        FileSaver.saveAs(data, "data.csv");
+    onSuccess: ({ blob, filename }) => {
+      if (blob instanceof Blob) {
+        FileSaver.saveAs(blob, filename);
         handleCloseDownloadModal();
-        toast.success("Downloaded successfully, please check your downloads folder.");
+        toast.success(`Downloaded ${filename}. Check your downloads folder.`);
+        // Downloads count against the allowance; refresh the permission counts.
+        refetch();
       } else {
         toast.error("Downloaded data is not a valid file");
         handleCloseDownloadModal();
       }
     },
-    onError: (error: any) => {
-      toast.error(
-        `Failed to download data set, make sure you have the permission to download this data set`
+    onError: async (error: unknown) => {
+      const detail = await getErrorDetail(
+        error,
+        "Failed to download data set, make sure you have the permission to download this data set"
       );
+      toast.error(detail);
       handleCloseDownloadModal();
     },
   });
@@ -230,7 +248,9 @@ export default function DatasetDetails({ id }: any) {
       csvRows.push("variable,type,description");
 
       for (const [key, value] of Object.entries(dictionary)) {
-        const row = `${key},${value.type},${value.description}`;
+        // Quote each field: descriptions often contain commas.
+        const quote = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+        const row = [key, value.type, value.description].map(quote).join(",");
         csvRows.push(row);
       }
 
@@ -363,7 +383,13 @@ export default function DatasetDetails({ id }: any) {
 
   const handleDwn = () => {
     if (isAgreedToConfidentiality && isAgreedToDataSharing) {
-      downloadFn(dataset.data_set.db_name);
+      setDownloadedBytes(0);
+      const request: DownloadRequest = {
+        source: dataset.data_set.db_name,
+        onProgress: setDownloadedBytes,
+      };
+      if (exportOptions) request.slug = exportOptions.slug;
+      downloadFn(request);
     } else {
       toast.error(
         "Please agree to the confidentiality agreement before downloading the data"
@@ -463,6 +489,17 @@ export default function DatasetDetails({ id }: any) {
                   dataset={dataset.data_set}
                   datasheet={datasheet}
                   formatDate={formatDate}
+                  profileSource={
+                    isSuperAdmin && dataset.data_set.in_warehouse ? exportSource : undefined
+                  }
+                  onDownloadDictionary={
+                    dataset.data_set.in_warehouse && dictionarySuccess
+                      ? generateCSVFromDataset
+                      : undefined
+                  }
+                  dictionaryVariableCount={
+                    dictionaryData?.data?.data ? Object.keys(dictionaryData.data.data).length : undefined
+                  }
                 />
 
                 <PermissionsSection
@@ -475,16 +512,6 @@ export default function DatasetDetails({ id }: any) {
                   formatDate={formatDate}
                 />
 
-                {dataset.data_set.in_warehouse && (
-                  <VariablesGrid
-                    dictionaryData={dictionaryData}
-                    dictionaryDataLoading={dictionaryDataLoading}
-                    dictionaryDataError={dictionaryDataError}
-                    dictionarySuccess={dictionarySuccess}
-                    isSuccess={isSuccess}
-                    onDownloadDictionary={generateCSVFromDataset}
-                  />
-                )}
               </div>
 
 
@@ -527,6 +554,10 @@ export default function DatasetDetails({ id }: any) {
         onAgreedToConfidentiality={setIsAgreedToConfidentiality}
         onAgreedToDataSharing={setIsAgreedToDataSharing}
         canDownload={canDownload}
+        exportOptions={exportOptions}
+        exportOptionsLoading={exportOptionsLoading}
+        downloadedBytes={downloadedBytes}
+        downloadsUsed={approvedDownloadsCount ?? 0}
       />
     </main>
   );
