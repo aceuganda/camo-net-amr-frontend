@@ -30,10 +30,9 @@ export default function DatasetCardPageContent() {
   // Get the dataset ID from the loaded data card
   const datasetId = dataset?.id || "";
 
-  // Profile badges follow the data profile tab: super admins only for now.
+  // Profiles need a login, so the badge shows once signed in.
   const { data: userInfo } = useUserInfor();
-  const isSuperAdmin = (userInfo?.data?.user?.roles ?? []).includes("super_admin");
-  const profiledIds = useProfiledDatasets(isSuperAdmin);
+  const profiledIds = useProfiledDatasets(!!userInfo?.data);
 
   const {
     data: datasheetData,

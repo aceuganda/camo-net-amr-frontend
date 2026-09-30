@@ -51,6 +51,8 @@ export const mockOptions = async (source: string): Promise<ExportOptions> => {
       column_count: null,
       built_at: null,
       expected_bytes: 31_000,
+      currency_note:
+        "Costs are in US dollars (USD), valued at the time they were costed. Columns whose names end in UGX (or InUGX) are in Ugandan shillings.",
     };
   }
   const built = source !== "daring_data";
@@ -67,6 +69,7 @@ export const mockOptions = async (source: string): Promise<ExportOptions> => {
     column_count: built ? 61 : null,
     built_at: built ? "2026-09-20T10:14:03" : null,
     expected_bytes: built ? 4_700_000 : null,
+    currency_note: null,
   };
 };
 

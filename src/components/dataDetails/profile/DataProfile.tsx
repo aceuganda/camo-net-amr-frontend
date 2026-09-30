@@ -46,6 +46,12 @@ export default function DataProfile({ source }: DataProfileProps) {
             {options.data.description}
           </p>
         )}
+        {options.data?.currency_note && (
+          <p className="mt-2 max-w-prose rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-slate-600 leading-relaxed">
+            <span className="font-medium text-amber-800">Currency: </span>
+            {options.data.currency_note}
+          </p>
+        )}
       </div>
 
       {(options.isLoading || profile.isLoading) && <ProfileSkeleton />}

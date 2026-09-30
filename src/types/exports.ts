@@ -29,6 +29,8 @@ export interface ExportOptions {
    * download scaled to their granted variables. Null until it has one.
    */
   expected_bytes: number | null;
+  /** Economic only: which currency the money columns are in. */
+  currency_note: string | null;
 }
 
 export type ProfileStatus = "ready" | "pending" | "unavailable";

@@ -6,14 +6,12 @@ import { useGetUserCatalogue } from "@/lib/hooks/useCatalogue";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { dataAccessPage } from "../GuideTour/steps";
-import { useUserInfor } from "@/lib/hooks/useAuth";
 import { useProfiledDatasets } from "@/lib/hooks/useExports";
 import ProfileBadge from "../dataDetails/profile/ProfileBadge";
 import {
   CopyIcon,
   ExternalLinkIcon,
   StackIcon,
-  Pencil2Icon,
   CubeIcon,
   MixerVerticalIcon,
   ChevronRightIcon,
@@ -130,10 +128,7 @@ export default function UserCatalogue() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const { data, isLoading, error } = useGetUserCatalogue();
-  // Profile badges follow the data profile tab: super admins only for now.
-  const { data: userInfo } = useUserInfor();
-  const isSuperAdmin = (userInfo?.data?.user?.roles ?? []).includes("super_admin");
-  const profiledIds = useProfiledDatasets(isSuperAdmin);
+  const profiledIds = useProfiledDatasets(true);
   const datasets: FetchedDataset[] = data?.data || [];
   const [isTrendsMenuOpen, setIsTrendsMenuOpen] = useState(false);
   const router = useRouter();
@@ -350,12 +345,6 @@ export default function UserCatalogue() {
 
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2">
-                              <Pencil2Icon className="w-3 h-3 text-gray-400" />
-                              <span className="text-xs text-gray-600">
-                                {dataset.entries_count} entries
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
                               <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
                                 {dataset.study_design}
                               </span>
@@ -455,7 +444,7 @@ export default function UserCatalogue() {
                             Data Type
                           </th>
                           <th className="p-2 sm:p-3 md:p-5 text-left font-semibold min-w-[60px] sm:min-w-[80px]">
-                            Entries
+                            Data profile
                           </th>
                           <th className="p-2 sm:p-3 md:p-5 text-left font-semibold min-w-[100px] sm:min-w-[120px]">
                             Access Status
@@ -527,12 +516,11 @@ export default function UserCatalogue() {
                                 </td>
 
                                 <td className="p-2 sm:p-3 md:p-5">
-                                  <div className="flex items-center gap-1 sm:gap-2">
-                                    <Pencil2Icon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" />
-                                    <span className="font-semibold whitespace-nowrap text-xs sm:text-sm">
-                                      {dataset.entries_count}
-                                    </span>
-                                  </div>
+                                  {profiledIds.has(dataset.id) ? (
+                                    <ProfileBadge />
+                                  ) : (
+                                    <span className="text-gray-400" aria-label="No data profile">—</span>
+                                  )}
                                 </td>
 
                                 <td className="p-2 sm:p-3 md:p-5">
